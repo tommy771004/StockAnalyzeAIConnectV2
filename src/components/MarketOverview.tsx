@@ -669,7 +669,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
 
         <div className="flex flex-col xl:flex-row gap-4">
           {/* 左側：自選股 Grid */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 content-start auto-rows-min">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 content-start items-start xl:self-start">
             {stocks.map(s => (
               <WatchlistStockCard
                 key={s.symbol}

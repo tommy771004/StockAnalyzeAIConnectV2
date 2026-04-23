@@ -24,6 +24,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
   const dataRef = useRef<any[]>([]);
   const indicRef = useRef<{rsi: number[], macd: any[]}>({rsi: [], macd: []});
   const logicalRangeRef = useRef<any>(null);
+  const prevChartTypeRef = useRef<ChartType | null>(null);
   
   const { settings } = useSettings();
   const [chartType, setChartType] = useState<ChartType>('candle');
@@ -114,7 +115,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         timeVisible: true,
         fixLeftEdge: true,
         fixRightEdge: true,
-        rightOffset: 1,
+        rightOffset: 0,
         barSpacing: 12,
         minBarSpacing: 1,
       },
@@ -182,10 +183,6 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     smaSeriesRef.current = smaSeries;
 
     // Preserve logical range when chart is recreated
-    chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-      logicalRangeRef.current = range;
-    });
-
     // Crosshair move handler
     chart.subscribeCrosshairMove(param => {
       if (
@@ -269,34 +266,37 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
     const chart = chartRef.current;
 
-    // 1. Handle Series Creation/Re-creation for type changes
+    // 1. Handle Series Creation - only re-create when chart type changes
+    const chartTypeChanged = prevChartTypeRef.current !== null && prevChartTypeRef.current !== chartType;
+    prevChartTypeRef.current = chartType;
     try {
-      // Remove old series if type changed
-      if (mainSeriesRef.current) {
-        chart.removeSeries(mainSeriesRef.current);
-      }
-
-      // Re-add based on current type
-      if (chartType === 'candle') {
-        mainSeriesRef.current = chart.addSeries(CandlestickSeries, {
-          upColor: '#10b981',
-          downColor: '#ef4444',
-          borderVisible: false,
-          wickUpColor: '#10b981',
-          wickDownColor: '#ef4444',
-        });
-      } else if (chartType === 'area') {
-        mainSeriesRef.current = chart.addSeries(AreaSeries, {
-          lineColor: '#6366f1',
-          topColor: 'rgba(99, 102, 241, 0.4)',
-          bottomColor: 'rgba(99, 102, 241, 0)',
-          lineWidth: 3,
-        });
-      } else {
-        mainSeriesRef.current = chart.addSeries(LineSeries, {
-          color: '#6366f1',
-          lineWidth: 3,
-        });
+      if (!mainSeriesRef.current || chartTypeChanged) {
+        if (mainSeriesRef.current && chartTypeChanged) {
+          // Save viewport before removing series
+          logicalRangeRef.current = chart.timeScale().getVisibleLogicalRange();
+          chart.removeSeries(mainSeriesRef.current);
+        }
+        if (chartType === 'candle') {
+          mainSeriesRef.current = chart.addSeries(CandlestickSeries, {
+            upColor: '#10b981',
+            downColor: '#ef4444',
+            borderVisible: false,
+            wickUpColor: '#10b981',
+            wickDownColor: '#ef4444',
+          });
+        } else if (chartType === 'area') {
+          mainSeriesRef.current = chart.addSeries(AreaSeries, {
+            lineColor: '#6366f1',
+            topColor: 'rgba(99, 102, 241, 0.4)',
+            bottomColor: 'rgba(99, 102, 241, 0)',
+            lineWidth: 3,
+          });
+        } else {
+          mainSeriesRef.current = chart.addSeries(LineSeries, {
+            color: '#6366f1',
+            lineWidth: 3,
+          });
+        }
       }
 
       // 2. Refresh Data
@@ -336,28 +336,22 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         smaSeriesRef.current.setData([]);
       }
 
-      // 3. Intelligently handle view
+      // 3. Handle viewport
       const barCount = uniqueData.length;
-      const RIGHT_PAD = 1;
       if (!isInitializedRef.current) {
-        // Show only the last 60 bars by default
+        // First load: show last 60 bars
         if (barCount > 60) {
-          chart.timeScale().setVisibleLogicalRange({
-            from: barCount - 60,
-            to: barCount - 1 + RIGHT_PAD,
-          });
+          chart.timeScale().setVisibleLogicalRange({ from: barCount - 60, to: barCount - 1 });
         } else {
           chart.timeScale().fitContent();
         }
         isInitializedRef.current = true;
-      } else if (logicalRangeRef.current) {
-        // Restore user's previous zoom, clamp right edge strictly to data boundary
-        const currentRange = logicalRangeRef.current;
-        const spanBars = currentRange.to - currentRange.from;
-        const clampedTo = Math.min(currentRange.to, barCount - 1 + RIGHT_PAD);
-        const clampedFrom = Math.max(0, clampedTo - spanBars);
-        chart.timeScale().setVisibleLogicalRange({ from: clampedFrom, to: clampedTo });
+      } else if (chartTypeChanged && logicalRangeRef.current) {
+        // Restore saved viewport only when switching chart type
+        chart.timeScale().setVisibleLogicalRange(logicalRangeRef.current);
+        logicalRangeRef.current = null;
       }
+      // Normal data refresh: setData() preserves existing viewport automatically
       
       dataRef.current = uniqueData;
     } catch (err) {
