@@ -110,30 +110,51 @@ async function callOpenRouter(
 
   _tried.add(model);
 
-  const res = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer':  'https://hermes-ai.trading',
-      'X-Title':       'Hermes AI Trading',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.2,
-      max_tokens: 1024,
-      stream: false,
-      ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
-    }),
-    signal: AbortSignal.timeout(30000),
-  });
+  let res: Response;
+  try {
+    res = await fetch(OPENROUTER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer':  'https://hermes-ai.trading',
+        'X-Title':       'Hermes AI Trading',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        max_tokens: 1024,
+        stream: false,
+        ...(jsonMode && { response_format: { type: 'json_object' } })
+      }),
+      signal: AbortSignal.timeout(45000), // raised timeout slightly
+    });
+  } catch (err: any) {
+    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+      const freeModels = await getOpenRouterFreeModels(apiKey);
+      const next = freeModels.find(m => !_tried.has(m));
+      if (next) {
+        console.warn(`[aiService] ${model} 逾時，自動切換至 ${next}`);
+        return callOpenRouter(prompt, next, jsonMode, _tried);
+      }
+      throw Object.assign(new Error('AI 服務請求逾時，且已無備用模型'), { status: 408 });
+    }
+    throw Object.assign(new Error(`網路或連線失敗: ${err.message}`), { status: 0 });
+  }
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     const st = res.status;
+    
+    // Auto-retry without json_mode if model doesn't support it
+    if (st === 400 && jsonMode && body.includes('Json mode is not supported')) {
+      console.warn(`[aiService] 模型 ${model} 不支援 JSON Mode，取消參數進行重試...`);
+      return callOpenRouter(prompt, model, false, _tried);
+    }
+
     // On rate-limit / overload / removed-endpoint, rotate to next free model
-    if (st === 429 || st === 503 || st === 404) {
+    if (st === 429 || st === 503 || st === 404 || st === 522) {
       // Invalidate cache on 404 so stale model list is refreshed
       if (st === 404) _freeModelsCache.ts = 0;
 
@@ -197,18 +218,19 @@ function classifyError(err: unknown) {
 
 function parseJSON<T>(raw: string, schema: z.ZodSchema<T>): T {
   // Strip possible markdown fences
-  const clean = raw.replace(/```(?:json)?/g, '').replace(/```/g, '').trim();
+  const clean = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
   let json: unknown;
   try {
     json = JSON.parse(clean);
   } catch {
-    // Try to extract first JSON object from response
-    const match = clean.match(/\{[\s\S]*\}/);
-    if (match) {
+    // If strict parsing fails, try to extract first JSON object/array
+    const firstBrace = clean.indexOf('{');
+    const lastBrace = clean.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       try {
-        json = JSON.parse(match[0]);
+        json = JSON.parse(clean.substring(firstBrace, lastBrace + 1));
       } catch {
-        throw new Error('AI 回傳格式無效，無法解析 JSON');
+        throw new Error('AI 回傳內容無法還原成 JSON');
       }
     } else {
       throw new Error('AI 回傳格式無效，無法解析 JSON');

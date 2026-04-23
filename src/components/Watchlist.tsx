@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, X, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, X, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { safeCn, safeN } from '../utils/helpers';
 import { motion, AnimatePresence, useAnimation } from 'motion/react';
 import { vibrate } from '../utils/helpers';

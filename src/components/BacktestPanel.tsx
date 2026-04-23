@@ -5,7 +5,9 @@ import { motion } from 'motion/react';
 import { useSettings } from '../contexts/SettingsContext';
 import { safeCn } from '../utils/helpers';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip, XAxis } from 'recharts';
-import { Activity } from 'lucide-react';
+import { Activity, Code, Settings2 } from 'lucide-react';
+import { pushLog } from './TradeLogger';
+import { STORAGE_KEYS } from '../utils/storage';
 
 interface Props {
   history: HistoricalData[];
@@ -15,65 +17,56 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
   const { settings } = useSettings();
   const compact = settings.compactMode;
   const [result, setResult] = useState<BacktestResult | null>(null);
+  const [prompt, setPrompt] = useState('當 RSI(14) 低於 30 且 MACD 黃金交叉時買入，RSI 高於 70 賣出');
+  const [isRunning, setIsRunning] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
 
-  const handleRun = () => {
+  const handleDynamicRun = async () => {
     if (!history || history.length === 0) return;
-    const shortPeriod = 50;
-    const longPeriod = 200;
-    const signals: ('BUY' | 'SELL' | 'HOLD')[] = [];
-    let position = 0;
+    setIsRunning(true);
+    setGeneratedCode(null);
+    pushLog('info', 'AGENT', `Starting Dynamic Backtest Generator...`);
+    try {
+      const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+      const res = await fetch('/api/agent/dynamic-strategy', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ prompt, historyData: history })
+      });
 
-    let shortSum = 0;
-    let longSum = 0;
-
-    for (let i = 0; i < history.length; i++) {
-      const close = Number(history[i]?.close) || 0;
-      
-      shortSum += close;
-      longSum += close;
-      
-      if (i >= shortPeriod) {
-        shortSum -= (Number(history[i - shortPeriod]?.close) || 0);
-      }
-      if (i >= longPeriod) {
-        longSum -= (Number(history[i - longPeriod]?.close) || 0);
+      if (!res.ok) {
+         const errData = await res.json().catch(() => ({}));
+         throw new Error(errData.error || `HTTP ${res.status}`);
       }
 
-      if (i < longPeriod - 1) {
-        signals.push('HOLD');
-        continue;
-      }
+      const data = await res.json();
+      setGeneratedCode(data.code);
+      pushLog('success', 'AGENT', `Strategy Code Generated & VM Executed Successfully!`);
 
-      const shortSMA = shortSum / shortPeriod;
-      const longSMA = longSum / longPeriod;
-      
-      if (!isFinite(shortSMA) || !isFinite(longSMA)) { 
-        signals.push('HOLD'); 
-        continue; 
-      }
+      // map numeric signals (1, -1, 0) to ('BUY', 'SELL', 'HOLD')
+      const signalsRaw: number[] = data.signals;
+      const mappedSignals = signalsRaw.map(v => v === 1 ? 'BUY' : v === -1 ? 'SELL' : 'HOLD') as ('BUY'|'SELL'|'HOLD')[];
 
-      if (position === 0 && shortSMA > longSMA) {
-        signals.push('BUY');
-        position = 1;
-      } else if (position === 1 && shortSMA < longSMA) {
-        signals.push('SELL');
-        position = 0;
-      } else {
-        signals.push('HOLD');
-      }
+      const config: BacktestConfig = {
+        initialCapital: 100000,
+        commissionRate: 0.001425,
+        minimumCommission: 20,
+        slippageRate: 0.001,
+        taxRate: 0.003,
+        positionSizing: 'all-in'
+      };
+
+      const backtestRes = runBacktest(history, mappedSignals, config);
+      setResult(backtestRes);
+    } catch (e: any) {
+      pushLog('error', 'AGENT', `Dynamic Backtest Error: ${e.message}`);
+      console.error(e);
+    } finally {
+      setIsRunning(false);
     }
-
-    const config: BacktestConfig = {
-      initialCapital: 100000,
-      commissionRate: 0.001425,
-      minimumCommission: 20,
-      slippageRate: 0.001,
-      taxRate: 0.003,
-      positionSizing: 'all-in'
-    };
-
-    const res = runBacktest(history, signals, config);
-    setResult(res);
   };
 
   const equityData = useMemo(() => {
@@ -92,28 +85,48 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
       transition={{ duration: 0.5 }}
       className={safeCn("flex flex-col h-full", compact ? "gap-2" : "gap-4")}
     >
-      <div className="flex items-center justify-between pb-2 border-b border-white/10">
-         <div className="flex items-center gap-2 text-indigo-400">
-           <Activity size={16} />
-           <span className="text-xs font-black tracking-widest uppercase">QUANTUM BACKTEST</span>
+      <div className="flex flex-col gap-2 pb-2 border-b border-white/10">
+         <div className="flex items-center justify-between">
+           <div className="flex items-center gap-2 text-indigo-400">
+             <Activity size={16} />
+             <span className="text-xs font-black tracking-widest uppercase">DYNAMIC AGENT</span>
+           </div>
+           <button 
+             onClick={handleDynamicRun}
+             disabled={isRunning}
+             className="px-3 py-1 bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition-colors rounded-lg text-xs font-bold border border-indigo-500/30 uppercase tracking-wider disabled:opacity-50 flex items-center gap-2"
+           >
+             {isRunning ? 'GENERATING...' : 'GENERATE & RUN'}
+           </button>
          </div>
-         <button 
-           onClick={handleRun}
-           className="px-3 py-1 bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition-colors rounded-lg text-xs font-bold border border-indigo-500/30 uppercase tracking-wider"
-         >
-           RUN SMA 50/200
-         </button>
+         {/* Agent UI specific input for dynamic strategy */}
+         <div className="relative">
+           <input 
+             className="w-full bg-black/40 border border-white/10 rounded-lg text-xs text-white placeholder-zinc-500 py-1.5 pl-7 pr-2 focus:outline-none focus:border-indigo-500/50"
+             value={prompt}
+             onChange={e => setPrompt(e.target.value)}
+             placeholder="輸入您想讓 AI 實作的策略邏輯..."
+             onKeyDown={(e) => e.key === 'Enter' && handleDynamicRun()}
+           />
+           <Settings2 size={12} className="absolute left-2.5 top-2 text-zinc-500" />
+         </div>
       </div>
 
       {!result ? (
         <div className="flex-1 flex flex-col items-center justify-center opacity-30 gap-2 p-10">
-          <Activity size={32} />
-          <div className="text-xs font-medium uppercase tracking-widest">Awaiting Simulation</div>
+          {isRunning ? (
+            <Code size={32} className="animate-pulse text-indigo-500" />
+          ) : (
+            <Activity size={32} />
+          )}
+          <div className="text-xs font-medium uppercase tracking-widest text-center max-w-[200px]">
+             {isRunning ? 'Agent Writing Code in Sandbox...' : 'Awaiting Strategy Context'}
+          </div>
         </div>
       ) : (
         <>
           {/* Equity Curve Chart */}
-          <div className="w-full h-[140px] mt-2">
+          <div className="w-full h-[140px] mt-2 relative">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={equityData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                 <YAxis domain={['auto', 'auto']} hide />
@@ -138,7 +151,17 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
 
           {/* KPI Grid */}
           {result.metrics && (
-             <div className="grid grid-cols-2 gap-2 mt-auto">
+             <div className="grid grid-cols-2 gap-2 mt-auto relative">
+                {/* Code overlay button */}
+                {generatedCode && (
+                  <button 
+                     onClick={() => console.log('Generated Strategy Code:\n', generatedCode)}
+                     className="absolute -top-6 right-0 text-[10px] text-zinc-400 hover:text-indigo-400 flex items-center gap-1 bg-black/50 px-2 py-0.5 rounded"
+                     title="View Code in DevTools Console"
+                  >
+                     <Code size={10} /> VIEW SOURCE
+                  </button>
+                )}
                <div className="bg-black/30 border border-white/5 p-2 rounded-xl">
                  <div className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Total Return</div>
                  <div className={safeCn("text-lg font-black tracking-tighter", result.metrics.roi > 0 ? "text-emerald-400" : "text-rose-400")} style={{ fontFamily: 'var(--font-data)' }}>

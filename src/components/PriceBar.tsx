@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Loader2, RefreshCw, TrendingUp, TrendingDown, X } from 'lucide-react';
-import { safeCn, safeN } from '../utils/helpers';
+import { safeCn, safeN, vibrate } from '../utils/helpers';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSettings } from '../contexts/SettingsContext';
 import { TWSEData } from '../types';
@@ -116,7 +116,7 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
             <button onClick={() => { setFocusMode(!focusMode); vibrate(20); }} aria-label="專注模式" aria-pressed={focusMode} 
               className={safeCn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all font-black uppercase tracking-widest text-[9px]", 
                 focusMode ? "bg-indigo-500 text-white shadow-lg" : "bg-white/5 text-zinc-400 hover:text-white")}>
-              <span className={cn(focusMode ? "scale-110" : "opacity-40 animate-pulse")}>✨</span> 專注
+              <span className={safeCn(focusMode ? "scale-110" : "opacity-40 animate-pulse")}>✨</span> 專注
             </button>
             <button onClick={() => { setAlertVal(String(price ?? '')); setAlertOpen(true); vibrate(20); }} aria-label="設定價格警示" 
               className="p-1.5 rounded-xl bg-white/5 text-zinc-400 hover:text-white border border-transparent hover:border-white/10 transition-all">

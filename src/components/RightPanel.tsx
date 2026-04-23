@@ -2,7 +2,7 @@ import React from 'react';
 import { Loader2, ArrowRight, Zap } from 'lucide-react';
 import { safeCn, safeN } from '../utils/helpers';
 import { vibrate } from '../utils/helpers';
-import { motion, useAnimation } from 'motion/react';
+import { motion, useAnimation, AnimatePresence } from 'motion/react';
 import { useSettings } from '../contexts/SettingsContext';
 import { NewsItem, Order, SentimentData } from '../types';
 import Decimal from 'decimal.js';

@@ -90,7 +90,6 @@ async function call<T>(path: string, params: Record<string, string | number | un
     // 服務未啟動 / DNS 解析失敗：視為「TV 不可用」
     const msg = e instanceof Error ? e.message : String(e);
     if (/ECONNREFUSED|fetch failed|ENOTFOUND|aborted/i.test(msg)) {
-      console.warn(`[TV] service unavailable (${msg}), falling back.`);
       return null;
     }
     throw e;

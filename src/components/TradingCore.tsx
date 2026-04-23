@@ -212,13 +212,13 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={safeCn("h-full flex flex-col lg:flex-row overflow-y-auto", isLandscape ? "p-0 gap-0" : compact ? "p-2 sm:p-4 gap-2" : "p-2 sm:p-4 gap-4")}
+      className={safeCn("h-full w-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden", isLandscape ? "p-0 gap-0" : compact ? "p-2 sm:p-4 gap-2 lg:gap-4" : "p-2 sm:p-4 gap-4 lg:gap-6")}
     >
 
 
       {/* ── LEFT: Watchlist + Portfolio Summary ── */}
       {!isFocusActive && !isLandscape && (
-        <div className={safeCn("w-full lg:w-[320px] flex flex-col shrink-0", compact ? "gap-3" : "gap-5", mobilePanel !== 'list' && "hidden lg:flex")}>
+        <div className={safeCn("w-full lg:w-[320px] flex flex-col shrink-0 lg:overflow-y-auto custom-scrollbar lg:pr-2 lg:-mr-2", compact ? "gap-3" : "gap-5", mobilePanel !== 'list' && "hidden lg:flex")}>
           {/* Portfolio Summary Group */}
           <div className="flex flex-col gap-3">
              <div className="px-4">
@@ -271,10 +271,11 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       )}
 
       {/* ── CENTER: Chart ── */}
-      <div className={safeCn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-3" : "gap-5", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
+      <div className={safeCn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0 lg:overflow-y-auto custom-scrollbar", isLandscape ? "gap-0" : compact ? "gap-3" : "gap-5", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
         {/* Main Display Unit */}
         <div className={safeCn(
-          "flex-1 flex flex-col overflow-hidden relative", 
+          "shrink-0 flex flex-col overflow-hidden relative", 
+          isFocusActive ? "flex-1" : "h-[60vh] lg:h-[calc(100vh-8rem)] min-h-[400px]",
           (isLandscape || isFocusActive) ? "p-0 rounded-none border-none bg-[#050505]" : "glass-card border border-white/5 rounded-3xl shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)]"
         )}>
           {/* Internal Top Bar */}
@@ -300,7 +301,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
           </div>
 
           {/* Core Chart Field */}
-          <div className="flex-1 min-h-0 relative">
+          <div className="flex-1 min-h-0 relative flex flex-col">
             <div className="absolute inset-0 z-0 bg-[#0a0a0c] pointer-events-none" />
             <ChartSection symbol={symbol} model={model} focusMode={isFocusActive || Boolean(isLandscape)} data={hist} />
           </div>
@@ -320,7 +321,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
 
       {/* ── RIGHT: Analysis Engine ── */}
       {!isFocusActive && !isLandscape && (
-        <div className={safeCn("w-full lg:w-[340px] flex flex-col shrink-0 relative", compact ? "gap-3" : "gap-5", mobilePanel !== 'panel' && "hidden lg:flex")}>
+        <div className={safeCn("w-full lg:w-[340px] flex flex-col shrink-0 relative lg:overflow-y-auto custom-scrollbar lg:pl-1 lg:-ml-1", compact ? "gap-3" : "gap-5", mobilePanel !== 'panel' && "hidden lg:flex")}>
           <div className="glass-card rounded-3xl border border-white/5 overflow-hidden shadow-2xl relative">
             <div className="absolute inset-0 bg-amber-500/[0.02] pointer-events-none" />
             <BacktestPanel history={hist} />

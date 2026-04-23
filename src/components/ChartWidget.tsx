@@ -9,6 +9,7 @@ import {
 import { useSettings } from '../contexts/SettingsContext';
 import { HistoricalData } from '../types';
 import { calcEMA, calcRSISeries as calcRSI, calcMACDSeries as calcMACD, calcBBSeries as calcBB } from '../utils/math';
+import { vibrate } from '../utils/helpers';
 
 // 內建 safeCn，防止 import { cn } 失敗導致黑屏
 function safeCn(...classes: (string | undefined | null | false)[]) {

@@ -14,6 +14,7 @@
  */
 
 import { Router } from 'express';
+import * as vm from 'vm';
 import type { AuthRequest } from '../middleware/auth.js';
 import * as agentMemoryRepo from '../repositories/agentMemoryRepo.js';
 import * as watchlistRepo   from '../repositories/watchlistRepo.js';
@@ -22,6 +23,71 @@ import { calcIndicators }    from '../utils/technical.js';
 import { analyzeSentiment }  from '../utils/sentiment.js';
 
 export const agentRouter = Router();
+
+// ── 動態策略生成與 VM 執行 ──────────────────────────────────────────────────
+agentRouter.post('/dynamic-strategy', async (req: AuthRequest, res) => {
+  const { prompt, historyData } = req.body;
+  if (!prompt || !historyData) return res.status(400).json({ error: 'Missing prompt or historyData' });
+
+  try {
+    const systemInstruction = `
+你是一位頂尖的量化交易工程師。
+你需要根據使用者的自然語言要求，寫出一段 JavaScript 函數。
+該函數簽名必須為: \`function generate_signals(df) { ... }\`
+
+參數 df 是一個陣列，每個元素包含：
+{ date: Date, open: number, high: number, low: number, close: number, volume: number }
+
+回傳值必須是一個與 df 長度相同的陣列，裡面的值只能是：
+1 (買入), -1 (賣出), 或 0 (持有/無動作)。
+
+請實作一個向量化的回測邏輯。如果需要技術指標（如 SMA, EMA, RSI），請你自己實作非常簡單的版本，不要依賴外部套件。
+
+[嚴格約束]
+1. 不要有任何 markdown。
+2. 絕對只能輸出純 JavaScript 程式碼。
+3. 程式碼最後不需要呼叫該函數。
+`;
+
+    // 1. Ask Hermes to generate Code
+    const codeResponse = await callOpenRouter([
+      { role: 'system', content: systemInstruction },
+      { role: 'user', content: prompt }
+    ], FREE_MODEL_PRIMARY);
+
+    // 2. Clean up markdown if any
+    let cleanCode = codeResponse.replace(/```(?:javascript|js)?\n/i, '').replace(/```$/m, '').trim();
+
+    // 3. Setup Node.js VM Sandbox
+    const sandbox = {
+      Math: Math,
+      Date: Date,
+      console: { log: () => {} }, // mock console
+    };
+
+    const script = new vm.Script(`
+      ${cleanCode}
+      generate_signals(df);
+    `);
+
+    const context = vm.createContext({ ...sandbox, df: historyData });
+    const signals = script.runInContext(context, { timeout: 3000 }); // 3s timeout to prevent infinite loops
+
+    if (!Array.isArray(signals)) {
+       throw new Error('Generated code did not return an array.');
+    }
+
+    res.json({
+      ok: true,
+      code: cleanCode,
+      signals: signals
+    });
+
+  } catch (err: any) {
+    console.error('[DynamicStrategy] VM Execution Error:', err);
+    res.status(500).json({ error: 'Strategy Generation or Execution Failed', details: err.message, code: err.codeSnippet || undefined });
+  }
+});
 
 // ── 環境變數 ──────────────────────────────────────────────────────────────────
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';

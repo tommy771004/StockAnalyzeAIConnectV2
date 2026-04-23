@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   WATCHLIST: 'liquid_intel_watchlist',
   PORTFOLIO: 'liquid_intel_portfolio',
+  TOKEN: 'auth_token',
 };
 
 export const saveToStorage = <T>(key: string, data: T): void => {

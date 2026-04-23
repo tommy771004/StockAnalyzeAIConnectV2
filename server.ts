@@ -17,12 +17,15 @@ import * as strategiesRepo from './server/repositories/strategiesRepo.js';
 import { calcIndicators } from './server/utils/technical.js';
 import { analyzeSentiment } from './server/utils/sentiment.js';
 import { agentRouter } from './server/api/agent.js';
+import { startAutonomousAgent } from './server/services/autonomousAgent.js';
 
 // Lazy-load Neon DB (requires DATABASE_URL to be set)
 let dbAvailable = false;
 try {
   await import('./src/db/index.js');
   dbAvailable = true;
+  // Start the background autonomous agent loop
+  startAutonomousAgent();
 } catch (e) {
   console.warn('[DB] Neon not available — set DATABASE_URL in .env to enable persistence:', (e as Error).message);
 }
@@ -555,17 +558,55 @@ app.use(express.json());
     const order = req.body;
     const userId = req.userId!;
     try {
-      const trade = await tradesRepo.createTrade(userId, { ...order, time: new Date().toISOString() });
+      // 1. Fetch current positions for Risk Management
       const existing = await positionsRepo.getPositionsByUser(userId);
+      let totalCost = 0;
+      let totalVal = 0;
+      let usdtwd = 32.5;
+      
+      // Calculate total exposure to enforce limits
+      const symbols = existing.map(p => p.symbol);
+      let qMap = new Map();
+      if (symbols.length > 0) {
+         try {
+           const results = await NativeYahooApi.quote(symbols);
+           const quotes = Array.isArray(results) ? results : [results];
+           qMap = new Map(quotes.filter(q => q && q.symbol).map(q => [q.symbol, q]));
+         } catch { /* if fetch fails, skip live value */ }
+      }
+
+      existing.forEach(p => {
+         const shares = Number(p.shares) || 0;
+         const avgCost = Number(p.avgCost) || 0;
+         const currentPrice = qMap.get(p.symbol)?.regularMarketPrice || avgCost;
+         totalCost += avgCost * shares;
+         totalVal += currentPrice * shares;
+      });
+
+      const plPct = totalCost > 0 ? ((totalVal - totalCost) / totalCost) * 100 : 0;
+      const targetAccountValue = totalVal > 0 ? totalVal : 1000000; // Simulated $1M starting capital
+      const tradeValue = order.amount * order.price;
+
+      // [Risk Validation Check] Backend Level
+      if (order.side === 'buy') {
+        if (totalCost > 0 && plPct <= -3) {
+           return res.status(403).json({ error: 'Circuit Breaker Triggered: Total loss exceeds -3% limit.' });
+        }
+        if (tradeValue > targetAccountValue * 0.05) {
+           return res.status(403).json({ error: `Position Limit Exceeded: Order value > 5% of account.` });
+        }
+      }
+
+      const trade = await tradesRepo.createTrade(userId, { ...order, time: new Date().toISOString() });
       const pos = existing.find(p => p.symbol === order.symbol);
       const isTWD = order.symbol.endsWith('.TW') || order.symbol.endsWith('.TWO');
       const currency = isTWD ? 'TWD' : 'USD';
       
       if (order.side === 'buy') {
         if (pos) {
-          const totalCost = Number(pos.shares) * Number(pos.avgCost) + order.total;
+          const newCost = Number(pos.shares) * Number(pos.avgCost) + order.total;
           const newShares = Number(pos.shares) + order.amount;
-          await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(newShares), avgCost: String(totalCost / newShares), currency });
+          await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(newShares), avgCost: String(newCost / newShares), currency });
         } else {
           await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(order.amount), avgCost: String(order.price), currency });
         }

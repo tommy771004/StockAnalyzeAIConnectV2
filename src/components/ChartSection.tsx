@@ -26,7 +26,7 @@ export const ChartSection: React.FC<ChartSectionProps> = React.memo(({ data, foc
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.1 }}
       className={safeCn(
-        "liquid-glass no-swipe flex-1 h-full relative overflow-hidden transition-all", 
+        "liquid-glass no-swipe flex-1 relative overflow-hidden transition-all flex flex-col", 
         focusMode ? "rounded-none p-0" : compact ? "rounded-2xl p-1" : "rounded-2xl p-2 sm:p-4"
       )}
     >
