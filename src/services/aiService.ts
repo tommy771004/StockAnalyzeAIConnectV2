@@ -258,6 +258,16 @@ const SentimentDataSchema = z.object({
 });
 
 
+export const AIChatResponseSchema = z.object({
+  message: z.string().default('分析失敗，請重新嘗試'),
+  ui_action: z.object({
+    type: z.enum(['CHANGE_SYMBOL', 'SET_ORDER']).optional(),
+    payload: z.any().optional()
+  }).optional().nullable()
+});
+
+export type AIChatResponse = z.infer<typeof AIChatResponseSchema>;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 //  analyzeStock
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -330,8 +340,8 @@ function buildChatPrompt(
   const market   = isTW(ticker) ? '台灣股市（半導體、電子）' : '美國股市（納斯達克）';
   const currency = quoteData?.currency ?? (isTW(ticker) ? 'TWD' : 'USD');
 
-  return `${systemInstruction ? systemInstruction + '\n\n' : ''}You are an expert AI stock trader specialising in ${market}.
-The user is asking a question about ${ticker}.
+  return `${systemInstruction ? systemInstruction + '\n\n' : ''}You are Hermes Agent, an expert AI stock trader specialising in ${market}.
+The user is asking a question or giving a command about ${ticker}.
 
 Quote (${currency}): Price=${price}, Change=${quoteData?.regularMarketChange?.toFixed(2)}, ChangePercent=${quoteData?.regularMarketChangePercent?.toFixed(2)}%,
 Volume=${quoteData?.regularMarketVolume}, 52wHigh=${quoteData?.fiftyTwoWeekHigh}, 52wLow=${quoteData?.fiftyTwoWeekLow},
@@ -339,9 +349,22 @@ PE=${quoteData?.trailingPE ?? 'N/A'}, MarketCap=${quoteData?.marketCap ?? 'N/A'}
 
 Last 30 close prices: ${recent.map((d) => d.close?.toFixed(2) ?? 'N/A').join(', ')}
 
-User Question: ${query}
+User Question/Command: ${query}
 
-Respond in Traditional Chinese. Provide a concise, insightful, and professional answer. Do not use JSON.`;
+Respond ONLY with a JSON object exactly matching this schema:
+{
+  "message": "Your text response to the user in Traditional Chinese.",
+  "ui_action": {
+    "type": "CHANGE_SYMBOL" | "SET_ORDER",
+    "payload": { ... }
+  }
+}
+
+Rules for ui_action:
+- If the user asks to analyze/switch to a different stock (e.g. "幫我看一下台積電" or "切換到 2330.TW"), output {"type": "CHANGE_SYMBOL", "payload": {"symbol": "2330.TW"}}. Always use standard ticker symbols.
+- If the user explicitly asks to setup an order to buy or sell (e.g. "幫我買入 10 股", "我要賣出"), output {"type": "SET_ORDER", "payload": {"side": "buy" | "sell", "qty": 10}}.
+- If NO action is needed and it's just a general question, ONLY output the "message" field and OMIT "ui_action" completely.
+- NEVER wrap JSON in markdown block ticks.`;
 }
 
 export async function chatWithAI(
@@ -351,19 +374,24 @@ export async function chatWithAI(
   historicalData: HistoricalData[],
   model = 'openai/gpt-4o-mini',
   systemInstruction = ''
-) {
+): Promise<AIChatResponse | null> {
   try {
     if (!Array.isArray(historicalData)) return null;
     const prompt = buildChatPrompt(query, ticker, quoteData, historicalData, systemInstruction);
-    const raw = await callAI(prompt, model, false);
-    return raw;
+    const raw = await callAI(prompt, model, true); // true forces JSON mode
+    try {
+      return parseJSON(raw, AIChatResponseSchema);
+    } catch {
+      // Fallback if parsing fails but there is text
+      return { message: raw };
+    }
   } catch (err: unknown) {
     const kind  = classifyError(err);
-    if (kind === 'missing') return '⚠️ OpenRouter API Key 未設定。請至「系統設定」輸入 Key，或勾選 Ollama 本地模式。';
-    if (kind === 'unauth')  return '⚠️ API Key 無效（401 Unauthorized）。';
-    if (kind === 'quota')   return '⚠️ AI 服務達配額限制，請稍後再試。';
+    if (kind === 'missing') return { message: '⚠️ OpenRouter API Key 未設定。請至「系統設定」輸入 Key，或勾選 Ollama 本地模式。' };
+    if (kind === 'unauth')  return { message: '⚠️ API Key 無效（401 Unauthorized）。' };
+    if (kind === 'quota')   return { message: '⚠️ AI 服務達配額限制，請稍後再試。' };
     console.error('chatWithAI:', err);
-    return '分析失敗，請稍後再試';
+    return { message: '分析失敗，請稍後再試' };
   }
 }
 

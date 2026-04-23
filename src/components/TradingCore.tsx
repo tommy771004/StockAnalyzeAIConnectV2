@@ -151,14 +151,42 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
     setChatStatus('busy'); setChatRep('');
     try {
       const rep = await chatWithAI(chat, symbol, quote || {}, hist, model, String(settings.systemInstruction || ''));
-      setChatRep(rep ?? '分析失敗');
+      if (rep) {
+        setChatRep(rep.message ?? '分析失敗');
+        // Handle Generative UI Intents from Hermes Agent
+        if (rep.ui_action && rep.ui_action.type) {
+          try {
+            const actionType = rep.ui_action.type;
+            const payload = rep.ui_action.payload ?? {};
+            
+            if (actionType === 'CHANGE_SYMBOL' && payload.symbol) {
+              const newSym = String(payload.symbol).toUpperCase();
+              onSymbolChange?.(newSym);
+              showToast(`Quantum Agent 已為您切換至標的: ${newSym}`, 'success');
+            } else if (actionType === 'SET_ORDER') {
+              if (payload.side && (typeof payload.side === 'string')) {
+                 const sideStr = payload.side.toLowerCase();
+                 if (sideStr === 'buy' || sideStr === 'sell') setOSide(sideStr as 'buy' | 'sell');
+              }
+              if (payload.qty && !isNaN(Number(payload.qty))) {
+                 setOrderQty(Number(payload.qty));
+              }
+              showToast(`Quantum Agent 參數佈署：${payload.side?.toUpperCase() || ''} ${payload.qty || ''} 股`.trim(), 'success');
+            }
+          } catch (actionErr) {
+            console.error('[TradingCore] Agent action execution failed:', actionErr);
+          }
+        }
+      } else {
+        setChatRep('目前無法取得分析結果，請稍後再試。');
+      }
     } catch(e: unknown) {
       console.error('[TradingCore] AI chat error:', e);
       setChatRep('目前無法取得分析結果，請稍後再試。');
     } finally {
       setChatStatus('idle');
     }
-  }, [chat, chatStatus, symbol, quote, hist, model, settings.systemInstruction]);
+  }, [chat, chatStatus, symbol, quote, hist, model, settings.systemInstruction, onSymbolChange, showToast]);
 
   const portfolioValue = useMemo(() => portfolio.reduce((acc: number, order: Order) => {
     const value = new Decimal(order.price ?? 0).times(order.qty ?? 0).toNumber();
