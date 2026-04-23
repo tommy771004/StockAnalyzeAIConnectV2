@@ -89,8 +89,7 @@ export default function PaperTradingDashboard() {
           <h3 className="text-zinc-100 font-bold mb-1">連線異常</h3>
           <p className="text-zinc-400 text-sm max-w-xs mx-auto">{error}</p>
         </div>
-        <button 
-          onClick={() => fetchPositions()}
+        <button type="button" onClick={(e) => {}}
           className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg text-sm transition-colors flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
@@ -132,7 +131,7 @@ export default function PaperTradingDashboard() {
           模擬交易看板 (Paper Trading)
         </h2>
         <div className="flex items-center gap-3">
-          <button onClick={fetchPositions} className="p-1.5 rounded-lg hover:bg-[var(--border-color)] text-zinc-500 transition-colors">
+          <button type="button">
             <RefreshCw size={14} />
           </button>
           <div className="text-right">

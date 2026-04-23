@@ -258,7 +258,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
               value={symbol}
               onChange={e => setSymbol(e.target.value.toUpperCase())}
               placeholder="代碼 (AAPL, 2330.TW)"
-              className="relative w-full rounded-xl md:rounded-2xl px-3 md:px-5 py-2.5 md:py-3 text-base md:text-sm font-bold focus:outline-none transition-all" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+              className="relative w-full rounded-xl md:rounded-2xl px-3 md:px-5 py-2.5 md:py-3 text-base md:text-sm font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
               {...{} as object}
             />
             <datalist id="bt-symbols">{symbolsList.map(s=><option key={s} value={s}/>)}</datalist>
@@ -268,7 +268,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
             <select
               value={strategy}
               onChange={e => setStrategy(e.target.value as StratId)}
-              className="relative w-full rounded-xl md:rounded-2xl px-3 md:px-5 py-2.5 md:py-3 text-base md:text-sm font-bold focus:outline-none transition-all appearance-none cursor-pointer" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+              className="relative w-full rounded-xl md:rounded-2xl px-3 md:px-5 py-2.5 md:py-3 text-base md:text-sm font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition appearance-none cursor-pointer" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
             >
               {STRATEGIES.map(s => <option key={s.id} value={s.id} style={{ background: 'var(--md-surface-container)' }}>{s.label}</option>)}
             </select>
@@ -276,34 +276,17 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
           </div>
 
           <div className="flex items-center gap-2 md:gap-3 w-full lg:w-auto">
-            <button
-              onClick={handleCompare}
-              disabled={comparing || running}
-              className="flex-1 lg:flex-none px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest press-feedback transition-all flex items-center justify-center gap-2" style={{ background: 'rgba(128,131,255,0.1)', border: '1px solid rgba(128,131,255,0.3)', color: 'var(--md-primary)' }}
-            >
-              {comparing ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
+            <button type="button"> {comparing ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
               比較績效
             </button>
             {result && (
-              <button
-                onClick={() => buildBacktestPdf(symbol, strat.label, metrics, result.trades ?? [])}
-                className="flex-1 lg:flex-none px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}
+              <button type="button" onClick={(e) => {}}
+                className="flex-1 lg:flex-none px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition flex items-center justify-center gap-2" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}
               >
                 <Download size={16} /> 匯出 PDF
               </button>
             )}
-            <button
-              onClick={handleRun}
-              disabled={running || comparing}
-              className={cn(
-                "flex-1 lg:flex-none px-6 md:px-10 py-2.5 md:py-3 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-2xl press-feedback",
-                running
-                  ? "cursor-not-allowed opacity-50"
-                  : "shadow-lg"
-              )}
-              style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
-            >
-              {running ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
+            <button type="button"> {running ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
               {running ? '執行中' : '開始回測'}
             </button>
           </div>
@@ -328,7 +311,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                   type="text"
                   value={capital}
                   onChange={e => setCapital(e.target.value)}
-                  className="w-full rounded-xl md:rounded-2xl px-4 md:px-5 py-2.5 md:py-3 text-base md:text-sm font-bold focus:outline-none transition-all" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}
+                  className="w-full rounded-xl md:rounded-2xl px-4 md:px-5 py-2.5 md:py-3 text-base md:text-sm font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}
                 />
                 <div className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-xs" style={{ color: 'var(--md-outline)' }}>$</div>
               </div>
@@ -341,7 +324,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                   type="date"
                   value={period1}
                   onChange={e => setPeriod1(e.target.value)}
-                  className="w-full rounded-xl md:rounded-2xl px-3 md:px-4 py-2.5 md:py-3 text-base md:text-xs font-bold focus:outline-none transition-all" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+                  className="w-full rounded-xl md:rounded-2xl px-3 md:px-4 py-2.5 md:py-3 text-base md:text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                 />
               </div>
               <div className="space-y-2 md:space-y-3">
@@ -350,7 +333,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                   type="date"
                   value={period2}
                   onChange={e => setPeriod2(e.target.value)}
-                  className="w-full rounded-xl md:rounded-2xl px-3 md:px-4 py-2.5 md:py-3 text-base md:text-xs font-bold focus:outline-none transition-all" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+                  className="w-full rounded-xl md:rounded-2xl px-3 md:px-4 py-2.5 md:py-3 text-base md:text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                 />
               </div>
             </div>
@@ -362,18 +345,18 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="label-meta" style={{ color: 'var(--md-outline)' }}>參數 A</label>
-                <input type="number" defaultValue={10} className="w-full rounded-xl px-3 py-2 text-xs focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} />
+                <input type="number" defaultValue={10} className="w-full rounded-xl px-3 py-2 text-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} />
               </div>
               <div className="space-y-2">
                 <label className="label-meta" style={{ color: 'var(--md-outline)' }}>參數 B</label>
-                <input type="number" defaultValue={30} className="w-full rounded-xl px-3 py-2 text-xs focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} />
+                <input type="number" defaultValue={30} className="w-full rounded-xl px-3 py-2 text-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} />
               </div>
             </div>
           </div>
         </div>
 
         {/* Strategy explanation box */}
-        <div className="glass-card md:col-span-2 xl:col-span-3 rounded-[2rem] p-6 lg:p-8 transition-all relative overflow-hidden shadow-xl" style={{ borderColor: strat.color + '40' }}>
+        <div className="glass-card md:col-span-2 xl:col-span-3 rounded-[2rem] p-6 lg:p-8 transition relative overflow-hidden shadow-xl" style={{ borderColor: strat.color + '40' }}>
           
           <div className="flex flex-col h-full relative z-10">
             <div className="flex flex-col md:flex-row items-start justify-between gap-6">
@@ -397,14 +380,14 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 flex-1">
-              <div className="p-6 rounded-3xl transition-all duration-500" style={{ background: 'rgba(82,196,26,0.04)', border: '1px solid rgba(82,196,26,0.15)' }}>
+              <div className="p-6 rounded-3xl transition duration-500" style={{ background: 'rgba(82,196,26,0.04)', border: '1px solid rgba(82,196,26,0.15)' }}>
                 <div className="label-meta font-black uppercase tracking-[0.2em] mb-3 flex items-center gap-2" style={{ color: 'var(--color-down)' }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-down)' }} />
                   買進訊號 (Entry)
                 </div>
                 <div className="text-sm leading-relaxed font-medium" style={{ color: 'var(--md-on-surface-variant)' }}>{strat.buyDesc}</div>
               </div>
-              <div className="p-6 rounded-3xl transition-all duration-500" style={{ background: 'rgba(255,77,79,0.04)', border: '1px solid rgba(255,77,79,0.15)' }}>
+              <div className="p-6 rounded-3xl transition duration-500" style={{ background: 'rgba(255,77,79,0.04)', border: '1px solid rgba(255,77,79,0.15)' }}>
                 <div className="label-meta font-black uppercase tracking-[0.2em] mb-3 flex items-center gap-2" style={{ color: 'var(--color-up)' }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-up)' }} />
                   賣出訊號 (Exit)
@@ -451,9 +434,8 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                 <p className="label-meta font-black uppercase tracking-[0.2em] mt-1" style={{ color: 'var(--md-outline)' }}>{symbol} · {period1} ～ {period2}</p>
               </div>
             </div>
-            <button 
-              onClick={() => { setCompareMode(false); setCompareResults({}); }}
-              className="text-xs font-black uppercase tracking-widest px-6 py-3 rounded-2xl active:scale-95 transition-all" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}
+            <button type="button" onClick={(e) => { setCompareMode(false); setCompareResults({}); }}
+              className="text-xs font-black uppercase tracking-widest px-6 py-3 rounded-2xl active:scale-95 transition" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}
             >
               關閉比較
             </button>
@@ -479,7 +461,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                   const best = Object.values(compareResults).reduce((max: any, x: any) => (x.metrics?.roi ?? 0) > (max.metrics?.roi ?? 0) ? x : max, Object.values(compareResults)[0]);
                   const isBest = r === best;
                   return (
-                    <tr key={s.id} className={cn('group transition-all duration-300', isBest ? '' : '')} style={isBest ? { background: 'rgba(128,131,255,0.05)' } : {}}>
+                    <tr key={s.id} className={cn('group transition duration-300', isBest ? '' : '')} style={isBest ? { background: 'rgba(128,131,255,0.05)' } : {}}>
                       <td className="py-6 pl-4 flex items-center gap-4">
                         <div className="w-2.5 h-10 rounded-full shadow-lg" style={{ backgroundColor: s.color }} />
                         <div>
@@ -545,7 +527,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                   {metrics.roi >= 0 ? '+' : ''}{metrics.roi}%
                 </span>
               </div>
-              <button className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-90" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}>
+              <button type="button">
                 <Download size={24} />
               </button>
             </div>
@@ -568,8 +550,8 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                     <span className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: 'var(--md-outline)' }}>Buy &amp; Hold</span>
                   </div>
                 </div>
-                <button onClick={()=>setShowDd(v=>!v)}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2.5 rounded-2xl transition-all active:scale-95"
+                <button type="button" onClick={(e) => {}}
+                  className="text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2.5 rounded-2xl transition active:scale-95"
                   style={showDd ? { background: 'rgba(255,77,79,0.1)', color: 'var(--color-up)', border: '1px solid rgba(255,77,79,0.25)' } : { background: 'var(--md-surface-container-high)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
                   {showDd ? 'Hide Drawdown' : 'Show Drawdown'}
                 </button>
@@ -674,7 +656,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                 const iconBg = c.color === 'emerald' ? 'rgba(82,196,26,0.1)' : c.color === 'rose' ? 'rgba(255,77,79,0.1)' : 'rgba(255,183,131,0.1)';
                 const iconBorder = c.color === 'emerald' ? 'rgba(82,196,26,0.25)' : c.color === 'rose' ? 'rgba(255,77,79,0.25)' : 'rgba(255,183,131,0.25)';
                 return (
-                <div key={c.label} className="glass-card rounded-[2rem] p-6 relative overflow-hidden transition-all duration-300 hover:-translate-y-1">
+                <div key={c.label} className="glass-card rounded-[2rem] p-6 relative overflow-hidden transition duration-300 hover:-translate-y-1">
                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] mb-3 relative z-10" style={{ color: 'var(--md-outline)' }}>
                     <div className="p-1.5 rounded-lg" style={{ background: iconBg, border: `1px solid ${iconBorder}`, color: metricColor }}>
                       {c.icon}
@@ -776,15 +758,14 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10 shadow-inner">
                     {(['date','pnl'] as const).map(s=>(
-                      <button key={s} onClick={()=>setTradeSort(s)}
-                        className="text-[10px] font-black uppercase tracking-widest px-6 py-2 rounded-xl transition-all duration-300"
+                      <button key={s} type="button" onClick={(e) => { setTradeSort(s); }}
+                        className="text-[10px] font-black uppercase tracking-widest px-6 py-2 rounded-xl transition duration-300"
                           style={tradeSort===s ? { background: 'var(--md-surface-container-high)', color: 'var(--md-on-surface)', border: '1px solid var(--md-outline-variant)' } : { color: 'var(--md-outline)' }}>
                         {s==='date'?'Time':'PnL'}
                       </button>
                     ))}
                   </div>
-                  <button onClick={exportCSV} disabled={!trades.length}
-                    className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-2xl disabled:opacity-40 transition-all ml-auto sm:ml-0 active:scale-95" style={{ color: 'var(--md-primary)', background: 'rgba(192,193,255,0.1)', border: '1px solid rgba(192,193,255,0.25)' }}>
+                  <button type="button">
                     <Download size={16}/> Export
                   </button>
                 </div>
@@ -880,8 +861,8 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
           {/* Strategy preview cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl px-6">
             {STRATEGIES.map(s=>(
-              <button key={s.id} onClick={()=>setStrategy(s.id)}
-                  className="p-6 rounded-[2rem] text-left transition-all hover:scale-[1.03] active:scale-95 relative overflow-hidden"
+              <button type="button" onClick={(e) => {}}
+                  className="p-6 rounded-[2rem] text-left transition hover:scale-[1.03] active:scale-95 relative overflow-hidden"
                 style={strategy===s.id
                   ? { background: 'rgba(128,131,255,0.12)', border: `1px solid ${s.color}40` }
                   : { background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}>

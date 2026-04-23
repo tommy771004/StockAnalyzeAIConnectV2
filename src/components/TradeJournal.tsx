@@ -221,8 +221,8 @@ export default function TradeJournal() {
             <div className="text-sm font-black text-zinc-100 uppercase tracking-widest">損益分析</div>
             <div className="flex gap-1 bg-zinc-950 rounded-xl p-1 border border-zinc-800 text-xs font-black uppercase tracking-widest">
               {(['bar','heatmap'] as const).map(v=>(
-                <button key={v} onClick={()=>setChartView(v)}
-                  className={cn('px-4 py-2 rounded-lg transition-all', chartView===v?'bg-zinc-800 text-zinc-100':'text-zinc-500 hover:text-zinc-300')}>
+                <button key={v} type="button" onClick={(e) => { setChartView(v); }}
+                  className={cn('px-4 py-2 rounded-lg transition', chartView===v?'bg-zinc-800 text-zinc-100':'text-zinc-500 hover:text-zinc-300')}>
                   {v==='bar'?'月柱狀圖':'日熱力圖'}
                 </button>
               ))}
@@ -319,7 +319,7 @@ export default function TradeJournal() {
       {err && (
         <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm rounded-2xl p-4 shrink-0 font-bold">
           <AlertCircle size={16}/> {err}
-          <button onClick={() => setErr('')} className="ml-auto"><X size={14}/></button>
+          <button type="button" onClick={(e) => {}} className="ml-auto"><X size={14}/></button>
         </div>
       )}
 
@@ -338,19 +338,18 @@ export default function TradeJournal() {
             <div className="flex gap-1 text-xs font-black uppercase tracking-widest">
               <span className="text-zinc-500 px-2 py-2">排序：</span>
               {(['date','pnl'] as const).map(s => (
-                <button key={s} onClick={() => setSortCol(s)}
-                  className={cn('px-4 py-2 rounded-xl border transition-all',
+                <button key={s} type="button" onClick={(e) => { setSortCol(s); }}
+                  className={cn('px-4 py-2 rounded-xl border transition',
                     sortCol===s?'bg-zinc-800 text-zinc-100 border-zinc-700':'text-zinc-500 border-zinc-800 hover:bg-zinc-900')}>
                   {s==='date'?'日期':'損益'}
                 </button>
               ))}
             </div>
-            <button onClick={() => { setAdding(v=>!v); setErr(''); }}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all">
+            <button type="button" onClick={(e) => { setAdding(v=>!v); setErr(''); }}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 transition">
               <Plus size={14}/> 新增交易
             </button>
-            <button onClick={exportCSV}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-all">
+            <button type="button">
               <Download size={14}/> 匯出CSV
             </button>
           </div>
@@ -375,30 +374,28 @@ export default function TradeJournal() {
                     value={form[k]}
                     onChange={e => fld(k as string, e.target.value)}
                     onKeyDown={e => e.key==='Enter' && k==='notes' && handleAdd()}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 text-base focus:outline-none focus:border-emerald-500/50 transition-all"/>
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-zinc-100 text-base focus:outline-none focus:border-emerald-500/50 transition"/>
                 </div>
               ))}
             </div>
             <div className="flex items-center gap-4 mb-6">
               <div className="text-xs text-zinc-500 font-black uppercase tracking-widest">方向：</div>
               {['做多 (Buy)', '做空 (Sell)'].map(a => (
-                <button key={a} onClick={() => fld('action', a)}
-                  className={cn('px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest border transition-all',
+                <button key={a} type="button" onClick={(e) => { fld('action', a); }}
+                  className={cn('px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest border transition',
                     form.action===a
                       ? a.includes('Buy') ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
                                           : 'bg-rose-500/10 text-rose-300 border-rose-500/20'
                       : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800')}>
-                  {a.includes('Buy') ? '📈 做多' : '📉 做空'}
+                  {a.includes('Buy') ? '📈 做多' : '📉 空'}
                 </button>
               ))}
             </div>
             <div className="flex gap-3">
-              <button onClick={handleAdd} disabled={saving}
-                className="px-8 py-3 rounded-xl bg-emerald-500/10 text-emerald-300 text-sm font-black uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                {saving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>} 儲存
+              <button type="button"> {saving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>} 儲存
               </button>
-              <button onClick={() => { setAdding(false); setErr(''); }}
-                className="px-8 py-3 rounded-xl bg-zinc-900 text-zinc-400 text-sm font-black uppercase tracking-widest border border-zinc-800 hover:bg-zinc-800 transition-all">
+              <button type="button" onClick={(e) => { setAdding(false); setErr(''); }}
+                className="px-8 py-3 rounded-xl bg-zinc-900 text-zinc-400 text-sm font-black uppercase tracking-widest border border-zinc-800 hover:bg-zinc-800 transition">
                 取消
               </button>
               <div className="text-sm text-zinc-600 flex items-center ml-4 font-black uppercase tracking-widest">
@@ -417,10 +414,7 @@ export default function TradeJournal() {
               </div>
               <h3 className="text-zinc-100 font-bold">連線異常</h3>
               <p className="text-zinc-400 text-sm max-w-xs">{error}</p>
-              <button 
-                onClick={load}
-                className="mt-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg text-sm transition-colors flex items-center gap-2"
-              >
+              <button type="button">
                 <RefreshCw className="w-4 h-4" />
                 重新整理
               </button>
@@ -434,7 +428,7 @@ export default function TradeJournal() {
               <div className="text-3xl">📒</div>
               <p className="text-zinc-500 text-sm font-semibold">還沒有交易記錄</p>
               <p className="text-zinc-500 text-xs">記錄每筆交易，追蹤自己的進步</p>
-              <button onClick={() => setAdding(true)}
+              <button type="button" onClick={(e) => {}}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
                 <Plus size={12}/> 新增第一筆
               </button>
@@ -470,36 +464,34 @@ export default function TradeJournal() {
                           </td>
                           <td className="py-2">
                             <input type="text" value={editBuf.ticker??t.ticker} onChange={e=>efld('ticker',e.target.value.toUpperCase())}
-                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-bold w-20 focus:outline-none"/>
+                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-bold w-20 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20"/>
                           </td>
                           <td className="py-2">
                             <select value={editBuf.action??t.action} onChange={e=>efld('action',e.target.value)}
-                              className="bg-black/30 border border-white/10 rounded px-1 py-1 text-white text-xs focus:outline-none">
+                              className="bg-black/30 border border-white/10 rounded px-1 py-1 text-white text-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20">
                               <option value="做多 (Buy)">做多</option>
                               <option value="做空 (Sell)">做空</option>
                             </select>
                           </td>
                           <td className="py-2 text-right">
                             <input type="number" step="0.01" value={editBuf.entry??t.entry} onChange={e=>efld('entry',Number(e.target.value))}
-                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-mono w-20 text-right focus:outline-none"/>
+                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-mono w-20 text-right focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20"/>
                           </td>
                           <td className="py-2 text-right">
                             <input type="number" step="0.01" value={editBuf.exit??t.exit} onChange={e=>efld('exit',Number(e.target.value))}
-                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-mono w-20 text-right focus:outline-none"/>
+                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-mono w-20 text-right focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20"/>
                           </td>
                           <td className="py-2 text-right">
                             <input type="number" value={editBuf.qty??t.qty} onChange={e=>efld('qty',Number(e.target.value))}
-                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-mono w-20 text-right focus:outline-none"/>
+                              className="bg-black/30 border border-white/10 rounded px-1.5 py-1 text-white text-xs font-mono w-20 text-right focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20"/>
                           </td>
                           <td className="py-2 text-right text-zinc-500 font-mono text-xs">自動計算</td>
                           <td/><td/>
                           <td className="py-2">
                             <div className="flex gap-1">
-                              <button onClick={handleSaveEdit} disabled={saving}
-                                className="p-1.5 rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors">
-                                {saving ? <Loader2 size={11} className="animate-spin"/> : <Check size={11}/>}
+                              <button type="button"> {saving ? <Loader2 size={11} className="animate-spin"/> : <Check size={11}/>}
                               </button>
-                              <button onClick={() => { setEditId(null); setEditBuf({}); }}
+                              <button type="button" onClick={(e) => { setEditId(null); setEditBuf({}); }}
                                 className="p-1.5 rounded bg-[var(--bg-color)] text-zinc-500 hover:bg-[var(--border-color)] transition-colors">
                                 <X size={11}/>
                               </button>
@@ -535,25 +527,25 @@ export default function TradeJournal() {
                           <td className="py-2.5 text-zinc-500 text-sm max-w-[120px] truncate" title={t.notes}>{t.notes}</td>
                           <td className="py-2.5">
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => { setEditId(t.id); setEditBuf({}); }}
+                              <button type="button" onClick={(e) => { setEditId(t.id); setEditBuf({}); }}
                                 className="p-1.5 rounded bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors">
                                 <Edit2 size={11}/>
                               </button>
                               {deleteConfirmId === t.id ? (
                                 <div className="flex items-center gap-1">
-                                  <button onClick={() => handleDelete(t.id)}
+                                  <button type="button" onClick={(e) => {}}
                                     className="px-2 py-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors text-xs font-bold"
                                     title="確認刪除">
                                     <Check size={11}/>
                                   </button>
-                                  <button onClick={() => setDeleteConfirmId(null)}
+                                  <button type="button" onClick={(e) => {}}
                                     className="px-2 py-1 rounded bg-[var(--bg-color)] text-zinc-500 hover:bg-[var(--border-color)] transition-colors text-xs"
                                     title="取消">
                                     <X size={11}/>
                                   </button>
                                 </div>
                               ) : (
-                                <button onClick={() => setDeleteConfirmId(t.id)}
+                                <button type="button" onClick={(e) => {}}
                                   className="p-1.5 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors">
                                   <Trash2 size={11}/>
                                 </button>

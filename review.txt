@@ -1,0 +1,369 @@
+
+## src/App.tsx
+
+src/App.tsx:385 - transition: all → list properties (use 'transition')
+src/App.tsx:414 - transition: all → list properties (use 'transition')
+src/App.tsx:442 - transition: all → list properties (use 'transition')
+src/App.tsx:470 - transition: all → list properties (use 'transition')
+src/App.tsx:478 - <div> with click handlers (should be <button>)
+src/App.tsx:566 - transition: all → list properties (use 'transition')
+src/App.tsx:594 - transition: all → list properties (use 'transition')
+src/App.tsx:629 - "..." → "…"
+src/App.tsx:646 - transition: all → list properties (use 'transition')
+src/App.tsx:661 - transition: all → list properties (use 'transition')
+src/App.tsx:693 - "..." → "…"
+src/App.tsx:761 - transition: all → list properties (use 'transition')
+src/App.tsx:766 - transition: all → list properties (use 'transition')
+src/App.tsx:800 - autoFocus without clear justification
+src/App.tsx:811 - outline-none without focus-visible replacement
+
+## src/components/Alerts.tsx
+
+✓ pass
+
+## src/components/BacktestPage.tsx
+
+src/components/BacktestPage.tsx:261 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:261 - outline-none without focus-visible replacement
+src/components/BacktestPage.tsx:262 - "..." → "…"
+src/components/BacktestPage.tsx:271 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:271 - outline-none without focus-visible replacement
+src/components/BacktestPage.tsx:282 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:290 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:299 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:331 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:331 - outline-none without focus-visible replacement
+src/components/BacktestPage.tsx:344 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:344 - outline-none without focus-visible replacement
+src/components/BacktestPage.tsx:353 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:353 - outline-none without focus-visible replacement
+src/components/BacktestPage.tsx:365 - outline-none without focus-visible replacement
+src/components/BacktestPage.tsx:369 - outline-none without focus-visible replacement
+src/components/BacktestPage.tsx:376 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:400 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:407 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:456 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:482 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:548 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:572 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:677 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:780 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:787 - transition: all → list properties (use 'transition')
+src/components/BacktestPage.tsx:884 - transition: all → list properties (use 'transition')
+
+## src/components/BacktestPanel.tsx
+
+src/components/BacktestPanel.tsx:28 - "..." → "…"
+src/components/BacktestPanel.tsx:103 - "..." → "…"
+src/components/BacktestPanel.tsx:112 - "..." → "…"
+src/components/BacktestPanel.tsx:127 - "..." → "…"
+
+## src/components/BottomSheet.tsx
+
+✓ pass
+
+## src/components/CardStack.tsx
+
+✓ pass
+
+## src/components/ChartSection.tsx
+
+src/components/ChartSection.tsx:29 - transition: all → list properties (use 'transition')
+
+## src/components/ChartWidget.tsx
+
+src/components/ChartWidget.tsx:446 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:472 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:474 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:490 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:492 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:508 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:510 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:527 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:529 - transition: all → list properties (use 'transition')
+src/components/ChartWidget.tsx:541 - transition: all → list properties (use 'transition')
+
+## src/components/Dashboard.tsx
+
+src/components/Dashboard.tsx:211 - transition: all → list properties (use 'transition')
+src/components/Dashboard.tsx:298 - "..." → "…"
+src/components/Dashboard.tsx:322 - "..." → "…"
+src/components/Dashboard.tsx:344 - "..." → "…"
+src/components/Dashboard.tsx:349 - "..." → "…"
+src/components/Dashboard.tsx:361 - transition: all → list properties (use 'transition')
+
+## src/components/ErrorBoundary.tsx
+
+src/components/ErrorBoundary.tsx:47 - transition: all → list properties (use 'transition')
+
+## src/components/LiveTradingConsole.tsx
+
+src/components/LiveTradingConsole.tsx:74 - transition: all → list properties (use 'transition')
+src/components/LiveTradingConsole.tsx:87 - transition: all → list properties (use 'transition')
+src/components/LiveTradingConsole.tsx:92 - transition: all → list properties (use 'transition')
+src/components/LiveTradingConsole.tsx:97 - transition: all → list properties (use 'transition')
+src/components/LiveTradingConsole.tsx:121 - transition: all → list properties (use 'transition')
+src/components/LiveTradingConsole.tsx:128 - "..." → "…"
+
+## src/components/MarketOverview.tsx
+
+src/components/MarketOverview.tsx:73 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:82 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:142 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:149 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:231 - "..." → "…"
+src/components/MarketOverview.tsx:342 - "..." → "…"
+src/components/MarketOverview.tsx:512 - "..." → "…"
+src/components/MarketOverview.tsx:653 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:680 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:682 - <div> with click handlers (should be <button>)
+src/components/MarketOverview.tsx:684 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:687 - autoFocus without clear justification
+src/components/MarketOverview.tsx:691 - "..." → "…"
+src/components/MarketOverview.tsx:692 - outline-none without focus-visible replacement
+src/components/MarketOverview.tsx:698 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:703 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:755 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:805 - "..." → "…"
+src/components/MarketOverview.tsx:819 - transition: all → list properties (use 'transition')
+src/components/MarketOverview.tsx:838 - "..." → "…"
+src/components/MarketOverview.tsx:927 - outline-none without focus-visible replacement
+src/components/MarketOverview.tsx:949 - transition: all → list properties (use 'transition')
+
+## src/components/MultiTimeframe.tsx
+
+src/components/MultiTimeframe.tsx:109 - "..." → "…"
+
+## src/components/NewsSentimentBelowChart.tsx
+
+src/components/NewsSentimentBelowChart.tsx:14 - "..." → "…"
+src/components/NewsSentimentBelowChart.tsx:36 - "..." → "…"
+
+## src/components/NotificationCenter.tsx
+
+src/components/NotificationCenter.tsx:91 - transition: all → list properties (use 'transition')
+
+## src/components/PaperTradingDashboard.tsx
+
+✓ pass
+
+## src/components/PerformanceSummary.tsx
+
+✓ pass
+
+## src/components/Portfolio.tsx
+
+src/components/Portfolio.tsx:372 - transition: all → list properties (use 'transition')
+src/components/Portfolio.tsx:417 - outline-none without focus-visible replacement
+src/components/Portfolio.tsx:476 - outline-none without focus-visible replacement
+src/components/Portfolio.tsx:576 - outline-none without focus-visible replacement
+src/components/Portfolio.tsx:579 - outline-none without focus-visible replacement
+
+## src/components/PriceBar.tsx
+
+src/components/PriceBar.tsx:117 - transition: all → list properties (use 'transition')
+src/components/PriceBar.tsx:122 - transition: all → list properties (use 'transition')
+src/components/PriceBar.tsx:126 - transition: all → list properties (use 'transition')
+src/components/PriceBar.tsx:136 - <div> with click handlers (should be <button>)
+
+## src/components/PricingModal.tsx
+
+src/components/PricingModal.tsx:58 - transition: all → list properties (use 'transition')
+src/components/PricingModal.tsx:82 - transition: all → list properties (use 'transition')
+src/components/PricingModal.tsx:92 - transition: all → list properties (use 'transition')
+src/components/PricingModal.tsx:121 - transition: all → list properties (use 'transition')
+src/components/PricingModal.tsx:133 - transition: all → list properties (use 'transition')
+src/components/PricingModal.tsx:159 - transition: all → list properties (use 'transition')
+
+## src/components/PullToRefreshIndicator.tsx
+
+✓ pass
+
+## src/components/QuantumAnimation.tsx
+
+✓ pass
+
+## src/components/RightPanel.tsx
+
+src/components/RightPanel.tsx:16 - transition: all → list properties (use 'transition')
+src/components/RightPanel.tsx:152 - transition: all → list properties (use 'transition')
+src/components/RightPanel.tsx:185 - transition: all → list properties (use 'transition')
+src/components/RightPanel.tsx:264 - "..." → "…"
+src/components/RightPanel.tsx:276 - "..." → "…"
+src/components/RightPanel.tsx:278 - transition: all → list properties (use 'transition')
+src/components/RightPanel.tsx:287 - transition: all → list properties (use 'transition')
+src/components/RightPanel.tsx:312 - transition: all → list properties (use 'transition')
+src/components/RightPanel.tsx:338 - transition: all → list properties (use 'transition')
+src/components/RightPanel.tsx:346 - outline-none without focus-visible replacement
+src/components/RightPanel.tsx:374 - transition: all → list properties (use 'transition')
+
+## src/components/Sentiment.tsx
+
+src/components/Sentiment.tsx:58 - "..." → "…"
+src/components/Sentiment.tsx:75 - transition: all → list properties (use 'transition')
+
+## src/components/SentimentPage.tsx
+
+✓ pass
+
+## src/components/Settings.tsx
+
+src/components/Settings.tsx:184 - outline-none without focus-visible replacement
+src/components/Settings.tsx:192 - outline-none without focus-visible replacement
+src/components/Settings.tsx:202 - outline-none without focus-visible replacement
+src/components/Settings.tsx:230 - transition: all → list properties (use 'transition')
+src/components/Settings.tsx:257 - transition: all → list properties (use 'transition')
+src/components/Settings.tsx:362 - outline-none without focus-visible replacement
+src/components/Settings.tsx:369 - outline-none without focus-visible replacement
+src/components/Settings.tsx:388 - outline-none without focus-visible replacement
+src/components/Settings.tsx:397 - outline-none without focus-visible replacement
+src/components/Settings.tsx:414 - outline-none without focus-visible replacement
+src/components/Settings.tsx:423 - outline-none without focus-visible replacement
+src/components/Settings.tsx:435 - outline-none without focus-visible replacement
+src/components/Settings.tsx:480 - outline-none without focus-visible replacement
+src/components/Settings.tsx:488 - outline-none without focus-visible replacement
+src/components/Settings.tsx:495 - outline-none without focus-visible replacement
+src/components/Settings.tsx:509 - outline-none without focus-visible replacement
+src/components/Settings.tsx:520 - outline-none without focus-visible replacement
+
+## src/components/Simulator.tsx
+
+✓ pass
+
+## src/components/StatusIndicator3D.tsx
+
+✓ pass
+
+## src/components/StockScreener.tsx
+
+src/components/StockScreener.tsx:141 - transition: all → list properties (use 'transition')
+src/components/StockScreener.tsx:145 - "..." → "…"
+src/components/StockScreener.tsx:156 - transition: all → list properties (use 'transition')
+src/components/StockScreener.tsx:193 - outline-none without focus-visible replacement
+src/components/StockScreener.tsx:202 - outline-none without focus-visible replacement
+src/components/StockScreener.tsx:211 - outline-none without focus-visible replacement
+src/components/StockScreener.tsx:234 - "..." → "…"
+src/components/StockScreener.tsx:235 - outline-none without focus-visible replacement
+src/components/StockScreener.tsx:241 - transition: all → list properties (use 'transition')
+src/components/StockScreener.tsx:247 - transition: all → list properties (use 'transition')
+src/components/StockScreener.tsx:277 - "..." → "…"
+
+## src/components/StrategyComparison.tsx
+
+✓ pass
+
+## src/components/StrategyLab.tsx
+
+src/components/StrategyLab.tsx:233 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:238 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:259 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:320 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:339 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:366 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:380 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:388 - transition: all → list properties (use 'transition')
+src/components/StrategyLab.tsx:408 - transition: all → list properties (use 'transition')
+
+## src/components/SubscriptionGate.tsx
+
+src/components/SubscriptionGate.tsx:44 - transition: all → list properties (use 'transition')
+
+## src/components/SystemLogs.tsx
+
+src/components/SystemLogs.tsx:74 - transition: all → list properties (use 'transition')
+src/components/SystemLogs.tsx:242 - transition: all → list properties (use 'transition')
+src/components/SystemLogs.tsx:259 - transition: all → list properties (use 'transition')
+src/components/SystemLogs.tsx:288 - transition: all → list properties (use 'transition')
+src/components/SystemLogs.tsx:311 - transition: all → list properties (use 'transition')
+src/components/SystemLogs.tsx:367 - outline-none without focus-visible replacement
+src/components/SystemLogs.tsx:413 - transition: all → list properties (use 'transition')
+src/components/SystemLogs.tsx:533 - transition: all → list properties (use 'transition')
+
+## src/components/TickerTape.tsx
+
+✓ pass
+
+## src/components/TradeJournal.tsx
+
+src/components/TradeJournal.tsx:225 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:342 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:349 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:353 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:378 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:386 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:397 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:401 - transition: all → list properties (use 'transition')
+src/components/TradeJournal.tsx:473 - outline-none without focus-visible replacement
+src/components/TradeJournal.tsx:477 - outline-none without focus-visible replacement
+src/components/TradeJournal.tsx:484 - outline-none without focus-visible replacement
+src/components/TradeJournal.tsx:488 - outline-none without focus-visible replacement
+src/components/TradeJournal.tsx:492 - outline-none without focus-visible replacement
+
+## src/components/TradeLogger.tsx
+
+src/components/TradeLogger.tsx:105 - "..." → "…"
+
+## src/components/TradingCore.tsx
+
+src/components/TradingCore.tsx:373 - transition: all → list properties (use 'transition')
+
+## src/components/VisualStrategyBuilder.tsx
+
+src/components/VisualStrategyBuilder.tsx:76 - outline-none without focus-visible replacement
+src/components/VisualStrategyBuilder.tsx:79 - outline-none without focus-visible replacement
+src/components/VisualStrategyBuilder.tsx:82 - outline-none without focus-visible replacement
+
+## src/components/Watchlist.tsx
+
+src/components/Watchlist.tsx:57 - transition: all → list properties (use 'transition')
+src/components/Watchlist.tsx:88 - transition: all → list properties (use 'transition')
+src/components/Watchlist.tsx:130 - transition: all → list properties (use 'transition')
+src/components/Watchlist.tsx:134 - transition: all → list properties (use 'transition')
+src/components/Watchlist.tsx:171 - outline-none without focus-visible replacement
+src/components/Watchlist.tsx:180 - transition: all → list properties (use 'transition')
+src/components/Watchlist.tsx:202 - "..." → "…"
+src/components/Watchlist.tsx:203 - autoFocus without clear justification
+src/components/Watchlist.tsx:204 - transition: all → list properties (use 'transition')
+src/components/Watchlist.tsx:208 - transition: all → list properties (use 'transition')
+src/components/Watchlist.tsx:223 - "..." → "…"
+src/components/Watchlist.tsx:235 - transition: all → list properties (use 'transition')
+
+## src/components/auth/AuthPage.tsx
+
+src/components/auth/AuthPage.tsx:76 - transition: all → list properties (use 'transition')
+src/components/auth/AuthPage.tsx:102 - transition: all → list properties (use 'transition')
+src/components/auth/AuthPage.tsx:102 - outline-none without focus-visible replacement
+src/components/auth/AuthPage.tsx:124 - transition: all → list properties (use 'transition')
+src/components/auth/AuthPage.tsx:124 - outline-none without focus-visible replacement
+src/components/auth/AuthPage.tsx:146 - transition: all → list properties (use 'transition')
+src/components/auth/AuthPage.tsx:146 - outline-none without focus-visible replacement
+src/components/auth/AuthPage.tsx:182 - transition: all → list properties (use 'transition')
+src/components/auth/AuthPage.tsx:213 - transition: all → list properties (use 'transition')
+
+## src/contexts/AuthContext.tsx
+
+✓ pass
+
+## src/contexts/MarketDataContext.tsx
+
+✓ pass
+
+## src/contexts/NavigationContext.tsx
+
+✓ pass
+
+## src/contexts/SettingsContext.tsx
+
+✓ pass
+
+## src/contexts/SubscriptionContext.tsx
+
+✓ pass
+
+## src/contexts/ToastContext.tsx
+
+✓ pass
+
+## src/main.tsx
+
+✓ pass

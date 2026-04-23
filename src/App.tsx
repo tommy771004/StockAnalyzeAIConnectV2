@@ -382,7 +382,7 @@ function MainApp() {
           <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
             {TOP_TABS.map(t=>(
               <button key={t.id} onClick={()=>handleTopTab(t.id)}
-                className="px-5 py-1.5 rounded-full text-xs font-bold transition-all tracking-wide"
+                className="px-5 py-1.5 rounded-full text-xs font-bold transition tracking-wide"
                 style={topTab===t.id
                   ? { color: 'var(--md-on-surface)', background: 'rgba(192,193,255,0.12)', boxShadow: 'inset 0 0 0 1px rgba(192,193,255,0.15)' }
                   : { color: 'var(--md-outline)' }}>
@@ -411,7 +411,7 @@ function MainApp() {
               ) : (
                 <>
                   <button onClick={()=>setModelOpen(v=>!v)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-bold transition"
                     style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}>
                     <Cpu size={12} style={{ color: 'var(--md-primary)' }}/>
                     <span className="max-w-[100px] truncate uppercase tracking-wider">{String(MODELS.find(m=>m.id===model)?.label??model)}</span>
@@ -439,7 +439,7 @@ function MainApp() {
 
             <button
               onClick={()=>{updateSetting('commuteMode', !settings.commuteMode); vibrate(50);}}
-              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition"
               style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: settings.commuteMode ? 'var(--md-primary)' : 'var(--md-outline)' }}
               title="通勤模式 (高對比)">
               <TrainFront size={14} />
@@ -467,7 +467,7 @@ function MainApp() {
               <button
                 onClick={() => setProfileOpen(v => !v)}
                 aria-label="個人檔案"
-                className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all"
+                className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition"
                 style={{ background: profileOpen ? 'var(--md-primary-container)' : 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: profileOpen ? 'var(--md-on-primary-container)' : 'var(--md-on-surface-variant)' }}>
                 <User size={16} />
               </button>
@@ -563,7 +563,7 @@ function MainApp() {
             role="navigation"
             aria-label="主導覽"
             className={cn(
-              'flex flex-col border-r transition-all duration-500 shrink-0 z-50 min-h-0',
+              'flex flex-col border-r transition duration-500 shrink-0 z-50 min-h-0',
               'fixed md:relative h-screen md:h-full',
               sidebar ? 'w-64 translate-x-0' : 'w-16 -translate-x-full md:translate-x-0'
             )}
@@ -591,7 +591,7 @@ function MainApp() {
                 const Icon = item.icon, active = page === item.id;
                 return (
                   <button key={item.id} onClick={() => handleNav(item)} title={!sidebar ? item.label : undefined}
-                    className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all relative group"
+                    className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-sm font-bold transition relative group"
                     style={active
                       ? { background: 'rgba(128,131,255,0.15)', color: 'var(--md-primary)' }
                       : { color: 'var(--md-outline)' }}
@@ -643,7 +643,7 @@ function MainApp() {
                       onClick={goPrevPage}
                       disabled={currentPageIndex <= 0}
                       aria-label="上一頁"
-                      className="p-1 rounded-lg transition-all active:scale-95"
+                      className="p-1 rounded-lg transition active:scale-95"
                       style={{
                         color: currentPageIndex <= 0 ? 'var(--md-outline-variant)' : 'var(--md-on-surface-variant)',
                         background: 'transparent',
@@ -658,7 +658,7 @@ function MainApp() {
                       onClick={goNextPage}
                       disabled={currentPageIndex >= NAV.length - 1}
                       aria-label="下一頁"
-                      className="p-1 rounded-lg transition-all active:scale-95"
+                      className="p-1 rounded-lg transition active:scale-95"
                       style={{
                         color: currentPageIndex >= NAV.length - 1 ? 'var(--md-outline-variant)' : 'var(--md-on-surface-variant)',
                         background: 'transparent',
@@ -758,12 +758,12 @@ function MainApp() {
                 aria-label={item.label}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-all duration-200 active:scale-95 relative',
+                  'flex flex-col items-center justify-center gap-1 flex-1 py-2 transition duration-200 active:scale-95 relative',
                   active ? 'mobile-nav-item-active' : ''
                 )}
                 style={active ? { color: 'var(--md-primary)' } : { color: 'var(--md-outline)' }}>
                 <div className={cn(
-                  'flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200',
+                  'flex items-center justify-center w-8 h-8 rounded-xl transition duration-200',
                   active ? 'scale-110' : 'scale-100'
                 )}
                   style={active ? { background: 'rgba(128,131,255,0.14)', boxShadow: '0 0 12px rgba(128,131,255,0.2)' } : {}}>
@@ -808,7 +808,7 @@ function MainApp() {
                   if(e.key==='Escape'){setSearch(false);setSearchQ('');}
                 }}
                 placeholder="搜尋股票代碼… (AAPL, 2330.TW, BTC-USD)"
-                className="flex-1 bg-transparent text-sm font-bold focus:outline-none uppercase"
+                className="flex-1 bg-transparent text-sm font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 uppercase"
                 style={{ color: 'var(--md-on-surface)' }}
               />
               <kbd className="text-[10px] rounded px-1.5 py-0.5 font-mono"

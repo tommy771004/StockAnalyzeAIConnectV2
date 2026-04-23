@@ -73,7 +73,7 @@ export default function AuthPage() {
                 key={m}
                 type="button"
                 onClick={() => { setMode(m); setError(''); }}
-                className="flex-1 py-2 text-sm font-semibold rounded-xl transition-all"
+                className="flex-1 py-2 text-sm font-semibold rounded-xl transition"
                 style={mode === m
                   ? { background: 'var(--md-primary-container)', color: 'var(--md-primary)', boxShadow: '0 0 12px rgba(192,193,255,0.2)' }
                   : { color: 'var(--md-outline)' }}
@@ -99,7 +99,7 @@ export default function AuthPage() {
                     placeholder="輸入名稱"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none transition-all"
+                    className="w-full rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition"
                     style={{ background: 'var(--md-surface-container-lowest)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}
                   />
                 </div>
@@ -121,7 +121,7 @@ export default function AuthPage() {
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none transition-all"
+                  className="w-full rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition"
                   style={{ background: 'var(--md-surface-container-lowest)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}
                 />
               </div>
@@ -143,7 +143,7 @@ export default function AuthPage() {
                   minLength={8}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full rounded-xl py-3 pl-10 pr-10 text-sm focus:outline-none transition-all"
+                  className="w-full rounded-xl py-3 pl-10 pr-10 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition"
                   style={{ background: 'var(--md-surface-container-lowest)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -179,7 +179,7 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full flex justify-center items-center gap-2 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-50"
+              className="w-full flex justify-center items-center gap-2 py-3 rounded-xl font-bold text-sm transition disabled:opacity-50"
               style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)', boxShadow: '0 0 15px rgba(192,193,255,0.2)' }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
@@ -210,7 +210,7 @@ export default function AuthPage() {
                 <button
                   key={btn.label}
                   type="button"
-                  className="flex justify-center items-center gap-2 py-2 px-4 rounded-xl text-sm transition-all"
+                  className="flex justify-center items-center gap-2 py-2 px-4 rounded-xl text-sm transition"
                   style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                 >
                   <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{btn.icon}</span>

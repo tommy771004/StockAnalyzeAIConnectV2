@@ -1,3 +1,4 @@
+import { VitePWA } from 'vite-plugin-pwa';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -12,7 +13,30 @@ export default defineConfig(({ mode }) => {
     base:    isProd ? './' : '/',
     root:    '.',
     publicDir: 'public',
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.svg'],
+        manifest: {
+          name: 'AI Stock Analysis',
+          short_name: 'ASA',
+          description: 'AI-Powered Commuter Trading',
+          theme_color: '#10b981',
+          background_color: '#000000',
+          display: 'standalone',
+          icons: [
+            {
+              src: 'favicon.svg',
+              sizes: '192x192 512x512',
+              type: 'image/svg+xml',
+              purpose: 'any maskable'
+            }
+          ]
+        }
+      })
+    ],
     define: {
       'process.env.VITE_OPENROUTER_API_KEY': JSON.stringify(env.VITE_OPENROUTER_API_KEY ?? ''),
     },

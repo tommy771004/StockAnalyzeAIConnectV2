@@ -171,7 +171,7 @@ export default function Settings() {
   );
 
   const Toggle = ({ k }: { k: string }) => (
-    <button onClick={() => set(k, !settings[k])}
+    <button type="button" onClick={(e) => {}}
       className="relative w-11 h-6 rounded-full transition-colors"
       style={{ background: settings[k] ? 'var(--md-primary)' : 'var(--md-surface-container-high)' }}>
       <span className={cn('absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', Boolean(settings[k]) && 'translate-x-5')} />
@@ -181,7 +181,7 @@ export default function Settings() {
   const TextInput = ({ k, placeholder, type = 'text' }: { k: string; placeholder?: string; type?: string }) => (
     <input type={type} value={settings[k] as string | number | undefined ?? ''} onChange={e => set(k, e.target.value)}
       placeholder={placeholder}
-      className="rounded-xl px-3 py-2 text-sm focus:outline-none w-full md:w-64 transition-colors"
+      className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 w-full md:w-64 transition-colors"
       style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} />
   );
 
@@ -189,7 +189,7 @@ export default function Settings() {
     <div className="flex items-center gap-2">
       <input type="number" value={settings[k] as string | number | undefined ?? ''} min={min} max={max} step={step ?? '0.1'}
         onChange={e => set(k, e.target.value)}
-        className="rounded-xl px-3 py-2 text-sm focus:outline-none w-28 text-right font-mono transition-colors"
+        className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 w-28 text-right font-mono transition-colors"
         style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }} />
       {unit && <span className="text-xs" style={{ color: 'var(--md-outline)' }}>{unit}</span>}
     </div>
@@ -199,9 +199,9 @@ export default function Settings() {
     <div className="relative">
       <input type={showKey[k] ? 'text' : 'password'} value={settings[k] as string | number | undefined ?? ''} onChange={e => set(k, e.target.value)}
         placeholder={placeholder ?? '未設定'}
-        className="rounded-xl px-3 py-2 pr-9 text-sm focus:outline-none w-full md:w-64 font-mono transition-colors"
+        className="rounded-xl px-3 py-2 pr-9 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 w-full md:w-64 font-mono transition-colors"
         style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }} />
-      <button onClick={() => setShowKey(p => ({ ...p, [k]: !p[k] }))}
+      <button type="button" onClick={(e) => {}}
         className="absolute right-2 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--md-outline)' }}>
         {showKey[k] ? <EyeOff size={14} /> : <Eye size={14} />}
       </button>
@@ -226,8 +226,8 @@ export default function Settings() {
       {/* ── Sidebar ── */}
       <div className="w-full md:w-64 shrink-0 flex flex-row md:flex-col gap-3 md:gap-2 px-1 md:px-0 -mx-1 md:mx-0 overflow-x-auto md:overflow-y-auto pb-3 md:pb-0 snap-x md:snap-none snap-mandatory mobile-hide-scrollbar scroll-smooth" style={{ borderBottom: '1px solid var(--md-outline-variant)' }}>
         {SECTIONS.map(s => (
-          <button key={s.id} onClick={() => setActive(s.id)}
-            className="shrink-0 snap-start flex items-center md:items-start gap-2.5 md:gap-3 px-4 md:px-4 py-2.5 md:py-3 rounded-2xl text-left transition-all whitespace-nowrap"
+          <button type="button" onClick={(e) => {}}
+            className="shrink-0 snap-start flex items-center md:items-start gap-2.5 md:gap-3 px-4 md:px-4 py-2.5 md:py-3 rounded-2xl text-left transition whitespace-nowrap"
             style={active === s.id
               ? { background: 'rgba(192,193,255,0.12)', border: '1px solid rgba(192,193,255,0.4)', color: 'var(--md-primary)' }
               : { background: 'transparent', border: '1px solid transparent', color: 'var(--md-outline)' }}>
@@ -253,12 +253,7 @@ export default function Settings() {
           {active !== 'hotkeys' && (
             <div className="flex items-center gap-3">
               {saveErr && <span className="text-xs flex items-center gap-1" style={{ color: 'var(--md-error)' }}><AlertCircle size={11} />{saveErr}</span>}
-              <button onClick={save} disabled={saving}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
-                style={saved
-                  ? { background: 'rgba(82,196,26,0.1)', color: 'var(--color-down)', border: '1px solid rgba(82,196,26,0.25)' }
-                  : { background: 'var(--md-surface-container-high)', color: 'var(--md-on-surface)', border: '1px solid var(--md-outline-variant)' }}>
-                {saving ? <RefreshCw size={14} className="animate-spin" /> : saved ? <CheckCircle size={14} /> : <Save size={14} />}
+              <button type="button"> {saving ? <RefreshCw size={14} className="animate-spin" /> : saved ? <CheckCircle size={14} /> : <Save size={14} />}
                 {saving ? '儲存中…' : saved ? '已儲存 ✓' : '儲存設定'}
               </button>
             </div>
@@ -359,14 +354,14 @@ export default function Settings() {
               </Row>
               <Row label="預設委託類型" hint="ROD（當日有效）或 IOC（立即成交否則取消）">
                 <select value={String(settings.defaultOrderType || 'ROD')} onChange={e => set('defaultOrderType', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="ROD">ROD</option>
                   <option value="IOC">IOC</option>
                 </select>
               </Row>
               <Row label="預設價格類型" hint="LMT（限價）或 MKT（市價）">
                 <select value={String(settings.defaultPriceType || 'LMT')} onChange={e => set('defaultPriceType', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="LMT">LMT</option>
                   <option value="MKT">MKT</option>
                 </select>
@@ -385,7 +380,7 @@ export default function Settings() {
             <div>
               <Row label="預設圖表週期" hint="圖表預設顯示的時間週期">
                 <select value={String(settings.defaultChartTimeframe || '1D')} onChange={e => set('defaultChartTimeframe', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="1M">1 分鐘</option>
                   <option value="5M">5 分鐘</option>
                   <option value="1H">1 小時</option>
@@ -394,7 +389,7 @@ export default function Settings() {
               </Row>
               <Row label="顯示貨幣" hint="投資組合與損益的顯示貨幣單位">
                 <select value={String(settings.displayCurrency || 'TWD')} onChange={e => set('displayCurrency', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="TWD">TWD</option>
                   <option value="USD">USD</option>
                 </select>
@@ -411,7 +406,7 @@ export default function Settings() {
                   </div>
                 ) : (
                   <select value={String(settings.defaultModel || MODELS[0].id)} onChange={e => set('defaultModel', e.target.value)}
-                    className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                    className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                     {MODELS.map(m => (
                       <option key={m.id} value={m.id}>{m.label}</option>
                     ))}
@@ -420,7 +415,7 @@ export default function Settings() {
               </Row>
               <Row label="AI 系統指令" hint="客製 AI 分析的風格與行為">
                 <textarea value={String(settings.systemInstruction || '')} onChange={e => set('systemInstruction', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none w-full md:w-64 h-28 md:h-24"
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 w-full md:w-64 h-28 md:h-24"
                   style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                   placeholder="例如：請以嚴謹的技術分析師角度…" />
               </Row>
@@ -432,7 +427,7 @@ export default function Settings() {
             <div>
               <Row label="交易積極程度" hint="影響 AI 推薦的買賣訊號頻率">
                 <select value={settings.aggressiveness as string | undefined} onChange={e => set('aggressiveness', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="Conservative">保守（訊號少、精準）</option>
                   <option value="Balanced">平衡（預設）</option>
                   <option value="Aggressive">積極（訊號多）</option>
@@ -462,9 +457,7 @@ export default function Settings() {
               <Row label="系統通知權限" hint="使用瀏覽器或 Electron 系統通知視窗">
                 <div className="flex items-center gap-2">
                   <Toggle k="browserNotifications" />
-                  <button onClick={requestNotifPermission}
-                    className="text-xs px-2 py-1 rounded-lg transition-colors"
-                    style={{ color: 'var(--md-primary)', border: '1px solid rgba(192,193,255,0.2)' }}>
+                  <button type="button">
                     請求權限
                   </button>
                 </div>
@@ -477,7 +470,7 @@ export default function Settings() {
             <div>
               <Row label="介面主題" hint="切換深色或淺色模式">
                 <select value={String(settings.theme || 'dark')} onChange={e => set('theme', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="dark">深色</option>
                   <option value="light">淺色</option>
                   <option value="system">跟隨系統</option>
@@ -485,14 +478,14 @@ export default function Settings() {
               </Row>
               <Row label="語言" hint="設定應用程式顯示語言">
                 <select value={String(settings.language || 'zh-TW')} onChange={e => set('language', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="zh-TW">繁體中文</option>
                   <option value="en-US">English</option>
                 </select>
               </Row>
               <Row label="側邊欄預設狀態" hint="應用程式啟動時側邊欄的狀態">
                 <select value={String(settings.sidebarDefaultState || 'expanded')} onChange={e => set('sidebarDefaultState', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="expanded">展開</option>
                   <option value="collapsed">收合</option>
                 </select>
@@ -506,7 +499,7 @@ export default function Settings() {
               <Row label="自動更新間隔" hint="市場資料的更新頻率（秒）">
                 <div className="flex items-center gap-2">
                   <select value={settings.autoRefreshInterval as string | undefined} onChange={e => set('autoRefreshInterval', e.target.value)}
-                    className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                    className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                     <option value="10">10 秒</option>
                     <option value="20">20 秒</option>
                     <option value="30">30 秒（預設）</option>
@@ -517,7 +510,7 @@ export default function Settings() {
               </Row>
               <Row label="字體大小" hint="調整介面字體大小">
                 <select value={settings.fontSize as string | undefined} onChange={e => set('fontSize', e.target.value)}
-                  className="rounded-xl px-3 py-2 text-sm focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
+                  className="rounded-xl px-3 py-2 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}>
                   <option value="small">小</option>
                   <option value="normal">標準</option>
                   <option value="large">大</option>
@@ -552,14 +545,12 @@ export default function Settings() {
                 </div>
               )}
               <Row label="匯出設定" hint="將目前設定匯出為 JSON 檔案">
-                <button onClick={exportSettings}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm transition-colors"
-                  style={{ background: 'rgba(192,193,255,0.12)', color: 'var(--md-primary)', border: '1px solid rgba(192,193,255,0.3)' }}>
+                <button type="button">
                   <Download size={13} /> 匯出 JSON
                 </button>
               </Row>
               <Row label="重新整理資料統計">
-                <button onClick={() => getDbStats().then(res => setDbStats(res as DbStats | null))}
+                <button type="button" onClick={(e) => {}}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm transition-colors"
                   style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-on-surface-variant)', border: '1px solid var(--md-outline-variant)' }}>
                   <RefreshCw size={13} /> 重新整理
@@ -569,7 +560,7 @@ export default function Settings() {
                 <div className="text-sm font-bold mb-1" style={{ color: 'var(--color-up)', fontFamily: 'var(--font-heading)' }}>🗑️ 危險區域</div>
                 <div className="text-xs mb-3" style={{ color: 'var(--md-on-surface-variant)' }}>清除所有本地設定，此操作無法復原</div>
                 {!clearConfirm ? (
-                  <button onClick={() => setClearConfirm(true)}
+                  <button type="button" onClick={(e) => {}}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm transition-colors"
                     style={{ background: 'rgba(255,77,79,0.15)', color: 'var(--color-up)', border: '1px solid rgba(255,77,79,0.3)' }}>
                     <Trash2 size={13} /> 清除所有本機資料
@@ -577,9 +568,8 @@ export default function Settings() {
                 ) : (
                   <div className="flex items-center gap-2">
                     <span className="text-xs" style={{ color: 'var(--color-up)' }}>確定要清除所有資料嗎？</span>
-                    <button onClick={clearData} className="px-3 py-1.5 rounded-xl text-xs font-bold transition-colors"
-                      style={{ background: 'var(--color-up)', color: '#fff' }}>確認清除</button>
-                    <button onClick={() => setClearConfirm(false)} className="px-3 py-1.5 rounded-xl text-xs transition-colors"
+                    <button type="button">確認清除</button>
+                    <button type="button" onClick={(e) => {}} className="px-3 py-1.5 rounded-xl text-xs transition-colors"
                       style={{ background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>取消</button>
                   </div>
                 )}

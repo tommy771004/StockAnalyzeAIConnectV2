@@ -366,11 +366,9 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
             { id: 'chart' as const, label: '圖表' },
             { id: 'panel' as const, label: '面板' },
           ]).map(p => (
-            <button
-              key={p.id}
-              onClick={() => { setMobilePanel(p.id); }}
+            <button key={p.id} type="button" onClick={(e) => { setMobilePanel(p.id); }}
               className={safeCn(
-                'flex-1 py-3 min-h-[48px] rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase transition-all press-feedback',
+                'flex-1 py-3 min-h-[48px] rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase transition press-feedback',
                 mobilePanel === p.id
                   ? 'bg-emerald-500 text-black shadow-[0_0_12px_rgba(52,211,153,0.3)]'
                   : 'text-zinc-500 hover:text-[var(--text-color)] hover:bg-white/5'

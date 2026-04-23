@@ -42,9 +42,8 @@ export class ErrorBoundary extends Component<Props, State> {
             </code>
           </div>
 
-          <button
-            onClick={() => this.setState({ error: null, info: '' })}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30 hover:bg-indigo-500/30 transition-all"
+          <button type="button" onClick={(e) => this.setState({ error: null, info: '' })}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30 hover:bg-indigo-500/30 transition"
           >
             <RefreshCw size={12} /> 重試
           </button>

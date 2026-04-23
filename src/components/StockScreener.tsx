@@ -135,25 +135,22 @@ export default function StockScreener({ onSelectSymbol }: Props) {
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--md-outline)' }}>XQ-Style Technical Screener — 多條件批量揁描</p>
         </div>
-        <button
-          onClick={() => runScan()}
+        <button type="button" onClick={(e) => {}}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95 disabled:opacity-50"
           style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-          {loading ? '掃描中...' : '開始掃描'}
+          {loading ? '掃描中…' : '開始掃描'}
         </button>
       </div>
 
       {/* Template Chips */}
       <div className="flex flex-wrap gap-2 shrink-0">
         {TEMPLATES.map(t => (
-          <button
-            key={t.id}
-            onClick={() => handleTemplate(t)}
+          <button type="button" onClick={(e) => {}}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-bold border transition-all active:scale-95",
+              "px-3 py-1.5 rounded-xl text-xs font-bold border transition active:scale-95",
               activeTemplate === t.id
                 ? { background: 'rgba(128,131,255,0.12)', borderColor: 'rgba(128,131,255,0.4)', color: 'var(--md-primary)' }
                 : { background: 'var(--md-surface-container)', borderColor: 'var(--md-outline-variant)', color: 'var(--md-outline)' }
@@ -167,8 +164,7 @@ export default function StockScreener({ onSelectSymbol }: Props) {
 
       {/* Custom Filters Panel */}
       <div className="shrink-0">
-        <button
-          onClick={() => setShowFilters(v => !v)}
+        <button type="button" onClick={(e) => {}}
           className="flex items-center gap-2 text-xs font-bold transition-colors" style={{ color: 'var(--md-outline)' }}
         >
           <Filter size={13} />
@@ -190,7 +186,7 @@ export default function StockScreener({ onSelectSymbol }: Props) {
                     type="number" min={0} max={100} placeholder="30"
                     value={customFilters.rsiBelow ?? ''}
                     onChange={e => setCustomFilters(f => ({ ...f, rsiBelow: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                   />
                 </div>
                 <div>
@@ -199,7 +195,7 @@ export default function StockScreener({ onSelectSymbol }: Props) {
                     type="number" min={0} max={100} placeholder="70"
                     value={customFilters.rsiAbove ?? ''}
                     onChange={e => setCustomFilters(f => ({ ...f, rsiAbove: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                   />
                 </div>
                 <div>
@@ -208,7 +204,7 @@ export default function StockScreener({ onSelectSymbol }: Props) {
                     type="number" min={1} step={0.5} placeholder="2"
                     value={customFilters.volumeSpikeMin ?? ''}
                     onChange={e => setCustomFilters(f => ({ ...f, volumeSpikeMin: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                   />
                 </div>
                 <div className="flex flex-col gap-2 justify-end">
@@ -231,20 +227,18 @@ export default function StockScreener({ onSelectSymbol }: Props) {
                     type="text"
                     value={customSymbols}
                     onChange={e => setCustomSymbols(e.target.value.toUpperCase())}
-                    placeholder="AAPL, NVDA, 2330.TW, BTC-USD ..."
-                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+                    placeholder="AAPL, NVDA, 2330.TW, BTC-USD …"
+                    className="w-full mt-1 px-3 py-2.5 rounded-xl text-base md:text-sm font-mono focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                   />
                 </div>
                 <div className="sm:col-span-2 lg:col-span-4 flex gap-2">
-                  <button
-                    onClick={() => { setActiveTemplate(null); runScan(); }}
-                    className="px-4 py-2 rounded-xl text-xs font-bold transition-all" style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
+                  <button type="button" onClick={(e) => { setActiveTemplate(null); runScan(); }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold transition" style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
                   >
                     執行自訂掃描
                   </button>
-                  <button
-                    onClick={() => { setCustomFilters({}); setActiveTemplate(null); }}
-                    className="px-4 py-2 rounded-xl text-xs font-bold transition-all" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}
+                  <button type="button" onClick={(e) => { setCustomFilters({}); setActiveTemplate(null); }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold transition" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}
                   >
                     清除條件
                   </button>
@@ -274,7 +268,7 @@ export default function StockScreener({ onSelectSymbol }: Props) {
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--md-primary)' }} />
-            <span className="text-sm" style={{ color: 'var(--md-outline)' }}>批量揁描技術指標中...</span>
+            <span className="text-sm" style={{ color: 'var(--md-outline)' }}>批量揁描技術指標中…</span>
           </div>
         </div>
       )}
@@ -369,8 +363,7 @@ export default function StockScreener({ onSelectSymbol }: Props) {
           </table>
           {sorted.length > visibleCount && (
             <div className="flex justify-center mt-3">
-              <button
-                onClick={() => setVisibleCount(v => v + 50)}
+              <button type="button" onClick={(e) => {}}
                 className="px-4 py-2 text-xs rounded-lg transition-colors" style={{ background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}
               >
                 載入更多 ({visibleCount}/{sorted.length})

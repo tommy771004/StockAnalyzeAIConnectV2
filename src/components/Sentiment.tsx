@@ -55,7 +55,7 @@ useEffect(() => {
       {isAnalyzing ? (
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-400 rounded-full animate-spin mb-4" />
-          <p className="text-white/60 animate-pulse">AI 正在分析全球市場情緒...</p>
+          <p className="text-white/60 animate-pulse">AI 正在分析全球市場情緒…</p>
         </div>
       ) : sentiment ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -72,7 +72,7 @@ useEffect(() => {
                     strokeWidth="8" 
                     strokeDasharray={`${2 * Math.PI * 40}`}
                     strokeDashoffset={`${2 * Math.PI * 40 * (1 - sentiment.score / 100)}`}
-                    className="transition-all duration-1000 ease-out"
+                    className="transition duration-1000 ease-out"
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center">

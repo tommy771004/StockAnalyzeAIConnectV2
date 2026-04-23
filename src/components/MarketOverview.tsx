@@ -70,7 +70,7 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
       onClick={() => onSelect(idx.symbol)}
       onKeyDown={e => e.key === 'Enter' && onSelect(idx.symbol)}
       className={safeCn(
-        "relative flex flex-col glass-card cursor-pointer transition-all group overflow-hidden border border-white/5 hover:border-indigo-500/30 active:scale-[0.98] rounded-[2rem]",
+        "relative flex flex-col glass-card cursor-pointer transition group overflow-hidden border border-white/5 hover:border-indigo-500/30 active:scale-[0.98] rounded-[2rem]",
         compact ? "p-4" : "p-6"
       )}
     >
@@ -79,7 +79,7 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
       <div className={safeCn("flex items-start justify-between relative z-10", compact ? "mb-3" : "mb-5")}>
         <div className="flex items-center gap-4 min-w-0">
           <div className={safeCn(
-            "shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 shadow-lg border",
+            "shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition group-hover:scale-110 shadow-lg border",
             isUp ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           )}>
             <idx.icon size={22} strokeWidth={2.5} />
@@ -139,14 +139,14 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
       onClick={() => onSelect(s)}
       onKeyDown={e => e.key === 'Enter' && onSelect(s)}
       className={safeCn(
-        "relative glass-card rounded-[2rem] p-5 sm:p-6 cursor-pointer transition-all group overflow-hidden border border-white/5 active:scale-[0.99]",
+        "relative glass-card rounded-[2rem] p-5 sm:p-6 cursor-pointer transition group overflow-hidden border border-white/5 active:scale-[0.99]",
         isSelected ? 'bg-indigo-500/10 border-indigo-500/40 ring-4 ring-indigo-500/5' : 'hover:border-white/10'
       )}
     >
       <div className="absolute inset-0 bg-white/[0.01] pointer-events-none group-hover:bg-white/[0.03] transition-colors" />
       
-      <button onClick={e => { e.stopPropagation(); onRemove(s.symbol); vibrate(20); }}
-        className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-2 rounded-2xl transition-all z-20 bg-black/40 border border-white/10 hover:bg-rose-500 hover:text-white hover:border-rose-400 text-zinc-500">
+      <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(s.symbol); vibrate(20); }}
+        className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-2 rounded-2xl transition z-20 bg-black/40 border border-white/10 hover:bg-rose-500 hover:text-white hover:border-rose-400 text-zinc-500">
         <X size={14}/>
       </button>
 
@@ -228,7 +228,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
         orderType,
         priceType
       });
-      // Fix: Server returns { ok: true, trade: ... }
+      // Fix: Server returns { ok: true, trade: … }
       if (data.ok) {
         setToast({ msg: '交易成功', type: 'success' });
         setShowOrder(false);
@@ -491,7 +491,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
           <AlertCircle size={32}/>
           <div className="text-sm font-bold">無網路連線</div>
           <div className="text-xs text-amber-500/70">請等待網路恢復後再試</div>
-          <button onClick={() => loadAllData()} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">重新連線</button>
+          <button type="button" onClick={(e) => {}} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">重新連線</button>
         </div>
       );
     }
@@ -500,7 +500,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
         <AlertCircle className="text-rose-400" size={32}/>
         <div className="text-sm font-bold text-rose-400">市場資料載入失敗</div>
         <div className="text-xs text-slate-500">{fetchErr}</div>
-        <button onClick={() => loadAllData()} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">重試</button>
+        <button type="button" onClick={(e) => {}} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">重試</button>
       </div>
     );
   }
@@ -648,9 +648,9 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {BROKERS.map((b, i) => (
-              <button key={i} onClick={() => { setBroker(b); vibrate(20); }}
+              <button type="button" key={b} onClick={(e) => { setBroker(b); vibrate(20); }}
                 className={safeCn(
-                  "px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-lg",
+                  "px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition border shadow-lg",
                   broker === b ? "bg-indigo-500 text-black border-indigo-400" : "bg-black/40 text-zinc-400 border-white/5 hover:text-white"
                 )}>
                 {b.split(' ')[0]}
@@ -677,11 +677,11 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
               tabIndex={0}
               onClick={() => !showAdd && setShowAdd(true)}
               onKeyDown={e => e.key === 'Enter' && !showAdd && setShowAdd(true)}
-              className="glass-card rounded-[2rem] border-2 border-dashed border-white/10 p-8 cursor-pointer transition-all flex flex-col items-center justify-center min-h-[180px] hover:border-indigo-500/40 hover:bg-indigo-500/5 group active:scale-[0.98]">
+              className="glass-card rounded-[2rem] border-2 border-dashed border-white/10 p-8 cursor-pointer transition flex flex-col items-center justify-center min-h-[180px] hover:border-indigo-500/40 hover:bg-indigo-500/5 group active:scale-[0.98]">
               {showAdd ? (
                 <div className="w-full space-y-4" onClick={e => e.stopPropagation()}>
                   <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">ADD NEW SYMBOL</div>
-                  <div className="flex items-center gap-3 bg-black/60 rounded-2xl px-5 border border-white/5 focus-within:border-indigo-500/50 transition-all">
+                  <div className="flex items-center gap-3 bg-black/60 rounded-2xl px-5 border border-white/5 focus-within:border-indigo-500/50 transition">
                     <Search size={16} className="text-zinc-600 shrink-0"/>
                     <input
                       autoFocus
@@ -689,18 +689,15 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                       onChange={e => { setAddInput(e.target.value.toUpperCase()); setAddErr(''); }}
                       onKeyDown={e => e.key === 'Enter' && handleAdd()}
                       placeholder="SYMBOL..."
-                      className="flex-1 bg-transparent py-4 text-sm font-bold text-white focus:outline-none placeholder:text-zinc-700"
+                      className="flex-1 bg-transparent py-4 text-sm font-bold text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 placeholder:text-zinc-700"
                     />
                   </div>
                   {addErr && <div className="text-[10px] font-bold text-rose-400 px-1">{addErr}</div>}
                   <div className="flex gap-3">
-                    <button onClick={handleAdd} disabled={busy}
-                      className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-indigo-500 text-black hover:bg-indigo-400 transition-all shadow-lg active:scale-95 flex items-center justify-center">
-                      {busy ? <Loader2 size={14} className="animate-spin mr-2"/> : null} CONFIRM
+                    <button type="button"> {busy ? <Loader2 size={14} className="animate-spin mr-2"/> : null} CONFIRM
                     </button>
-                    <button
-                      onClick={() => { setShowAdd(false); setAddInput(''); setAddErr(''); }}
-                      className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white/5 text-zinc-400 border border-white/10 hover:text-white transition-all">
+                    <button type="button" onClick={(e) => { setShowAdd(false); setAddInput(''); setAddErr(''); }}
+                      className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white/5 text-zinc-400 border border-white/10 hover:text-white transition">
                       CANCEL
                     </button>
                   </div>
@@ -752,7 +749,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                     ))}
                   </div>
                   <div className="mt-8 pt-8 border-t border-white/5 relative z-10 flex items-center justify-center">
-                     <button className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98]">
+                     <button type="button">
                         EXPORT ANALYTICS
                      </button>
                   </div>
@@ -802,7 +799,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   </div>
                 </div>
               );
-            }) : <div className="text-xs text-zinc-500 text-center py-6 w-full">載入中...</div>}
+            }) : <div className="text-xs text-zinc-500 text-center py-6 w-full">載入中…</div>}
           </div>
         </div>
 
@@ -815,8 +812,8 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
           </div>
           <div className="flex-1 overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 pr-1">
             {news.length > 0 ? news.map((n: NewsItem, i: number) => (
-              <a key={i} href={n.link} target="_blank" rel="noopener noreferrer"
-                className="flex flex-col p-3 rounded-xl transition-all group"
+              <a key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer"
+                className="flex flex-col p-3 rounded-xl transition group"
                 style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(173,198,255,0.3)')}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--md-outline-variant)')}>
@@ -835,7 +832,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
               </a>
             )) : (
               <div className="col-span-full text-center text-xs text-zinc-500 py-10">
-                {loading ? '讀取新聞中...' : '目前無相關新聞'}
+                {loading ? '讀取新聞中…' : '目前無相關新聞'}
               </div>
             )}
           </div>
@@ -865,14 +862,14 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   <h3 className="text-lg md:text-sm font-bold" style={{ color: 'var(--md-on-surface)' }}>快速委託</h3>
                   <div className="text-xs" style={{ color: 'var(--md-outline)' }}>{selected.symbol}</div>
                 </div>
-                <button onClick={() => setShowOrder(false)} className="p-2 md:p-1 rounded-full hover:bg-zinc-800 text-zinc-400">
+                <button type="button" onClick={(e) => {}} className="p-2 md:p-1 rounded-full hover:bg-zinc-800 text-zinc-400">
                   <X size={18} className="md:w-3.5 md:h-3.5" />
                 </button>
               </div>
 
               <div className="flex gap-2 md:gap-1.5 mb-5 md:mb-4">
                 {(['buy', 'sell'] as const).map(s => (
-                  <button key={s} onClick={() => setOSide(s)}
+                  <button type="button" key={s} onClick={(e) => {}}
                     className={cn('flex-1 py-3 md:py-2 rounded-xl text-base md:text-sm font-bold transition-colors')}
                     style={oSide === s
                       ? (s === 'buy' ? { background: 'var(--color-up)', color: '#fff' } : { background: 'var(--color-down)', color: '#fff' })
@@ -924,7 +921,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                 <div>
                   <div className="text-xs text-zinc-500 mb-1.5 md:mb-1">委託數量</div>
                   <input type="number" value={oQty} onChange={e => setOQty(Number(e.target.value))} min={1}
-                    className="w-full rounded-xl px-4 py-3 md:px-3 md:py-2 font-mono text-base md:text-xs focus:outline-none"
+                    className="w-full rounded-xl px-4 py-3 md:px-3 md:py-2 font-mono text-base md:text-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20"
                     style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}/>
                 </div>
 
@@ -935,9 +932,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   </span>
                 </div>
 
-                <button onClick={executeTrade}
-                  className="w-full py-4 md:py-2.5 rounded-xl text-base md:text-sm font-bold mt-2"
-                  style={oSide === 'buy' ? { background: 'var(--color-up)', color: '#fff' } : { background: 'var(--color-down)', color: '#fff' }}>
+                <button type="button" onClick={(e) => {}} className="w-full py-4 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700">
                   確認{oSide === 'buy' ? '買進' : '賣出'}
                 </button>
               </div>
@@ -945,8 +940,8 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
           </>
         )}
 
-        <button onClick={() => setShowOrder(v => !v)}
-          className="flex items-center gap-2 px-5 py-3 md:py-2.5 font-bold rounded-full transition-all text-base md:text-sm hover:scale-105 active:scale-95"
+        <button type="button" onClick={(e) => {}}
+          className="flex items-center gap-2 px-5 py-3 md:py-2.5 font-bold rounded-full transition text-base md:text-sm hover:scale-105 active:scale-95"
           style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)', boxShadow: '0 0 20px rgba(128,131,255,0.35)' }}>
           <Zap size={18} className="md:w-4 md:h-4"/> <span className="hidden xs:inline">快速委託</span>
         </button>

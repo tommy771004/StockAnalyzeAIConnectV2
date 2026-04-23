@@ -64,7 +64,7 @@ export function useTradeExecution(
           mode: 'paper',
         });
 
-        // Fix: Server returns { ok: true, trade: ... }
+        // Fix: Server returns { ok: true, trade: … }
         if (res.ok) {
           const trade = res.trade;
           const newOrder: Order = {

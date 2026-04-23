@@ -149,7 +149,7 @@ async function callOpenRouter(
     
     // Auto-retry without json_mode if model doesn't support it
     if (st === 400 && jsonMode && body.includes('Json mode is not supported')) {
-      console.warn(`[aiService] 模型 ${model} 不支援 JSON Mode，取消參數進行重試...`);
+      console.warn(`[aiService] 模型 ${model} 不支援 JSON Mode，取消參數進行重試…`);
       return callOpenRouter(prompt, model, false, _tried);
     }
 
@@ -378,7 +378,7 @@ Respond ONLY with a JSON object exactly matching this schema:
   "message": "Your text response to the user in Traditional Chinese.",
   "ui_action": {
     "type": "CHANGE_SYMBOL" | "SET_ORDER",
-    "payload": { ... }
+    "payload": { … }
   }
 }
 
@@ -433,7 +433,7 @@ function buildMTFPrompt(
 1D closes (last 10): ${fmt(data1d)}
 1W closes (last 10): ${fmt(data1wk)}
 
-JSON: {"indicators":[{"name":"Chinese+English","values":["1H","1D","1W"],"statuses":["bullish|bearish|neutral","...","..."]}],"synthesis":"Traditional Chinese","score":0-100,"overallTrend":"偏多|偏空|中性"}
+JSON: {"indicators":[{"name":"Chinese+English","values":["1H","1D","1W"],"statuses":["bullish|bearish|neutral","…","…"]}],"synthesis":"Traditional Chinese","score":0-100,"overallTrend":"偏多|偏空|中性"}
 Provide exactly 5 indicators.`;
 }
 

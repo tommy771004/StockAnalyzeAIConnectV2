@@ -229,14 +229,9 @@ export default function StrategyLab() {
           <p className="text-xs text-zinc-500 mt-1 font-bold uppercase tracking-widest opacity-70">Quantum Strategy Backtesting Lab</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={handleSave}
-            className={cn('flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest border transition-all',
-              saved ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:bg-zinc-900 hover:text-zinc-100')}>
-            {saved ? <CheckCircle size={14}/> : <Save size={14}/>}{saved ? '已儲存' : '儲存草稿'}
+          <button type="button"> {saved ? <CheckCircle size={14}/> : <Save size={14}/>}{saved ? '已儲存' : '儲存草稿'}
           </button>
-          <button onClick={handleBacktest} disabled={btStatus === 'running'}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-500 text-zinc-950 text-xs font-black uppercase tracking-widest hover:bg-emerald-400 disabled:opacity-50 transition-all shadow-2xl shadow-emerald-500/20">
-            {btStatus === 'running' ? <Loader2 size={14} className="animate-spin"/> : <Play size={14} className="fill-current"/>}
+          <button type="button"> {btStatus === 'running' ? <Loader2 size={14} className="animate-spin"/> : <Play size={14} className="fill-current"/>}
             {btStatus === 'running' ? '回測中…' : '執行回測'}
           </button>
         </div>
@@ -255,8 +250,8 @@ export default function StrategyLab() {
           </div>
           <div className="flex items-center gap-1 bg-zinc-950 rounded-xl p-1 border border-zinc-800">
             {(['visual', 'script'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                className={cn('px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all',
+              <button type="button" key={t} onClick={(e) => {}}
+                className={cn('px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition',
                   tab === t ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300')}>
                 {t}
               </button>
@@ -316,8 +311,8 @@ export default function StrategyLab() {
           <span className="label-meta text-zinc-500 font-black uppercase tracking-widest truncate">標的</span>
           <div className="flex flex-wrap gap-2 min-w-0">
             {['2330.TW', 'BTC-USD', 'AAPL', 'NVDA', 'SPY', 'QQQ'].map(s => (
-              <button key={s} onClick={() => setSymbol(s)}
-                className={cn('px-3 py-1.5 rounded-lg text-xs font-mono font-black border transition-all truncate',
+              <button type="button" key={s} onClick={(e) => {}}
+                className={cn('px-3 py-1.5 rounded-lg text-xs font-mono font-black border transition truncate',
                   symbol === s ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:bg-zinc-900 hover:text-zinc-300')}>
                 {s}
               </button>
@@ -335,8 +330,8 @@ export default function StrategyLab() {
         </div>
         <div className="flex flex-col gap-2 min-w-0">
           <span className="label-meta text-zinc-500 font-black uppercase tracking-widest truncate">自動化交易</span>
-          <button onClick={() => setAutoTrade(!autoTrade)}
-            className={cn('px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border transition-all truncate',
+          <button type="button" onClick={(e) => {}}
+            className={cn('px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border transition truncate',
               autoTrade ? 'bg-rose-500/10 text-rose-300 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20')}>
             {autoTrade ? '停止自動化' : '啟用自動化'}
           </button>
@@ -363,7 +358,7 @@ export default function StrategyLab() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {suggestions.map((sg, idx) => (
-            <div key={idx} className={cn('bg-zinc-950 rounded-2xl border p-5 transition-all', sg.applied ? 'border-emerald-500/20 opacity-60' : 'border-zinc-800')}>
+            <div key={sg.param || idx} className={cn('bg-zinc-950 rounded-2xl border p-5 transition', sg.applied ? 'border-emerald-500/20 opacity-60' : 'border-zinc-800')}>
               <div className="flex items-center justify-between mb-4">
                 <span className="label-meta text-zinc-500 font-black uppercase tracking-widest">{sg.param}</span>
                 <span className="label-meta text-emerald-400 font-black uppercase tracking-widest">+{sg.roi}% ROI</span>
@@ -376,16 +371,15 @@ export default function StrategyLab() {
               {sg.applied ? (
                 <div className="flex items-center gap-2 label-meta font-black text-emerald-400 uppercase tracking-widest"><CheckCircle size={12}/>已套用</div>
               ) : (
-                <button onClick={() => handleApply(idx)}
-                  className="w-full py-2 rounded-xl bg-zinc-900 text-zinc-400 label-meta font-black uppercase tracking-widest border border-zinc-800 hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/20 transition-all">
+                <button type="button" onClick={(e) => {}}
+                  className="w-full py-2 rounded-xl bg-zinc-900 text-zinc-400 label-meta font-black uppercase tracking-widest border border-zinc-800 hover:bg-emerald-500/10 hover:text-emerald-300 hover:border-emerald-500/20 transition">
                   套用此建議
                 </button>
               )}
             </div>
           ))}
         </div>
-        <button onClick={handleApplyAll}
-          className="mt-6 w-full py-3 rounded-2xl bg-emerald-500/10 text-emerald-300 text-xs font-black uppercase tracking-widest border border-emerald-500/20 hover:bg-emerald-500/20 transition-all shrink-0 flex items-center justify-center gap-2">
+        <button type="button" onClick={(e) => {}} className="mt-4 w-full py-2 bg-indigo-500 rounded text-white font-bold text-sm">
           套用全部 {appliedCount > 0 && `(${appliedCount}/${suggestions.length})`}
         </button>
       </div>
@@ -404,8 +398,8 @@ export default function StrategyLab() {
             </div>
             <div className="flex items-center bg-zinc-950 rounded-xl p-1 border border-zinc-800">
               {(['chart', 'log'] as const).map(t => (
-                <button key={t} onClick={() => setBtTab(t)}
-                  className={cn('px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all',
+                <button type="button" key={t} onClick={(e) => {}}
+                  className={cn('px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition',
                     btTab === t ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:text-zinc-300')}>
                   {t === 'chart' ? '績效圖表' : '交易明細'}
                 </button>
@@ -468,8 +462,8 @@ export default function StrategyLab() {
                 </thead>
                 <tbody>
                   {(btResult.trades && btResult.trades.length > 0) ? (btResult.trades as unknown as BtTradeRow[]).map((t, i) => (
-                    <tr key={i} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-color)]">
-                      <td className="py-2 px-2 font-mono">{t.entryDate ?? t.entry ?? '-'}</td>
+                    <tr key={`${t.entryDate}-${t.exitDate}-${i}`} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-color)]">
+                      <td className="py-2 px-2 font-mono">{t.entryDate || t.entry || '-'}</td>
                       <td className="py-2 px-2 font-mono">{t.exitDate ?? t.exit ?? '-'}</td>
                       <td className={cn('py-2 px-2 font-bold', (t.dir ?? t.side ?? 'BUY') === 'BUY' ? 'text-emerald-400' : 'text-rose-400')}>{t.dir ?? t.side ?? 'BUY'}</td>
                       <td className="py-2 px-2 text-right font-mono">{t.entryPrice?.toFixed(2) ?? '-'}</td>

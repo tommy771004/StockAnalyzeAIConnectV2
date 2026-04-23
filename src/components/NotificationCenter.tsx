@@ -74,7 +74,7 @@ export default function NotificationCenter({ open, onClose }: { open: boolean, o
     <div className="fixed top-16 right-2 sm:right-4 z-50 p-4 glass-card shadow-2xl w-[calc(100vw-1rem)] sm:w-80 max-h-[70vh] overflow-auto">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-sm font-black tracking-tight" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>通知中心</h3>
-        <button onClick={onClose} className="p-1.5 rounded-full hover:bg-[var(--md-surface-container-highest)] transition-colors" style={{ color: 'var(--md-outline)' }}>
+        <button type="button">
           <X size={16} />
         </button>
       </div>
@@ -88,7 +88,7 @@ export default function NotificationCenter({ open, onClose }: { open: boolean, o
       ) : (
         <div className="flex flex-col gap-3">
           {context.notifications.map(n => (
-            <div key={n.id} className="p-3 rounded-xl border transition-all" 
+            <div key={n.id} className="p-3 rounded-xl border transition" 
                  style={{ 
                    background: n.read ? 'var(--md-surface-container-low)' : 'rgba(128, 131, 255, 0.08)',
                    borderColor: n.read ? 'var(--md-outline-variant)' : 'rgba(128, 131, 255, 0.25)' 

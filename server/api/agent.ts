@@ -19,6 +19,7 @@ import type { AuthRequest } from '../middleware/auth.js';
 import * as agentMemoryRepo from '../repositories/agentMemoryRepo.js';
 import * as watchlistRepo   from '../repositories/watchlistRepo.js';
 import * as tradesRepo      from '../repositories/tradesRepo.js';
+import * as settingsRepo    from '../repositories/settingsRepo.js';
 import { calcIndicators }    from '../utils/technical.js';
 import { analyzeSentiment }  from '../utils/sentiment.js';
 
@@ -49,11 +50,22 @@ agentRouter.post('/dynamic-strategy', async (req: AuthRequest, res) => {
 3. 程式碼最後不需要呼叫該函數。
 `;
 
-    // 1. Ask Hermes to generate Code
+    // 1. Get OpenRouter Key
+    let openrouterKey = req.body.openrouterKey || process.env.OPENROUTER_API_KEY;
+    if (!openrouterKey && req.userId) {
+      try {
+        const storedKey = await settingsRepo.getSetting(req.userId, 'openrouterKey');
+        if (storedKey && (storedKey as any).settingValue) openrouterKey = (storedKey as any).settingValue;
+      } catch (e) {
+        console.warn('Failed to fetch openrouterKey from db', e);
+      }
+    }
+
+    // 2. Ask Hermes to generate Code
     const codeResponse = await callOpenRouter([
       { role: 'system', content: systemInstruction },
       { role: 'user', content: prompt }
-    ], FREE_MODEL_PRIMARY);
+    ], FREE_MODEL_PRIMARY, openrouterKey);
 
     // 2. Clean up markdown if any
     let cleanCode = codeResponse.replace(/```(?:javascript|js)?\n/i, '').replace(/```$/m, '').trim();
@@ -108,8 +120,9 @@ interface OpenRouterMessage {
 async function callOpenRouter(
   messages: OpenRouterMessage[],
   model: string = FREE_MODEL_PRIMARY,
+  reqApiKey?: string
 ): Promise<string> {
-  const apiKey = getApiKey();
+  const apiKey = reqApiKey || getApiKey();
   if (!apiKey) throw new Error('OPENROUTER_API_KEY 未設定');
 
   const res = await fetch(OPENROUTER_API_URL, {
@@ -135,7 +148,7 @@ async function callOpenRouter(
     // Fallback to secondary free model on rate-limit or model unavailable
     if ((res.status === 429 || res.status === 503) && model !== FREE_MODEL_FALLBACK) {
       console.warn(`[Hermes] ${model} 不可用 (${res.status})，切換至備援模型`);
-      return callOpenRouter(messages, FREE_MODEL_FALLBACK);
+      return callOpenRouter(messages, FREE_MODEL_FALLBACK, reqApiKey);
     }
     throw new Error(`OpenRouter ${res.status}: ${body.slice(0, 200)}`);
   }
@@ -281,7 +294,17 @@ agentRouter.post('/chat', async (req: AuthRequest, res) => {
       { role: 'user', content: message },
     ];
 
-    const rawReply = await callOpenRouter(messages);
+    let openrouterKey = req.body.openrouterKey || process.env.OPENROUTER_API_KEY;
+    if (!openrouterKey && userId) {
+      try {
+        const storedKey = await settingsRepo.getSetting(userId, 'openrouterKey');
+        if (storedKey && (storedKey as any).settingValue) openrouterKey = (storedKey as any).settingValue;
+      } catch (e) {
+        console.warn('Failed to fetch openrouterKey from db', e);
+      }
+    }
+
+    const rawReply = await callOpenRouter(messages, FREE_MODEL_PRIMARY, openrouterKey);
     const { cleanText, skills } = parseExtractedSkills(rawReply);
 
     // 持久化萃取出的技能/偏好

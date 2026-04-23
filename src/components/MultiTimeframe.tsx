@@ -106,7 +106,7 @@ export default function MultiTimeframe({ model, symbol }: { model: string, symbo
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-64 space-y-4 relative z-10">
             <Loader2 className="w-10 h-10 text-indigo-400 animate-spin" />
-            <p className="text-white/60">AI 正在進行多時區共振分析...</p>
+            <p className="text-white/60">AI 正在進行多時區共振分析…</p>
           </div>
         ) : analysis ? (
           <>

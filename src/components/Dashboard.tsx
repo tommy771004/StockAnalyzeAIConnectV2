@@ -161,8 +161,7 @@ const exportToCSV = (data: HistoricalData[], filename: string) => {
         </div>
         <h2 className="text-xl font-bold text-zinc-100 mb-2">連線異常</h2>
         <p className="text-zinc-400 mb-6 max-w-md">無法取得 {symbol} 的市場資料，請檢查網路連線或稍後再試。</p>
-        <button 
-          onClick={() => fetchData()}
+        <button type="button" onClick={(e) => {}}
           className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl font-medium transition-colors flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
@@ -198,17 +197,15 @@ const exportToCSV = (data: HistoricalData[], filename: string) => {
                   <h3 className={cn("font-black text-zinc-100 tracking-tighter truncate", compact ? "text-lg" : "text-xl md:text-2xl")}>{quote?.shortName || symbol}</h3>
                   <p className="text-zinc-500 text-xs md:text-sm font-bold truncate">{quote?.longName || symbol}</p>
                 </div>
-                <button
-                  onClick={() => fetchData(true)}
+                <button type="button" onClick={(e) => {}}
                   disabled={fetchStatus === 'refreshing'}
                   aria-label={fetchStatus === 'refreshing' ? '資料更新中…' : '重新整理資料'}
                   className={cn("rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 transition-colors press-feedback shrink-0", compact ? "p-2" : "p-2 md:p-3")}
                 >
                   <Loader2 aria-hidden="true" className={cn("w-5 h-5", fetchStatus === 'refreshing' && "animate-spin")} />
                 </button>
-                <button 
-                  onClick={() => exportToCSV(historicalData, symbol)}
-                  className={cn("rounded-xl bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 hover:bg-emerald-900/40 transition-all press-feedback font-black text-xs uppercase tracking-widest shrink-0", compact ? "px-3 py-1.5" : "px-4 py-2 md:px-5 md:py-2.5")}
+                <button type="button" onClick={(e) => {}}
+                  className={cn("rounded-xl bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 hover:bg-emerald-900/40 transition press-feedback font-black text-xs uppercase tracking-widest shrink-0", compact ? "px-3 py-1.5" : "px-4 py-2 md:px-5 md:py-2.5")}
                 >
                   匯出 CSV
                 </button>
@@ -295,7 +292,7 @@ const exportToCSV = (data: HistoricalData[], filename: string) => {
             </h3>
             {aiStatus === 'analyzing' ? (
               <div className="flex items-center gap-2 text-sm text-slate-400">
-                <Loader2 size={14} className="animate-spin" /> 分析中...
+                <Loader2 size={14} className="animate-spin" /> 分析中…
               </div>
             ) : aiAnalysis ? (
               <div className="text-sm text-slate-300 space-y-2">
@@ -319,7 +316,7 @@ const exportToCSV = (data: HistoricalData[], filename: string) => {
             </h3>
             {aiStatus === 'sentiment' ? (
               <div className="flex items-center gap-2 text-sm text-slate-400">
-                <Loader2 size={14} className="animate-spin" /> 分析市場情緒中...
+                <Loader2 size={14} className="animate-spin" /> 分析市場情緒中…
               </div>
             ) : sentimentAnalysis ? (
               <div className="text-sm text-slate-300 space-y-2">
@@ -341,12 +338,12 @@ const exportToCSV = (data: HistoricalData[], filename: string) => {
       {/* Bottom Section - Trading Consoles */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <Suspense fallback={<div className="h-60 flex items-center justify-center text-white/40">載入中...</div>}>
+          <Suspense fallback={<div className="h-60 flex items-center justify-center text-white/40">載入中…</div>}>
             <PaperTradingDashboard />
           </Suspense>
         </div>
         <div className="flex flex-col gap-6">
-          <Suspense fallback={<div className="h-40 flex items-center justify-center text-white/40">載入中...</div>}>
+          <Suspense fallback={<div className="h-40 flex items-center justify-center text-white/40">載入中…</div>}>
             <StrategyComparison />
             <LiveTradingConsole />
           </Suspense>
@@ -358,7 +355,7 @@ const exportToCSV = (data: HistoricalData[], filename: string) => {
 
 function IndicatorCard({ title, value, status, label }: { title: string, value: string, status: 'bullish' | 'bearish' | 'neutral', label: string }) {
   return (
-    <div className="liquid-glass-strong rounded-[2rem] p-6 border border-zinc-800 bg-zinc-900/50 flex flex-col justify-between relative overflow-hidden transition-all">
+    <div className="liquid-glass-strong rounded-[2rem] p-6 border border-zinc-800 bg-zinc-900/50 flex flex-col justify-between relative overflow-hidden transition">
       <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/[0.03] to-transparent pointer-events-none" />
       <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-3 relative z-10">{title}</div>
       <div className="relative z-10">

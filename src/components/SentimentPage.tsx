@@ -176,8 +176,7 @@ export default function SentimentPage({ model, symbol: initSym }: Props) {
             {lastUpdated && <span className="ml-2 text-zinc-600">更新於 {lastUpdated}</span>}
           </p>
         </div>
-        <button onClick={loadSentiment} disabled={loading}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-color)] text-[var(--text-color)] opacity-70 text-sm border border-[var(--border-color)] hover:bg-[var(--border-color)] transition-colors">
+        <button type="button">
           <RefreshCw size={13} className={loading?'animate-spin':''}/> 重新分析
         </button>
       </div>
@@ -274,9 +273,7 @@ export default function SentimentPage({ model, symbol: initSym }: Props) {
               onKeyDown={e=>e.key==='Enter'&&handleSearch()}
               placeholder="輸入代碼…"
               className="bg-black/30 border border-[var(--border-color)] rounded-xl px-3 py-1.5 text-sm text-white font-bold focus:outline-none focus:border-emerald-500/40 w-32 uppercase placeholder:text-zinc-600 placeholder:normal-case"/>
-            <button onClick={handleSearch} disabled={mtfLoading}
-              className="p-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
-              {mtfLoading ? <Loader2 size={14} className="animate-spin"/> : <Search size={14}/>}
+            <button type="button"> {mtfLoading ? <Loader2 size={14} className="animate-spin"/> : <Search size={14}/>}
             </button>
           </div>
         </div>

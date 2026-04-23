@@ -11,7 +11,7 @@ interface Props {
 
 export const NewsSentimentBelowChart = React.memo(({ news, sentiment, newsStatus }: Props) => {
   if (newsStatus === 'loading') {
-    return <div className="text-xs text-[var(--md-outline)] animate-pulse p-4 text-center w-full">正在獲取最新新聞與市場情緒...</div>;
+    return <div className="text-xs text-[var(--md-outline)] animate-pulse p-4 text-center w-full">正在獲取最新新聞與市場情緒…</div>;
   }
   if (newsStatus === 'error') {
     return <div className="text-xs text-[var(--color-up)] p-4 text-center w-full">無法取得最新新聞</div>;
@@ -33,7 +33,7 @@ export const NewsSentimentBelowChart = React.memo(({ news, sentiment, newsStatus
           <Sparkles size={14} /> AI 綜合情緒分析
         </div>
         {!sentiment ? (
-          <div className="text-xs text-[var(--md-outline)] animate-pulse mt-2">情緒分析中...</div>
+          <div className="text-xs text-[var(--md-outline)] animate-pulse mt-2">情緒分析中…</div>
         ) : (
           <>
             <div className="flex items-baseline gap-2 mt-1">

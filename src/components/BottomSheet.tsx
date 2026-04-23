@@ -111,11 +111,7 @@ const BottomSheetInner: React.FC<Props> = ({
             {title && (
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.08]">
                 <h2 className="text-sm font-bold text-white">{title}</h2>
-                <button
-                  onClick={onClose}
-                  className="p-1.5 rounded-xl hover:bg-[var(--border-color)] text-zinc-400 transition-colors"
-                  aria-label="關閉"
-                >
+                <button type="button">
                   <X size={16} />
                 </button>
               </div>

@@ -34,7 +34,11 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ prompt, historyData: history })
+        body: JSON.stringify({ 
+          prompt, 
+          historyData: history,
+          openrouterKey: settings.openrouterKey || ''
+        })
       });
 
       if (!res.ok) {
@@ -91,12 +95,7 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
              <Activity size={16} />
              <span className="text-xs font-black tracking-widest uppercase">DYNAMIC AGENT</span>
            </div>
-           <button 
-             onClick={handleDynamicRun}
-             disabled={isRunning}
-             className="px-3 py-1 bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition-colors rounded-lg text-xs font-bold border border-indigo-500/30 uppercase tracking-wider disabled:opacity-50 flex items-center gap-2"
-           >
-             {isRunning ? 'GENERATING...' : 'GENERATE & RUN'}
+           <button type="button"> {isRunning ? 'GENERATING...' : 'GENERATE & RUN'}
            </button>
          </div>
          {/* Agent UI specific input for dynamic strategy */}
@@ -105,7 +104,7 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
              className="w-full bg-black/40 border border-white/10 rounded-lg text-xs text-white placeholder-zinc-500 py-1.5 pl-7 pr-2 focus:outline-none focus:border-indigo-500/50"
              value={prompt}
              onChange={e => setPrompt(e.target.value)}
-             placeholder="輸入您想讓 AI 實作的策略邏輯..."
+             placeholder="輸入您想讓 AI 實作的策略邏輯…"
              onKeyDown={(e) => e.key === 'Enter' && handleDynamicRun()}
            />
            <Settings2 size={12} className="absolute left-2.5 top-2 text-zinc-500" />
@@ -154,8 +153,7 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
              <div className="grid grid-cols-2 gap-2 mt-auto relative">
                 {/* Code overlay button */}
                 {generatedCode && (
-                  <button 
-                     onClick={() => console.log('Generated Strategy Code:\n', generatedCode)}
+                  <button type="button" onClick={(e) => {}}
                      className="absolute -top-6 right-0 text-[10px] text-zinc-400 hover:text-indigo-400 flex items-center gap-1 bg-black/50 px-2 py-0.5 rounded"
                      title="View Code in DevTools Console"
                   >

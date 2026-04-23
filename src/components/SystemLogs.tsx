@@ -71,7 +71,7 @@ const MetricBar: React.FC<MetricBarProps> = ({ label, value, max, barColor, unit
     </div>
     {desc && <div className="text-xs mb-1" style={{ color: 'var(--md-outline)' }}>{desc}</div>}
     <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--md-surface-container-high)' }}>
-      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (value/max)*100)}%`, background: barColor }}/>
+      <div className="h-full rounded-full transition duration-500" style={{ width: `${Math.min(100, (value/max)*100)}%`, background: barColor }}/>
     </div>
   </div>
 );
@@ -238,8 +238,8 @@ export default function SystemLogs() {
           {id:'alerts', label:'🔔 價格警報'},
           {id:'system', label:'💻 系統資源'},
         ].map(t => (
-          <button key={t.id} onClick={() => { const validTabs = ['broker','logs','alerts','system'] as const; if (validTabs.includes(t.id as typeof validTabs[number])) setTab(t.id as typeof validTabs[number]); }}
-            className="px-4 py-2 rounded-xl text-base font-semibold transition-all whitespace-nowrap"
+          <button type="button" onClick={(e) => { const validTabs = ['broker','logs','alerts','system'] as const; if (validTabs.includes(t.id as typeof validTabs[number])) setTab(t.id as typeof validTabs[number]); }}
+            className="px-4 py-2 rounded-xl text-base font-semibold transition whitespace-nowrap"
             style={tab===t.id
               ? { background: 'rgba(192,193,255,0.12)', color: 'var(--md-primary)', border: '1px solid rgba(192,193,255,0.4)' }
               : { background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
@@ -256,7 +256,7 @@ export default function SystemLogs() {
             {brokers.map(b => {
               const on = b.status === 'connected';
               return (
-                <div key={b.id} className="glass-card rounded-2xl p-5 transition-all min-w-[240px]">
+                <div key={b.id} className="glass-card rounded-2xl p-5 transition min-w-[240px]">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-black"
@@ -284,8 +284,8 @@ export default function SystemLogs() {
                       <span style={{ color: on ? 'var(--color-down)' : 'var(--md-outline)' }}>{on?`${b.latency}ms`:'—'}</span>
                     </div>
                   </div>
-                  <button onClick={() => toggleBroker(b.id)}
-                    className="w-full py-2 rounded-xl text-base font-bold transition-all"
+                  <button type="button" onClick={(e) => {}}
+                    className="w-full py-2 rounded-xl text-base font-bold transition"
                     style={on
                       ? { background: 'rgba(255,77,79,0.12)', color: 'var(--color-up)', border: '1px solid rgba(255,77,79,0.3)' }
                       : { background: 'rgba(82,196,26,0.12)', color: 'var(--color-down)', border: '1px solid rgba(82,196,26,0.3)' }}>
@@ -307,8 +307,8 @@ export default function SystemLogs() {
           {/* Filter bar */}
           <div className="flex items-center gap-2 p-3 shrink-0 flex-wrap" style={{ borderBottom: '1px solid var(--md-outline-variant)' }}>
             {['ALL','SYSTEM','API','TRADE','AI','NET','WARN'].map(f => (
-              <button key={f} onClick={() => setLogFilter(f)}
-                className="px-2 py-1 rounded-lg text-sm font-bold transition-all"
+              <button type="button" onClick={(e) => {}}
+                className="px-2 py-1 rounded-lg text-sm font-bold transition"
                 style={{ fontFamily: 'var(--font-data)', color: logFilter===f ? 'var(--md-on-surface)' : 'var(--md-outline)', background: logFilter===f ? 'var(--md-surface-container-high)' : 'transparent' }}>
                 {f}
               </button>
@@ -343,7 +343,7 @@ export default function SystemLogs() {
           <div className="glass-card rounded-2xl p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>新增價格警報</h3>
-              <button onClick={() => setAddingAlert(v => !v)}
+              <button type="button" onClick={(e) => {}}
                 className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-xl transition-colors"
                 style={{ color: 'var(--md-primary)', border: '1px solid rgba(192,193,255,0.3)', background: 'rgba(192,193,255,0.08)' }}>
                 <Plus size={11}/> 新增警報
@@ -364,7 +364,7 @@ export default function SystemLogs() {
                       const val = e.target.value;
                       if (val === 'above' || val === 'below') setAlertForm(p => ({...p, condition: val}));
                     }}
-                      className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-white text-base sm:text-sm focus:outline-none">
+                      className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-white text-base sm:text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20">
                       <option value="above">📈 高於（突破）</option>
                       <option value="below">📉 低於（跌破）</option>
                     </select>
@@ -378,12 +378,10 @@ export default function SystemLogs() {
                 </div>
                 {alertErr && <div className="text-xs" style={{ color: 'var(--color-up)' }}>{alertErr}</div>}
                 <div className="flex gap-2">
-                  <button onClick={handleAddAlert}
-                    className="px-5 py-2 rounded-xl text-sm font-semibold transition-colors"
-                    style={{ background: 'rgba(82,196,26,0.12)', color: 'var(--color-down)', border: '1px solid rgba(82,196,26,0.3)' }}>
+                  <button type="button">
                     ✓ 確認新增
                   </button>
-                  <button onClick={() => { setAddingAlert(false); setAlertErr(''); }}
+                  <button type="button" onClick={(e) => { setAddingAlert(false); setAlertErr(''); }}
                     className="px-5 py-2 rounded-xl text-sm transition-colors"
                     style={{ background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
                     取消
@@ -410,7 +408,7 @@ export default function SystemLogs() {
             ) : (
               <div className="flex md:grid md:grid-cols-1 gap-3 overflow-x-auto pb-2 md:pb-0">
                 {alerts.map(a => (
-                  <div key={a.id} className="min-w-[200px] md:min-w-0 flex items-center gap-3 p-3 rounded-xl transition-all"
+                  <div key={a.id} className="min-w-[200px] md:min-w-0 flex items-center gap-3 p-3 rounded-xl transition"
                     style={a.triggered
                       ? { background: 'rgba(255,183,131,0.06)', border: '1px solid rgba(255,183,131,0.25)' }
                       : { background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}>
@@ -436,7 +434,7 @@ export default function SystemLogs() {
                         : { background: 'var(--md-surface-container-high)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
                       {a.triggered ? '🔔 已觸發' : '⏳ 監控中'}
                     </span>
-                    <button onClick={() => handleDeleteAlert(a.id)}
+                    <button type="button" onClick={(e) => {}}
                       className="p-1.5 rounded-lg transition-colors shrink-0"
                       style={{ background: 'rgba(255,77,79,0.10)', color: 'var(--color-up)' }}>
                       <Trash2 size={12}/>
@@ -529,12 +527,7 @@ export default function SystemLogs() {
                 ))}
                 <div className="grid grid-cols-3 gap-2 mt-3">
                   {['保守', '均衡', '積極'].map((m, i) => (
-                    <button key={m}
-                      className="py-2 rounded-xl text-xs font-bold transition-all"
-                      style={i===1
-                        ? { background: 'rgba(255,183,131,0.12)', color: 'var(--md-tertiary)', border: '1px solid rgba(255,183,131,0.3)' }
-                        : { background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
-                      {m}
+                    <button type="button"> {m}
                     </button>
                   ))}
                 </div>

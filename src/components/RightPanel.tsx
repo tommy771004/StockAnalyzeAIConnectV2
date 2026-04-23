@@ -13,7 +13,7 @@ const SwipeToConfirm = ({ onConfirm, loading, side }: { onConfirm: () => void, l
   
   return (
     <div ref={containerRef} className={safeCn(
-      "relative h-14 w-full rounded-2xl overflow-hidden border transition-all touch-none select-none",
+      "relative h-14 w-full rounded-2xl overflow-hidden border transition touch-none select-none",
       side === 'buy' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-rose-500/5 border-rose-500/20'
     )}>
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -143,13 +143,11 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
     <div className={safeCn("glass-card border border-white/5 rounded-3xl flex-1 flex flex-col min-h-0 relative", compact ? "p-0.5" : "p-1")}>
       <div className="flex p-1.5 gap-1 bg-black/40 rounded-[1.25rem] m-2 mb-1 border border-white/5 shadow-inner">
         {(['news', 'calendar', 'mtf'] as const).map(t => (
-          <button 
-            key={t} 
-            onClick={() => { setTab(t); vibrate(15); }} 
+          <button type="button" key={t} onClick={(e) => { setTab(t); vibrate(15); }} 
             role="tab" 
             aria-selected={tab === t} 
             className={safeCn(
-              'flex-1 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all rounded-xl',
+              'flex-1 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition rounded-xl',
               tab === t ? 'bg-indigo-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-200'
             )}
             style={{ fontFamily: 'var(--font-heading)' }}
@@ -182,7 +180,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   key={i} href={n.link} target="_blank" rel="noopener noreferrer" 
-                  className="block p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all group overflow-hidden relative"
+                  className="block p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition group overflow-hidden relative"
                 >
                   <div className="absolute inset-y-0 left-0 w-1 bg-white/20 scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
                   <div className="text-xs font-medium text-zinc-200 leading-snug line-clamp-2 tracking-tight group-hover:text-white transition-colors">{n.title}</div>
@@ -275,16 +273,15 @@ const AIChat = React.memo(({ chat, setChat, chatRep, chatStatus, handleChat, com
           onKeyDown={e => e.key === 'Enter' && handleChat()}
           placeholder="詢問策略分析 COMMAND..."
           className={safeCn(
-            "w-full bg-black/40 border border-white/5 hover:border-indigo-500/30 rounded-2xl pl-5 pr-14 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all",
+            "w-full bg-black/40 border border-white/5 hover:border-indigo-500/30 rounded-2xl pl-5 pr-14 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition",
             compact ? "py-3 text-xs" : "py-4 text-sm"
           )} 
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          <button 
-            onClick={() => { handleChat(); vibrate(20); }} 
+          <button type="button" onClick={(e) => { handleChat(); vibrate(20); }} 
             disabled={chatStatus === 'busy'}
             className={safeCn(
-              "rounded-xl bg-indigo-500 text-black flex items-center justify-center disabled:opacity-50 transition-all shadow-lg active:scale-90",
+              "rounded-xl bg-indigo-500 text-black flex items-center justify-center disabled:opacity-50 transition shadow-lg active:scale-90",
               compact ? "w-8 h-8" : "w-10 h-10",
               chatStatus === 'busy' ? "opacity-30" : "hover:bg-indigo-400"
             )}
@@ -305,11 +302,9 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
         <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>終端交易 TERMINAL</span>
         <div className="flex gap-1 bg-black/40 rounded-xl p-1 border border-white/5 overflow-hidden">
           {(['buy', 'sell'] as const).map(s => (
-            <button 
-              key={s} 
-              onClick={() => { setOSide(s); vibrate(15); }}
+            <button type="button" key={s} onClick={(e) => { setOSide(s); vibrate(15); }}
               className={safeCn(
-                'px-4 py-1.5 font-black rounded-lg transition-all text-[10px] uppercase tracking-widest active:scale-95',
+                'px-4 py-1.5 font-black rounded-lg transition text-[10px] uppercase tracking-widest active:scale-95',
                 oSide === s 
                   ? (s === 'buy' ? 'bg-emerald-500 text-black shadow-lg' : 'bg-rose-500 text-white shadow-lg') 
                   : 'text-zinc-500 hover:text-zinc-200'
@@ -335,19 +330,17 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
             <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest" htmlFor="order-qty-right">交易數量 QUANTITY</label>
             <span className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest">AUTO-STEP 100</span>
           </div>
-          <div className="flex items-center h-14 bg-black/40 border border-white/5 rounded-2xl overflow-hidden group focus-within:border-indigo-500/40 transition-all focus-within:ring-4 focus-within:ring-indigo-500/5">
-            <button
-              onClick={() => { setOrderQty(Math.max(1, orderQty - 100)); vibrate(20); }}
+          <div className="flex items-center h-14 bg-black/40 border border-white/5 rounded-2xl overflow-hidden group focus-within:border-indigo-500/40 transition focus-within:ring-4 focus-within:ring-indigo-500/5">
+            <button type="button" onClick={(e) => { setOrderQty(Math.max(1, orderQty - 100)); vibrate(20); }}
               className="w-14 h-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white font-black text-xl active:scale-90 transition-transform">
               -
             </button>
             <input id="order-qty-right" type="number" value={orderQty} min={1} step={100}
               onChange={e => setOrderQty(Math.max(1, Number(e.target.value)))}
-              className="flex-1 w-0 h-full bg-transparent text-center text-white font-black tabular-nums tracking-wider text-lg focus:outline-none" 
+              className="flex-1 w-0 h-full bg-transparent text-center text-white font-black tabular-nums tracking-wider text-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" 
               style={{ fontFamily: 'var(--font-data)' }}
             />
-            <button
-               onClick={() => { setOrderQty(orderQty + 100); vibrate(20); }}
+            <button type="button" onClick={(e) => { setOrderQty(orderQty + 100); vibrate(20); }}
               className="w-14 h-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white font-black text-xl active:scale-90 transition-transform">
               +
             </button>
@@ -369,9 +362,8 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
         />
         
         {onGoBacktest && (
-          <button
-            onClick={() => { onGoBacktest(symbol); vibrate(20); }}
-            className="w-full h-12 rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] flex items-center justify-center gap-2 transition-all bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 group"
+          <button type="button" onClick={(e) => { onGoBacktest(symbol); vibrate(20); }}
+            className="w-full h-12 rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] flex items-center justify-center gap-2 transition bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 group"
           >
             <span className="group-hover:rotate-12 transition-transform">📊</span> BACKTEST STRATEGY
           </button>

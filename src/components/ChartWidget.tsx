@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Settings, Check, ChevronDown } from 'lucide-react';
 import {
@@ -26,19 +26,19 @@ type SubPanel  = 'none' | 'RSI' | 'MACD';
 const SUB_H = 120;
 const VALID_SUBPANELS: SubPanel[] = ['none', 'RSI', 'MACD'];
 
-export default function ChartWidget({ data: history, focusMode = false }: Props) {
-  const mainRef  = useRef<HTMLDivElement>(null);
-  const volRef   = useRef<HTMLDivElement>(null);
-  const subRef   = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const volChartRef = useRef<IChartApi | null>(null);
-  const subChartRef = useRef<IChartApi | null>(null);
-  const tooltipRef  = useRef<HTMLDivElement>(null);
+const ChartWidget: React.FC<Props> = ({ data: history, focusMode = false }) => {
+  const mainRef  = React.useRef<HTMLDivElement>(null);
+  const volRef   = React.useRef<HTMLDivElement>(null);
+  const subRef   = React.useRef<HTMLDivElement>(null);
+  const chartRef = React.useRef<IChartApi | null>(null);
+  const volChartRef = React.useRef<IChartApi | null>(null);
+  const subChartRef = React.useRef<IChartApi | null>(null);
+  const tooltipRef  = React.useRef<HTMLDivElement>(null);
 
-  const [showSettings, setShowSettings] = useState(false);
-  const settingsRef = useRef<HTMLDivElement>(null);
+  const [showSettings, setShowSettings] = React.useState(false);
+  const settingsRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
         setShowSettings(false);
@@ -440,10 +440,9 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
     <div className="w-full h-full flex flex-col overflow-hidden relative">
       {/* Indicator Settings Floating Button */}
       <div className="absolute top-3 right-3 z-30" ref={settingsRef}>
-        <button 
-          onClick={() => { setShowSettings(!showSettings); vibrate(20); }}
+        <button type="button" onClick={(e) => { setShowSettings(!showSettings); vibrate(20); }}
           className={safeCn(
-            "flex items-center justify-center w-10 h-10 rounded-2xl shadow-xl transition-all backdrop-blur-xl border border-white/10",
+            "flex items-center justify-center w-10 h-10 rounded-2xl shadow-xl transition backdrop-blur-xl border border-white/10",
             showSettings 
               ? "bg-indigo-500 text-white border-indigo-400 rotate-90" 
               : "bg-black/60 text-zinc-400 hover:bg-black/80 hover:text-white"
@@ -469,9 +468,9 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
                 <div className="text-[10px] font-black opacity-30 uppercase tracking-[0.25em] px-1" style={{ fontFamily: 'var(--font-data)' }}>分析疊加 OVERLAYS</div>
                 
                 <div className="space-y-1">
-                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
                     <div className={safeCn(
-                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
                       indics.has('EMA1') ? "bg-amber-500 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]" : "border-white/10 group-hover:border-white/30"
                     )}>
                       {indics.has('EMA1') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
@@ -483,13 +482,13 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
                       value={ema1Period}
                       onChange={(e) => setEmaPersist(1, parseInt(e.target.value) || 20)}
                       className="w-14 bg-black/40 border border-white/10 rounded-xl py-1.5 text-[11px] font-black text-center text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {}}
                     />
                   </label>
 
-                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
                     <div className={safeCn(
-                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
                       indics.has('EMA2') ? "bg-violet-500 border-violet-400 shadow-[0_0_15px_rgba(167,139,250,0.3)]" : "border-white/10 group-hover:border-white/30"
                     )}>
                       {indics.has('EMA2') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
@@ -501,13 +500,13 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
                       value={ema2Period}
                       onChange={(e) => setEmaPersist(2, parseInt(e.target.value) || 50)}
                       className="w-14 bg-black/40 border border-white/10 rounded-xl py-1.5 text-[11px] font-black text-center text-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(e) => {}}
                     />
                   </label>
 
-                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
                     <div className={safeCn(
-                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
                       indics.has('BB') ? "bg-indigo-500 border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]" : "border-white/10 group-hover:border-white/30"
                     )}>
                       {indics.has('BB') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
@@ -524,9 +523,9 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
               <div className="flex flex-col gap-3 relative z-10">
                 <div className="text-[10px] font-black opacity-30 uppercase tracking-[0.25em] px-1" style={{ fontFamily: 'var(--font-data)' }}>震盪指標 OSCILLATORS</div>
                 
-                <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
                   <div className={safeCn(
-                    "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                    "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
                     indics.has('Volume') ? "bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "border-white/10 group-hover:border-white/30"
                   )}>
                     {indics.has('Volume') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
@@ -537,8 +536,8 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
 
                 <div className="flex items-center gap-1.5 mt-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
                   {(['none','RSI','MACD'] as SubPanel[]).map(p => (
-                    <button key={p} onClick={() => { setSubPanelPersist(p); vibrate(15); }}
-                      className={safeCn('flex-1 py-2.5 rounded-xl text-[10px] font-black transition-all uppercase tracking-widest',
+                    <button type="button" key={p} onClick={(e) => { setSubPanelPersist(p); vibrate(15); }}
+                      className={safeCn('flex-1 py-2.5 rounded-xl text-[10px] font-black transition uppercase tracking-widest',
                         subPanel===p ? 'bg-indigo-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/5')}>
                       {p==='none'?'OFF':p}
                     </button>
@@ -599,4 +598,6 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
       )}
     </div>
   );
-}
+};
+
+export default ChartWidget;

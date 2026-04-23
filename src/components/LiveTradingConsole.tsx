@@ -70,8 +70,8 @@ export default function LiveTradingConsole() {
       {/* Side selector */}
       <div className="flex gap-2">
         {(['BUY', 'SELL'] as const).map(s => (
-          <button key={s} onClick={() => setSide(s)}
-            className={cn('flex-1 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest border transition-all',
+          <button key={s} type="button" onClick={(e) => { setSide(s); }}
+            className={cn('flex-1 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest border transition',
               side === s
                 ? s === 'BUY' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'
                 : 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:bg-zinc-900')}>
@@ -84,17 +84,17 @@ export default function LiveTradingConsole() {
         <div>
           <label className="block text-zinc-500 mb-1.5 text-xs font-black uppercase tracking-widest">標的代碼</label>
           <input type="text" value={symbol} onChange={e => { setSymbol(e.target.value.toUpperCase()); setValidationErr(''); }}
-            className={cn("w-full bg-zinc-950 border border-zinc-800 rounded-xl text-white font-mono font-bold text-base md:text-sm focus:outline-none focus:border-emerald-500/50 transition-all", compact ? "px-2 py-1.5" : "px-3 py-2.5")} />
+            className={cn("w-full bg-zinc-950 border border-zinc-800 rounded-xl text-white font-mono font-bold text-base md:text-sm focus:outline-none focus:border-emerald-500/50 transition", compact ? "px-2 py-1.5" : "px-3 py-2.5")} />
         </div>
         <div>
           <label className="block text-zinc-500 mb-1.5 text-xs font-black uppercase tracking-widest">數量 (股)</label>
           <input type="number" min="1" value={qty} onChange={e => { setQty(Number(e.target.value)); setValidationErr(''); }}
-            className={cn("w-full bg-zinc-950 border border-zinc-800 rounded-xl text-white font-mono font-bold text-base md:text-sm focus:outline-none focus:border-emerald-500/50 transition-all", compact ? "px-2 py-1.5" : "px-3 py-2.5")} />
+            className={cn("w-full bg-zinc-950 border border-zinc-800 rounded-xl text-white font-mono font-bold text-base md:text-sm focus:outline-none focus:border-emerald-500/50 transition", compact ? "px-2 py-1.5" : "px-3 py-2.5")} />
         </div>
         <div>
           <label className="block text-zinc-500 mb-1.5 text-xs font-black uppercase tracking-widest">價格</label>
           <input type="number" min="0.01" step="0.01" value={price} onChange={e => { setPrice(Number(e.target.value)); setValidationErr(''); }}
-            className={cn("w-full bg-zinc-950 border border-zinc-800 rounded-xl text-white font-mono font-bold text-base md:text-sm focus:outline-none focus:border-emerald-500/50 transition-all", compact ? "px-2 py-1.5" : "px-3 py-2.5")} />
+            className={cn("w-full bg-zinc-950 border border-zinc-800 rounded-xl text-white font-mono font-bold text-base md:text-sm focus:outline-none focus:border-emerald-500/50 transition", compact ? "px-2 py-1.5" : "px-3 py-2.5")} />
         </div>
       </div>
 
@@ -115,17 +115,8 @@ export default function LiveTradingConsole() {
         )}
       </AnimatePresence>
 
-      <button
-        onClick={handleSubmit}
-        disabled={status === 'executing'}
-        className={cn("w-full font-black rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50 uppercase tracking-widest border",
-          side === 'BUY'
-            ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500/30'
-            : 'bg-rose-600 hover:bg-rose-500 text-white border-rose-500/30',
-          compact ? "py-2 text-xs" : "py-3 text-sm")}
-      >
-        {status === 'executing' ? <Loader2 size={16} className="animate-spin"/> : <Send size={compact ? 14 : 16} />}
-        {status === 'executing' ? '執行中...' : side === 'BUY' ? '執行買入' : '執行賣出'}
+      <button type="button"> {status === 'executing' ? <Loader2 size={16} className="animate-spin"/> : <Send size={compact ? 14 : 16} />}
+        {status === 'executing' ? '執行中…' : side === 'BUY' ? '執行買入' : '執行賣出'}
       </button>
 
       {/* Confirmation modal */}
@@ -150,8 +141,8 @@ export default function LiveTradingConsole() {
               </div>
               <p className="text-xs text-rose-300 mb-5 font-bold">此操作將使用真實資金，確認後無法撤銷。</p>
               <div className="flex gap-3">
-                <button onClick={() => setShowConfirm(false)} className="flex-1 bg-zinc-900 text-zinc-400 py-2.5 rounded-xl hover:bg-zinc-800 transition-colors font-black text-xs uppercase tracking-widest border border-zinc-800">取消</button>
-                <button onClick={executeTrade} className="flex-1 bg-rose-600 text-white py-2.5 rounded-xl hover:bg-rose-500 transition-colors font-black text-xs uppercase tracking-widest border border-rose-500/30">確認執行</button>
+                <button type="button" onClick={(e) => {}} className="flex-1 bg-zinc-900 text-zinc-400 py-2.5 rounded-xl hover:bg-zinc-800 transition-colors font-black text-xs uppercase tracking-widest border border-zinc-800">取消</button>
+                <button type="button">確認執行</button>
               </div>
             </motion.div>
           </motion.div>

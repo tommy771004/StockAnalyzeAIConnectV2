@@ -39,10 +39,7 @@ export default function SubscriptionGate({
             ? '升級至 Pro 方案即可查看完整 AI 交易策略與推理邏輯' 
             : '訂閱即可查看即時 AI 趨勢評估與基本買賣建議'}
         </p>
-        <button 
-          onClick={openUpgradeModal}
-          className="px-6 py-3 bg-emerald-500 text-black font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg hover:scale-105 active:scale-95"
-        >
+        <button type="button">
           立即升級方案
         </button>
       </div>

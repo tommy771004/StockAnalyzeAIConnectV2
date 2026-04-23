@@ -113,17 +113,17 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
           )}
           
           <div className="flex items-center gap-1.5 ml-2">
-            <button onClick={() => { setFocusMode(!focusMode); vibrate(20); }} aria-label="專注模式" aria-pressed={focusMode} 
-              className={safeCn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all font-black uppercase tracking-widest text-[9px]", 
+            <button type="button" onClick={(e) => { setFocusMode(!focusMode); vibrate(20); }} aria-label="專注模式" aria-pressed={focusMode} 
+              className={safeCn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition font-black uppercase tracking-widest text-[9px]", 
                 focusMode ? "bg-indigo-500 text-white shadow-lg" : "bg-white/5 text-zinc-400 hover:text-white")}>
               <span className={safeCn(focusMode ? "scale-110" : "opacity-40 animate-pulse")}>✨</span> 專注
             </button>
-            <button onClick={() => { setAlertVal(String(price ?? '')); setAlertOpen(true); vibrate(20); }} aria-label="設定價格警示" 
-              className="p-1.5 rounded-xl bg-white/5 text-zinc-400 hover:text-white border border-transparent hover:border-white/10 transition-all">
+            <button type="button" onClick={(e) => { setAlertVal(String(price ?? '')); setAlertOpen(true); vibrate(20); }} aria-label="設定價格警示" 
+              className="p-1.5 rounded-xl bg-white/5 text-zinc-400 hover:text-white border border-transparent hover:border-white/10 transition">
               🔔
             </button>
-            <button onClick={() => { loadData(); vibrate(20); }} disabled={loading} aria-label="重新載入資料" 
-              className="p-1.5 rounded-xl bg-white/5 text-zinc-400 hover:text-white border border-transparent hover:border-white/10 transition-all">
+            <button type="button" onClick={(e) => { loadData(); vibrate(20); }} disabled={loading} aria-label="重新載入資料" 
+              className="p-1.5 rounded-xl bg-white/5 text-zinc-400 hover:text-white border border-transparent hover:border-white/10 transition">
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
@@ -144,7 +144,7 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-[var(--text-color)]">設定價格警示</h3>
-                <button onClick={() => setAlertOpen(false)} className="p-1 rounded-lg hover:bg-[var(--border-color)] text-zinc-500" aria-label="關閉">
+                <button type="button" onClick={(e) => {}} className="p-1 rounded-lg hover:bg-[var(--border-color)] text-zinc-500" aria-label="關閉">
                   <X size={16} />
                 </button>
               </div>
@@ -162,8 +162,8 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
                 step="any"
               />
               <div className="flex gap-2">
-                <button onClick={() => setAlertOpen(false)} className="flex-1 py-2 rounded-xl bg-[var(--border-color)] text-[var(--text-color)] opacity-70 text-sm font-bold hover:opacity-100 transition-colors">取消</button>
-                <button onClick={handleAlertSubmit} className="flex-1 py-2 rounded-xl bg-emerald-500 text-black text-sm font-bold hover:bg-emerald-400 transition-colors">確認設定</button>
+                <button type="button" onClick={(e) => {}} className="flex-1 py-2 rounded-xl bg-[var(--border-color)] text-[var(--text-color)] opacity-70 text-sm font-bold hover:opacity-100 transition-colors">取消</button>
+                <button type="button">確認設定</button>
               </div>
             </motion.div>
           </div>

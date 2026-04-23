@@ -175,7 +175,7 @@ export const agentMemories = pgTable('agent_memories', {
   id:         serial('id').primaryKey(),
   userId:     uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   memoryType: agentMemoryTypeEnum('memory_type').notNull().default('CONTEXT'),
-  content:    jsonb('content').notNull(),         // free-form JSON: { key, value, ... }
+  content:    jsonb('content').notNull(),         // free-form JSON: { key, value, … }
   createdAt:  timestamp('created_at').defaultNow().notNull(),
 },
 (t) => [

@@ -54,7 +54,7 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
 
   return (
     <div className="relative overflow-hidden rounded-2xl col-span-1 border border-transparent">
-      <div className={safeCn("absolute inset-0 flex items-center px-4 transition-all duration-300 backdrop-blur-md", swipeSide === 'buy' ? 'bg-emerald-500/80 justify-start' : swipeSide === 'sell' ? 'bg-rose-500/80 justify-end' : 'bg-transparent')}>
+      <div className={safeCn("absolute inset-0 flex items-center px-4 transition duration-300 backdrop-blur-md", swipeSide === 'buy' ? 'bg-emerald-500/80 justify-start' : swipeSide === 'sell' ? 'bg-rose-500/80 justify-end' : 'bg-transparent')}>
         {swipeSide === 'buy' && <span className="font-black text-black text-[10px] tracking-[0.2em] uppercase">BUY EXEC</span>}
         {swipeSide === 'sell' && <span className="font-black text-white text-[10px] tracking-[0.2em] uppercase">SELL EXEC</span>}
       </div>
@@ -85,7 +85,7 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
         role="option"
         aria-selected={isActive}
         className={safeCn(
-          'stock-card flex flex-col rounded-2xl cursor-pointer transition-all active:scale-[0.98] bg-[#0a0a0c]/40 z-10 relative overflow-hidden',
+          'stock-card flex flex-col rounded-2xl cursor-pointer transition active:scale-[0.98] bg-[#0a0a0c]/40 z-10 relative overflow-hidden',
           compact ? 'p-3' : 'p-4',
           isActive
             ? 'bg-indigo-500/10 border-2 border-indigo-500/30 ring-4 ring-indigo-500/5'
@@ -125,14 +125,8 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
           </div>
           
           <div className="flex gap-1.5 ml-2 shrink-0">
-            <button 
-              onClick={handleBuy}
-              className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 text-[10px] font-black hover:text-black transition-all flex items-center justify-center active:scale-95"
-            >B</button>
-            <button 
-              onClick={handleSell}
-              className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500 text-[10px] font-black hover:text-white transition-all flex items-center justify-center active:scale-95"
-            >S</button>
+            <button type="button">B</button>
+            <button type="button">S</button>
           </div>
         </div>
       </motion.div>
@@ -168,16 +162,15 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
           <select 
             value={filter} 
             onChange={e => { setFilter(e.target.value as 'all' | 'bullish' | 'bearish'); vibrate(15); }} 
-            className="bg-black/40 text-[10px] font-black uppercase tracking-widest text-zinc-400 rounded-xl px-3 py-1.5 focus:outline-none border border-white/5 cursor-pointer hover:text-white transition-colors"
+            className="bg-black/40 text-[10px] font-black uppercase tracking-widest text-zinc-400 rounded-xl px-3 py-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 border border-white/5 cursor-pointer hover:text-white transition-colors"
           >
             <option value="all">ALL</option>
             <option value="bullish">BULL</option>
             <option value="bearish">BEAR</option>
           </select>
-          <button 
-            onClick={() => { setWlAdding(v => !v); vibrate(20); }} 
+          <button type="button" onClick={(e) => { setWlAdding(v => !v); vibrate(20); }} 
             className={safeCn(
-              "w-8 h-8 flex items-center justify-center rounded-xl transition-all border",
+              "w-8 h-8 flex items-center justify-center rounded-xl transition border",
               wlAdding ? "bg-indigo-500 text-black border-indigo-400 rotate-45 shadow-lg" : "bg-white/5 text-zinc-400 border-white/10 hover:text-white"
             )}
           >
@@ -201,11 +194,10 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
                 onKeyDown={e => e.key === 'Enter' && addToWatchlist(wlSearch.toUpperCase())}
                 placeholder="搜尋代碼或名稱 SYMBOL..."
                 autoFocus
-                className="flex-1 bg-black/60 border border-white/5 rounded-2xl px-4 py-3 text-xs font-bold text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all shadow-inner"
+                className="flex-1 bg-black/60 border border-white/5 rounded-2xl px-4 py-3 text-xs font-bold text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition shadow-inner"
               />
-              <button 
-                onClick={() => { addToWatchlist(wlSearch.toUpperCase()); vibrate(20); }} 
-                className="aspect-square flex items-center justify-center rounded-2xl bg-indigo-500 text-black hover:bg-indigo-400 transition-all shadow-lg active:scale-95 group shrink-0"
+              <button type="button" onClick={(e) => { addToWatchlist(wlSearch.toUpperCase()); vibrate(20); }} 
+                className="aspect-square flex items-center justify-center rounded-2xl bg-indigo-500 text-black hover:bg-indigo-400 transition shadow-lg active:scale-95 group shrink-0"
               >
                 <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
               </button>
@@ -224,15 +216,13 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
                   </div>
                 ) : searchResults.length > 0 ? (
                   searchResults.map((res, i) => (
-                    <button
-                      key={`${res.symbol}-${i}`}
-                      onClick={() => {
+                    <button type="button" key={res.symbol} onClick={(e) => {
                         addToWatchlist(res.symbol);
                         setWlSearch('');
                         setWlAdding(false);
                         vibrate(20);
                       }}
-                      className="w-full text-left px-5 py-3 hover:bg-indigo-500/[0.08] flex items-center justify-between border-b border-white/5 last:border-0 transition-all group"
+                      className="w-full text-left px-5 py-3 hover:bg-indigo-500/[0.08] flex items-center justify-between border-b border-white/5 last:border-0 transition group"
                     >
                       <div className="flex flex-col min-w-0">
                         <span className="text-sm font-black text-white group-hover:text-indigo-400 transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>{res.symbol}</span>

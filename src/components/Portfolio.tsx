@@ -343,8 +343,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
         </div>
         <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--md-on-surface)' }}>連線異常</h2>
         <p className="mb-6 max-w-md" style={{ color: 'var(--md-outline)' }}>無法取得投資組合資料，請檢查網路連線或稍後再試。</p>
-        <button 
-          onClick={() => fetchAll()}
+        <button type="button" onClick={(e) => {}}
           className="px-6 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
         >
           <RefreshCw className="w-4 h-4" />
@@ -363,13 +362,12 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
       className="h-full flex flex-col gap-4 pb-10 overflow-auto"
     >
       <PullToRefreshIndicator state={pullState} />
-      {saveErr&&<div className="flex items-center gap-2 text-sm rounded-xl p-3 shrink-0" style={{ background: 'rgba(255,77,79,0.08)', border: '1px solid rgba(255,77,79,0.3)', color: 'var(--color-up)' }}><AlertCircle size={13}/>{saveErr}<button onClick={()=>setSaveErr('')} className="ml-auto"><X size={11}/></button></div>}
+      {saveErr&&<div className="flex items-center gap-2 text-sm rounded-xl p-3 shrink-0" style={{ background: 'rgba(255,77,79,0.08)', border: '1px solid rgba(255,77,79,0.3)', color: 'var(--color-up)' }}><AlertCircle size={13}/>{saveErr}<button type="button" onClick={(e) => {}} className="ml-auto"><X size={11}/></button></div>}
 
       {/* Toolbar */}
       <div className="flex items-center justify-end gap-2 shrink-0">
-        <button
-          onClick={() => buildPortfolioPdf(positions, trades, { totalValue: totalMV, totalPnl: totalPnL, totalPnlPct: totalPct, winRate: Number(winRate) })}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}
+        <button type="button" onClick={(e) => {}}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}
         >
           <Download size={13} /> 匯出 PDF
         </button>
@@ -406,7 +404,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
               <h3 className={cn("font-bold", compact ? "text-xs" : "text-xs")} style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>損益曲線</h3>
               <div className={cn(compact ? "label-meta" : "text-xs")} style={{ color: 'var(--md-outline)' }}>基於交易日誌的已實現損益累積</div>
             </div>
-            <button onClick={()=>{setCapInput(String(startCap));setShowCapSet(v=>!v);}}
+            <button type="button" onClick={(e) => {setCapInput(String(startCap));setShowCapSet(v=>!v);}}
               className={cn("flex items-center gap-1 px-2 py-1 rounded-lg border transition-colors", compact ? "label-meta" : "text-xs")} style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}>
               <Settings2 size={compact ? 8 : 9}/> 初始資金
             </button>
@@ -414,9 +412,9 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
           {showCapSet&&(
             <div className="flex items-center gap-2 mb-2">
               <input aria-label="初始資金" type="number" value={capInput} onChange={e=>setCapInput(e.target.value)} placeholder="初始資金"
-                className="flex-1 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}/>
-              <button onClick={applyCapital} className="px-2 py-1 text-xs rounded-lg" style={{ background: 'rgba(128,131,255,0.12)', border: '1px solid rgba(128,131,255,0.4)', color: 'var(--md-primary)' }}>套用</button>
-              <button onClick={()=>setShowCapSet(false)} className="px-2 py-1 text-xs rounded-lg" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}>取消</button>
+                className="flex-1 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}/>
+              <button type="button">套用</button>
+              <button type="button" onClick={(e) => {}} className="px-2 py-1 text-xs rounded-lg" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}>取消</button>
             </div>
           )}
           {equityCurve.length>1?(
@@ -456,11 +454,11 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
             <div className="text-sm mt-0.5" style={{ color: 'var(--md-outline)' }}>即時報價 · 每次刷新重新取得</div>
           </div>
           <div className="flex gap-2">
-            <button onClick={()=>fetchAll(true)} disabled={status==='refreshing'}
+            <button type="button" onClick={(e) => {}} disabled={status==='refreshing'}
               className={cn("flex items-center gap-1 rounded-xl border transition-colors", compact ? "px-2 py-1 text-xs" : "px-2.5 py-1.5 text-sm")} style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}>
               <RefreshCw size={compact ? 12 : 14} className={status==='refreshing'?'animate-spin':''}/> 刷新
             </button>
-            <button onClick={()=>{setShowAdd(v=>!v);setSaveErr('');}} 
+            <button type="button" onClick={(e) => {setShowAdd(v=>!v);setSaveErr('');}} 
               className={cn("flex items-center gap-1 rounded-xl border transition-colors", compact ? "px-2 py-1 text-xs" : "px-2.5 py-1.5 text-sm")} style={{ background: 'rgba(128,131,255,0.12)', border: '1px solid rgba(128,131,255,0.4)', color: 'var(--md-primary)' }}>
               <Plus size={compact ? 12 : 14}/> 新增持倉
             </button>
@@ -473,15 +471,15 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
               <div key={k}>
                 <div className="text-sm mb-1" style={{ color: 'var(--md-outline)' }}>{ph}</div>
                 <input aria-label={ph} type={t} placeholder={ph}
-                  className="w-full rounded-lg px-2.5 py-1.5 text-sm focus:outline-none" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
+                  className="w-full rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
                   value={newPos[k]} onChange={e=>setNewPos(p=>({...p,[k]:e.target.value}))}/>
               </div>
             ))}
             <div className="flex flex-col gap-1">
               <div className="text-sm mb-1" style={{ color: 'var(--md-outline)' }}>操作</div>
               <div className="flex gap-1">
-                <button onClick={handleAdd} className="flex-1 py-1.5 rounded-lg text-sm font-semibold" style={{ background: 'rgba(128,131,255,0.12)', border: '1px solid rgba(128,131,255,0.4)', color: 'var(--md-primary)' }}>✓</button>
-                <button onClick={()=>{setShowAdd(false);setSaveErr('');}} className="flex-1 py-1.5 rounded-lg text-sm" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}>✕</button>
+                <button type="button">✓</button>
+                <button type="button" onClick={(e) => {setShowAdd(false);setSaveErr('');}} className="flex-1 py-1.5 rounded-lg text-sm" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}>✕</button>
               </div>
             </div>
           </div>
@@ -541,7 +539,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
                 <Wallet size={32} className="mx-auto mb-3" style={{ color: 'var(--md-outline-variant)' }} />
                 <div className="font-bold mb-1" style={{ color: 'var(--md-on-surface-variant)' }}>尚無持倉資料</div>
                 <div className="text-xs mb-4" style={{ color: 'var(--md-outline)' }}>點擊「新增持倉」開始追蹤投資組合</div>
-                <button onClick={()=>setShowAdd(true)} className="px-4 py-2 rounded-xl text-xs font-bold" style={{ background: 'rgba(128,131,255,0.12)', border: '1px solid rgba(128,131,255,0.4)', color: 'var(--md-primary)' }}>
+                <button type="button" onClick={(e) => {}} className="px-4 py-2 rounded-xl text-xs font-bold" style={{ background: 'rgba(128,131,255,0.12)', border: '1px solid rgba(128,131,255,0.4)', color: 'var(--md-primary)' }}>
                   <Plus size={12} className="inline mr-1" /> 新增第一筆持倉
                 </button>
               </div>
@@ -573,10 +571,10 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
                     </div>
                   </td>
                   <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface-variant)', fontFamily: 'var(--font-data)' }}>
-                    {editIdx===idx?<input aria-label="持股數量" type="number" className="rounded px-1.5 py-0.5 text-xs w-16 focus:outline-none" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.shares??p.shares} onChange={e=>setEditBuf(b=>({...b,shares:Number(e.target.value)}))}/>:p.shares.toLocaleString()}
+                    {editIdx===idx?<input aria-label="持股數量" type="number" className="rounded px-1.5 py-0.5 text-xs w-16 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.shares??p.shares} onChange={e=>setEditBuf(b=>({...b,shares:Number(e.target.value)}))}/>:p.shares.toLocaleString()}
                   </td>
                   <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface-variant)', fontFamily: 'var(--font-data)' }}>
-                    {editIdx===idx?<input aria-label="平均成本" type="number" step="0.01" className="rounded px-1.5 py-0.5 text-xs w-20 focus:outline-none" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.avgCost??p.avgCost} onChange={e=>setEditBuf(b=>({...b,avgCost:Number(e.target.value)}))}/>:p.avgCost.toFixed(2)}
+                    {editIdx===idx?<input aria-label="平均成本" type="number" step="0.01" className="rounded px-1.5 py-0.5 text-xs w-20 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.avgCost??p.avgCost} onChange={e=>setEditBuf(b=>({...b,avgCost:Number(e.target.value)}))}/>:p.avgCost.toFixed(2)}
                   </td>
                   <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>{p.currentPrice!=null?p.currentPrice.toFixed(2):<Loader2 className="w-3 h-3 animate-spin inline" style={{ color: 'var(--md-outline-variant)' }}/>}</td>
                   <td className="py-3 font-mono text-right" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>${Math.round(p.marketValueTWD??p.marketValue??0).toLocaleString()}</td>
@@ -594,26 +592,26 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
                   <td className="py-3">
                     <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                       {editIdx===idx?(
-                        <><button onClick={handleSaveEdit} className="p-1.5 rounded" style={{ background: 'rgba(128,131,255,0.1)', color: 'var(--md-primary)' }}><Check size={10}/></button>
-                          <button onClick={()=>setEditIdx(null)} className="p-1.5 rounded" style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-outline)' }}><X size={10}/></button></>
+                        <><button type="button"><Check size={10}/></button>
+                          <button type="button" onClick={(e) => {}} className="p-1.5 rounded" style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-outline)' }}><X size={10}/></button></>
                       ):(
                         <>
                           {/* 送回測 button */}
                           {onGoBacktest&&(
-                            <button onClick={()=>onGoBacktest(p.symbol)} title="回測此標的"
+                            <button type="button" onClick={(e) => {}} title="回測此標的"
                               className="p-1.5 rounded transition-colors" style={{ background: 'rgba(255,183,131,0.1)', color: 'var(--md-tertiary)' }}>
                               <BarChart2 size={10}/>
                             </button>
                           )}
                           {/* 新增交易記錄 */}
                           {onGoJournal&&(
-                            <button onClick={()=>onGoJournal(p.symbol)} title="前往交易日誌"
+                            <button type="button" onClick={(e) => {}} title="前往交易日誌"
                               className="p-1.5 rounded transition-colors" style={{ background: 'rgba(128,131,255,0.1)', color: 'var(--md-primary)' }}>
                               <BookOpen size={10}/>
                             </button>
                           )}
-                          <button onClick={()=>{setEditIdx(idx);setEditBuf({});}} className="p-1.5 rounded" style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-outline)' }}><Edit2 size={10}/></button>
-                          <button onClick={()=>handleDelete(idx)} className="p-1.5 rounded" style={{ background: 'rgba(255,77,79,0.1)', color: 'var(--color-up)' }}><Trash2 size={10}/></button>
+                          <button type="button" onClick={(e) => {setEditIdx(idx);setEditBuf({});}} className="p-1.5 rounded" style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-outline)' }}><Edit2 size={10}/></button>
+                          <button type="button" onClick={(e) => {}} className="p-1.5 rounded" style={{ background: 'rgba(255,77,79,0.1)', color: 'var(--color-up)' }}><Trash2 size={10}/></button>
                         </>
                       )}
                     </div>

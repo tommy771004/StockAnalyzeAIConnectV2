@@ -16,8 +16,8 @@ export default function Simulator() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">利潤模擬器</h2>
         <div className="flex space-x-4">
-          <button className="px-4 py-2 bg-pink-50 text-pink-700 rounded-lg font-medium flex items-center"><Download size={18} className="mr-2" /> 匯出模擬結果</button>
-          <button className="px-4 py-2 bg-pink-900 text-white rounded-lg font-medium flex items-center"><Save size={18} className="mr-2" /> 儲存情境</button>
+          <button type="button"><Download size={18} className="mr-2" /> 匯出模擬結果</button>
+          <button type="button"><Save size={18} className="mr-2" /> 儲存情境</button>
         </div>
       </div>
 
