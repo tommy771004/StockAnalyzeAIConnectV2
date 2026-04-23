@@ -136,19 +136,26 @@ class NativeYahooApi {
   private static async fetchApi(url: string) {
     await this.ensureAuth();
     const finalUrl = url.includes('?') ? `${url}&crumb=${this.crumb}` : `${url}?crumb=${this.crumb}`;
-    const res = await fetch(finalUrl, {
-      headers: {
-        'User-Agent': UA_CHROME,
-        'Cookie': this.cookie,
-        'Accept': 'application/json'
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    try {
+      const res = await fetch(finalUrl, {
+        headers: {
+          'User-Agent': UA_CHROME,
+          'Cookie': this.cookie,
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
+      if (res.status === 401 || res.status === 403) {
+        this.crumb = "";
+        throw new Error(`Auth Expired: ${res.status}`);
       }
-    });
-    if (res.status === 401 || res.status === 403) {
-      this.crumb = "";
-      throw new Error(`Auth Expired: ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } finally {
+      clearTimeout(timeoutId);
     }
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
   }
 
   public static async quote(symbols: string | string[]) {

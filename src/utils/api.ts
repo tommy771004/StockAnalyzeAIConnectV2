@@ -9,14 +9,21 @@ export async function fetchJ<T = unknown>(url: string, options?: RequestInit): P
     ...(options?.headers as Record<string, string> | undefined),
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const response = await fetch(url, { ...options, headers });
-  if (!response.ok) {
-    if (response.status === 401 && token) {
-      // Token expired: clear it and notify AuthContext via event — no hard reload
-      localStorage.removeItem(TOKEN_KEY);
-      window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch(url, { ...options, headers, signal: controller.signal });
+    if (!response.ok) {
+      if (response.status === 401 && token) {
+        localStorage.removeItem(TOKEN_KEY);
+        window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return response.json();
 }

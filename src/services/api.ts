@@ -83,7 +83,8 @@ export const getNews = async (sym: string): Promise<NewsItem[]> => {
     } else {
       try {
         const tvNews = await fetchJ<Array<{ id: string; title: string; published: number; source: string; storyPath: string }>>(`/api/tv/news/${encodeURIComponent(sym)}`);
-        data = (tvNews || []).map(item => ({
+        if (!tvNews || tvNews.length === 0) throw new Error('Empty TV news');
+        data = tvNews.map(item => ({
           id: item.id || Math.random().toString(),
           title: item.title,
           link: item.storyPath ? `https://www.tradingview.com${item.storyPath}` : '',
@@ -92,7 +93,12 @@ export const getNews = async (sym: string): Promise<NewsItem[]> => {
         }));
       } catch (tvError) {
         console.warn('Fallback to Yahoo news:', tvError);
-        data = await fetchJ<NewsItem[]>(`/api/news/${sym}`);
+        try {
+          data = await fetchJ<NewsItem[]>(`/api/news/${sym}`);
+        } catch (yError) {
+          console.error('Yahoo news fallback failed:', yError);
+          data = [];
+        }
       }
     }
     setCachedData(`news:${sym}`, data);

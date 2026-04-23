@@ -812,7 +812,11 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   <span>{new Date((n.providerPublishTime || Date.now() / 1000) * 1000).toLocaleString()}</span>
                 </div>
               </a>
-            )) : <div className="col-span-full text-center text-xs text-zinc-500 py-10">讀取新聞中...</div>}
+            )) : (
+              <div className="col-span-full text-center text-xs text-zinc-500 py-10">
+                {loading ? '讀取新聞中...' : '目前無相關新聞'}
+              </div>
+            )}
           </div>
         </div>
       </div>
