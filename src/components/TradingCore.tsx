@@ -15,6 +15,7 @@ import { PriceBar } from './PriceBar';
 import { BacktestPanel } from './BacktestPanel';
 import { ChartSection } from './ChartSection';
 import { NewsSentimentBelowChart } from './NewsSentimentBelowChart';
+import TradeLogger, { pushLog } from './TradeLogger';
 import { RightPanel } from './RightPanel';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWatchlist } from '../hooks/useQueryHooks';
@@ -149,6 +150,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
     if(!chat.trim()||chatStatus === 'busy') return;
     setChatStatus('busy'); setChatRep('');
     try {
+      pushLog('info', 'AGENT', `User prompt: "${chat}"`);
       const rep = await chatWithAI(chat, symbol, quote || {}, hist, model, String(settings.systemInstruction || ''));
       if (rep) {
         setChatRep(rep.message ?? '分析失敗');
@@ -160,6 +162,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
             
             if (actionType === 'CHANGE_SYMBOL' && payload.symbol) {
               const newSym = String(payload.symbol).toUpperCase();
+              pushLog('success', 'AGENT', `Intent [CHANGE_SYMBOL] -> Switched to ${newSym}`);
               onSymbolChange?.(newSym);
               showToast(`Quantum Agent 已為您切換至標的: ${newSym}`, 'success');
             } else if (actionType === 'SET_ORDER') {
@@ -170,9 +173,11 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
               if (payload.qty && !isNaN(Number(payload.qty))) {
                  setOrderQty(Number(payload.qty));
               }
+              pushLog('success', 'AGENT', `Intent [PREPARE_ORDER] -> UI updated to ${payload.side?.toUpperCase()} ${payload.qty} shares`);
               showToast(`Quantum Agent 參數佈署：${payload.side?.toUpperCase() || ''} ${payload.qty || ''} 股`.trim(), 'success');
             }
           } catch (actionErr) {
+            pushLog('error', 'AGENT', `Failed to execute intent: ${actionErr instanceof Error ? actionErr.message : 'Unknown'}`);
             console.error('[TradingCore] Agent action execution failed:', actionErr);
           }
         }
@@ -303,8 +308,12 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
         
         {/* Sub-Data Grid */}
         {!isLandscape && (
-          <div className={safeCn(isFocusActive && "px-4 animate-in fade-in slide-in-from-bottom-4 duration-700")}>
-            <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
+          <div className={safeCn("flex flex-col gap-4", isFocusActive && "px-4 animate-in fade-in slide-in-from-bottom-4 duration-700")}>
+             <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
+             {/* ── STAGE 5: Trade Logger Console ── */}
+             <div className="h-40 shrink-0">
+               <TradeLogger />
+             </div>
           </div>
         )}
       </div>
