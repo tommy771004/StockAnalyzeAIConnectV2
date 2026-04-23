@@ -1,10 +1,10 @@
 export const IS_AI_ENABLED = true;
 
-/** Gemini 免費模型，供用戶自動使用 */
-export const FREE_MODEL = 'gemini-flash-latest';
+/** OpenRouter 預設免費模型 */
+export const FREE_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
 
 export const MODELS = [
-  {id:'gemini-flash-latest',               label:'✨ Gemini 1.5 Flash (穩定/免費)'},
+  {id:'meta-llama/llama-3.3-70b-instruct:free', label:'✨ Llama 3.3 70B (免費)'},
   {id:'openai/gpt-4o-mini',                  label:'GPT-4o Mini'},
   {id:'anthropic/claude-3.5-sonnet',         label:'Claude 3.5 Sonnet'},
   {id:'anthropic/claude-3-haiku',            label:'Claude 3 Haiku'},

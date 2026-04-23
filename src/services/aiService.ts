@@ -1,30 +1,7 @@
 import { z } from 'zod';
-import { GoogleGenAI } from '@google/genai';
 import Decimal from 'decimal.js';
 import * as api from './api';
 import { Quote, HistoricalData, AIAnalysisResult, MTFResult, SentimentData, TradingStrategy, NewsItem } from '../types';
-
-// ── Gemini call (Server-side proxy) ──────────────────────────────────────────
-async function callGemini(prompt: string, model: string, jsonMode: boolean = true): Promise<string> {
-  const token = localStorage.getItem('auth_token');
-  const res = await fetch('/api/ai/call', {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` 
-    },
-    body: JSON.stringify({ prompt, model, jsonMode }),
-  });
-
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.error || 'Gemini call failed');
-  }
-
-  const data = await res.json();
-  if (!data.text) throw new Error('Gemini response missing text content');
-  return data.text;
-}
 
 // ── Settings helpers ──────────────────────────────────────────────────────────
 function getSettings() {
@@ -204,35 +181,15 @@ async function callOpenRouter(
   return content;
 }
 
-// ── Router: Ollama vs OpenRouter vs Gemini ──────────────────────────────────────
+// ── Router: Ollama vs OpenRouter ──────────────────────────────────────────────
 async function callAI(prompt: string, model: string, jsonMode: boolean = true): Promise<string> {
-  const targetModel = model || 'gemini-flash-latest';
-  
+  const targetModel = model || OPENROUTER_FALLBACK;
+
   if (isOllamaModel(targetModel)) {
     return callOllama(prompt, targetModel, jsonMode);
   }
-  
-  if (targetModel.includes('gemini') || targetModel === 'gemini-flash-latest') {
-    return callGemini(prompt, targetModel, jsonMode);
-  }
 
-  try {
-    return await callOpenRouter(prompt, targetModel, jsonMode);
-  } catch (err: any) {
-    const isQuotaError = err.status === 402 || 
-                        (err.message && (err.message.includes('402') || err.message.includes('Insufficient credits')));
-    
-    if (isQuotaError) {
-      console.warn(`[aiService] OpenRouter model ${targetModel} credits exhausted or 402, falling back to Gemini...`);
-      try {
-        return await callGemini(prompt, 'gemini-flash-latest', jsonMode);
-      } catch (geminiErr) {
-        console.error('[aiService] Fallback to Gemini failed:', geminiErr);
-        throw err; // Throw the original OpenRouter error if fallback also fails
-      }
-    }
-    throw err;
-  }
+  return callOpenRouter(prompt, targetModel, jsonMode);
 }
 
 // ── Error response factories ──────────────────────────────────────────────────
@@ -433,7 +390,7 @@ export async function analyzeStock(
   ticker: string,
   quoteData: Partial<Quote>,
   historicalData: HistoricalData[],
-  model = 'gemini-flash-latest',
+  model = 'meta-llama/llama-3.3-70b-instruct:free',
   systemInstruction = ''
 ): Promise<AIAnalysisResult | null> {
   try {
@@ -499,7 +456,7 @@ export async function chatWithAI(
   ticker: string,
   quoteData: Partial<Quote>,
   historicalData: HistoricalData[],
-  model = 'gemini-flash-latest',
+  model = 'meta-llama/llama-3.3-70b-instruct:free',
   systemInstruction = ''
 ): Promise<AIChatResponse | null> {
   try {
@@ -545,7 +502,7 @@ JSON:
 
 export async function analyzeMTF(
   ticker: string, data1h: HistoricalData[], data1d: HistoricalData[], data1wk: HistoricalData[],
-  model = 'gemini-flash-latest',
+  model = 'meta-llama/llama-3.3-70b-instruct:free',
   systemInstruction = ''
 ): Promise<MTFResult | null> {
   try {
@@ -585,7 +542,7 @@ export async function getTradingStrategy(
   ticker: string,
   aiAnalysis: AIAnalysisResult,
   mtfAnalysis: MTFResult,
-  model = 'gemini-flash-latest',
+  model = 'meta-llama/llama-3.3-70b-instruct:free',
   systemInstruction = ''
 ): Promise<TradingStrategy> {
   try {
@@ -614,7 +571,7 @@ JSON:
 {"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"string","putCallRatio":"string","marketBreadth":"string","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
 }
 
-export async function analyzeSentiment(marketData: Partial<Quote>[], model = 'gemini-flash-latest', systemInstruction = ''): Promise<SentimentData | null> {
+export async function analyzeSentiment(marketData: Partial<Quote>[], model = 'meta-llama/llama-3.3-70b-instruct:free', systemInstruction = ''): Promise<SentimentData | null> {
   const vix = String(marketData?.find((d) => d?.symbol === '^VIX')?.regularMarketPrice?.toFixed(2) ?? 'N/A');
   try {
     const prompt = buildSentimentPrompt(marketData, systemInstruction);
@@ -645,7 +602,7 @@ JSON:
 {"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"N/A","putCallRatio":"N/A","marketBreadth":"N/A","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
 }
 
-export async function analyzeNewsSentiment(news: NewsItem[], model = 'gemini-flash-latest', systemInstruction = ''): Promise<SentimentData | null> {
+export async function analyzeNewsSentiment(news: NewsItem[], model = 'meta-llama/llama-3.3-70b-instruct:free', systemInstruction = ''): Promise<SentimentData | null> {
   try {
     const prompt = buildNewsSentimentPrompt(news, systemInstruction);
     const raw = await callAI(prompt, model);

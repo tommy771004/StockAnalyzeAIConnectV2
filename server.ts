@@ -411,42 +411,81 @@ app.use(express.json());
     });
   });
 
-  // --- AI Analysis ---
+  // --- AI Analysis (OpenRouter proxy) ---
   app.post('/api/ai/call', authMiddleware, async (req: AuthRequest, res) => {
     const { prompt, model, jsonMode } = req.body;
     if (!prompt) { res.status(400).json({ error: 'prompt required' }); return; }
-    
-    const apiKey = process.env.GEMINI_API_KEY;
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      console.warn('[API] GEMINI_API_KEY is missing in environment variables.');
+      console.warn('[API] OPENROUTER_API_KEY is missing in environment variables.');
       res.status(500).json({ error: 'AI service configuration error: Missing API Key. Please contact the administrator.' });
       return;
     }
 
+    const targetModel = model || 'meta-llama/llama-3.3-70b-instruct:free';
+
     try {
-      const { GoogleGenAI } = await import('@google/genai');
-      const ai = new GoogleGenAI({ apiKey });
-      
-      const response = await ai.models.generateContent({
-        model: model?.includes('gemini') ? model : 'gemini-1.5-flash',
-        contents: [{ parts: [{ text: prompt }] }],
-        config: {
+      const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer':  'https://hermes-ai.trading',
+          'X-Title':       'Hermes AI Trading',
+        },
+        body: JSON.stringify({
+          model: targetModel,
+          messages: [{ role: 'user', content: prompt }],
           temperature: 0.2,
-          ...(jsonMode && { responseMimeType: 'application/json' })
-        }
+          max_tokens: 2048,
+          stream: false,
+          ...(jsonMode && { response_format: { type: 'json_object' } }),
+        }),
       });
-      
-      const text = response.text;
-      if (!text) throw new Error('AI response was empty');
+
+      if (!orRes.ok) {
+        const errBody = await orRes.text().catch(() => '');
+        console.error('[API] OpenRouter error:', orRes.status, errBody.slice(0, 200));
+        res.status(orRes.status).json({ error: `OpenRouter ${orRes.status}: ${errBody.slice(0, 200)}` });
+        return;
+      }
+
+      const json = await orRes.json() as { choices?: { message?: { content?: string } }[] };
+      const text = json?.choices?.[0]?.message?.content ?? '';
+      if (!text) throw new Error('OpenRouter response was empty');
       res.json({ text });
     } catch (e: any) {
       console.error('[API] AI Analyze error:', e);
-      if (e.message?.includes('credentials')) {
-        res.status(500).json({ error: 'AI Error: Could not load the default credentials. Please ensure GENAI_API_KEY is properly set for the Gemini API SDK.' });
-      } else {
-        res.status(500).json({ error: e.message });
-      }
+      res.status(500).json({ error: e.message });
     }
+  });
+
+  // --- System Stats ---
+  app.get('/api/stats', authMiddleware, (_req, res) => {
+    const mem = process.memoryUsage();
+    const cpu = process.cpuUsage();
+    const MB  = 1024 * 1024;
+    const uptimeSec = process.uptime();
+    const hours   = Math.floor(uptimeSec / 3600);
+    const minutes = Math.floor((uptimeSec % 3600) / 60);
+    const uptimeStr = hours > 0 ? `${hours} 時 ${minutes} 分鐘` : `${minutes} 分鐘`;
+    res.json({
+      heapUsed:        Math.round(mem.heapUsed  / MB),
+      heapTotal:       Math.round(mem.heapTotal / MB),
+      rss:             Math.round(mem.rss       / MB),
+      cpuUser:         cpu.user,
+      cpuSystem:       cpu.system,
+      uptimeStr,
+      nodeVersion:     process.version,
+      electronVersion: '',
+      platform:        process.platform,
+    });
+  });
+
+  // --- System Logs ---
+  app.get('/api/logs', authMiddleware, (_req, res) => {
+    res.json([]);
   });
 
   // ── Auth ────────────────────────────────────────────────────────────────────

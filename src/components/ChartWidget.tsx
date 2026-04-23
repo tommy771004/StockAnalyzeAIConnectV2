@@ -136,7 +136,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     // Add Main Series
     let series: ISeriesApi<any>;
     if (chartType === 'candle') {
-      series = chart.addCandlestickSeries({
+      series = chart.addSeries(CandlestickSeries, {
         upColor: '#10b981',
         downColor: '#ef4444',
         borderVisible: false,
@@ -144,14 +144,14 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         wickDownColor: '#ef4444',
       });
     } else if (chartType === 'area') {
-      series = chart.addAreaSeries({
+      series = chart.addSeries(AreaSeries, {
         lineColor: '#6366f1',
         topColor: 'rgba(99, 102, 241, 0.4)',
         bottomColor: 'rgba(99, 102, 241, 0)',
         lineWidth: 2,
       });
     } else {
-      series = chart.addLineSeries({
+      series = chart.addSeries(LineSeries, {
         color: '#6366f1',
         lineWidth: 2,
       });
@@ -159,7 +159,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     mainSeriesRef.current = series;
 
     // Add Volume
-    const volumeSeries = chart.addHistogramSeries({
+    const volumeSeries = chart.addSeries(HistogramSeries, {
       priceFormat: { type: 'volume' },
       priceScaleId: '',
     });
@@ -169,7 +169,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     volumeSeriesRef.current = volumeSeries;
 
     // Add SMA
-    const smaSeries = chart.addLineSeries({
+    const smaSeries = chart.addSeries(LineSeries, {
       color: '#f59e0b',
       lineWidth: 2,
       priceLineVisible: false,
@@ -274,7 +274,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
       // Re-add based on current type
       if (chartType === 'candle') {
-        mainSeriesRef.current = chart.addCandlestickSeries({
+        mainSeriesRef.current = chart.addSeries(CandlestickSeries, {
           upColor: '#10b981',
           downColor: '#ef4444',
           borderVisible: false,
@@ -282,14 +282,14 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
           wickDownColor: '#ef4444',
         });
       } else if (chartType === 'area') {
-        mainSeriesRef.current = chart.addAreaSeries({
+        mainSeriesRef.current = chart.addSeries(AreaSeries, {
           lineColor: '#6366f1',
           topColor: 'rgba(99, 102, 241, 0.4)',
           bottomColor: 'rgba(99, 102, 241, 0)',
           lineWidth: 3,
         });
       } else {
-        mainSeriesRef.current = chart.addLineSeries({
+        mainSeriesRef.current = chart.addSeries(LineSeries, {
           color: '#6366f1',
           lineWidth: 3,
         });
