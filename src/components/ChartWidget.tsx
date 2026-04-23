@@ -113,7 +113,8 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         borderColor: gridColor,
         timeVisible: true,
         fixLeftEdge: true,
-        rightOffset: 3,
+        fixRightEdge: true,
+        rightOffset: 1,
         barSpacing: 12,
         minBarSpacing: 1,
       },
@@ -337,7 +338,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
       // 3. Intelligently handle view
       const barCount = uniqueData.length;
-      const RIGHT_PAD = 3;
+      const RIGHT_PAD = 1;
       if (!isInitializedRef.current) {
         // Show only the last 60 bars by default
         if (barCount > 60) {
@@ -350,7 +351,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         }
         isInitializedRef.current = true;
       } else if (logicalRangeRef.current) {
-        // Restore user's previous zoom, but always clamp right edge to data boundary
+        // Restore user's previous zoom, clamp right edge strictly to data boundary
         const currentRange = logicalRangeRef.current;
         const spanBars = currentRange.to - currentRange.from;
         const clampedTo = Math.min(currentRange.to, barCount - 1 + RIGHT_PAD);
