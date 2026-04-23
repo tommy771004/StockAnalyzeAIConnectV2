@@ -685,7 +685,10 @@ function MainApp() {
             </div>
           )}
 
-          <div className={cn("flex-1 min-h-0 overflow-auto custom-scrollbar relative", isLandscape ? "p-0" : "p-2 sm:p-4 md:p-6 lg:p-8")}
+          <div className={cn(
+            "flex-1 min-h-0 overflow-auto custom-scrollbar relative", 
+            isLandscape ? "p-0" : "p-1.5 sm:p-2 md:p-6 lg:p-8"
+          )}
                style={isLandscape ? { background: '#000' } : { overscrollBehavior: 'contain' }}
                ref={scrollContainerRef}
                {...(isMobile ? swipeHandlers : {})}>

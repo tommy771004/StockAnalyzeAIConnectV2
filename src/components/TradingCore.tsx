@@ -225,7 +225,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       {/* ── CENTER: Chart ── */}
       <div className={cn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-2" : "gap-4", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
         {/* Price bar */}
-        <div className={cn("shrink-0 overflow-hidden", isLandscape ? "bg-black border-b border-white/10" : "liquid-glass-strong rounded-3xl border border-[var(--border-color)]")}>
+        <div className={cn("shrink-0 overflow-hidden", (isLandscape || isFocusActive) ? "bg-black border-b border-white/10" : "liquid-glass-strong rounded-3xl border border-[var(--border-color)]")}>
           <PriceBar
             symbol={symbol}
             twse={twse}
@@ -247,13 +247,18 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
         </div>
 
         {/* Chart */}
-        <div className={cn("flex-1 min-h-[300px] lg:min-h-0 overflow-hidden flex flex-col", isLandscape ? "p-0 rounded-none border-none bg-black" : "liquid-glass rounded-3xl border border-[var(--border-color)] p-1")}>
+        <div className={cn(
+          "flex-1 min-h-[300px] lg:min-h-0 overflow-hidden flex flex-col", 
+          (isLandscape || isFocusActive) ? "p-0 rounded-none border-none bg-black" : "liquid-glass rounded-3xl border border-[var(--border-color)] p-0.5 sm:p-1"
+        )}>
           <div className="flex-1 min-h-0"><ChartSection symbol={symbol} model={model} focusMode={isFocusActive || Boolean(isLandscape)} data={hist} /></div>
         </div>
         
         {/* News & AI Sentiment Below Chart */}
         {!isLandscape && (
-          <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
+          <div className={cn(isFocusActive && "px-4")}>
+            <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
+          </div>
         )}
       </div>
 
