@@ -161,7 +161,7 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
 
   // ── News Sentiment ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (activeTab !== 'news' || news.length === 0) return;
+    if (news.length === 0) return;
     if (analyzedNewsRef.current === news) return;
     analyzedNewsRef.current = news;
     let cancelled = false;

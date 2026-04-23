@@ -77,7 +77,24 @@ export const getNews = async (sym: string): Promise<NewsItem[]> => {
   const cached = getCachedData<NewsItem[]>(`news:${sym}`);
   if (cached) return cached;
   try {
-    const data = IS_ELECTRON ? await E().getNews(sym) : await fetchJ<NewsItem[]>(`/api/news/${sym}`);
+    let data;
+    if (IS_ELECTRON) {
+      data = await E().getNews(sym);
+    } else {
+      try {
+        const tvNews = await fetchJ<Array<{ id: string; title: string; published: number; source: string; storyPath: string }>>(`/api/tv/news/${encodeURIComponent(sym)}`);
+        data = (tvNews || []).map(item => ({
+          id: item.id || Math.random().toString(),
+          title: item.title,
+          link: item.storyPath ? `https://www.tradingview.com${item.storyPath}` : '',
+          publisher: item.source,
+          providerPublishTime: item.published
+        }));
+      } catch (tvError) {
+        console.warn('Fallback to Yahoo news:', tvError);
+        data = await fetchJ<NewsItem[]>(`/api/news/${sym}`);
+      }
+    }
     setCachedData(`news:${sym}`, data);
     return data;
   } catch (e) {

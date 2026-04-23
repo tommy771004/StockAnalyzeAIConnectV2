@@ -17,6 +17,7 @@ import { cn } from '../lib/utils';
 import * as api from '../services/api';
 import ChartWidget from './ChartWidget';
 import { PerformanceSummary } from './PerformanceSummary';
+import { StatusIndicator3D } from './StatusIndicator3D';
 import { Quote, HistoricalData, AIAnalysisResult, SentimentData, Trade } from '../types';
 import { useSettings } from '../contexts/SettingsContext';
 
@@ -289,6 +290,7 @@ const exportToCSV = (data: HistoricalData[], filename: string) => {
           {/* AI Analysis */}
           <div className="liquid-glass rounded-3xl p-6 border border-[var(--border-color)] shadow-xl">
             <h3 className={cn("font-black text-[var(--text-color)] flex items-center gap-2 uppercase tracking-widest", compact ? "text-xs mb-3" : "text-sm mb-4")}>
+              <div className="absolute top-2 right-2"><StatusIndicator3D status={aiStatus} /></div>
               <BrainCircuit className="text-indigo-400" size={compact ? 14 : 16} /> AI 分析
             </h3>
             {aiStatus === 'analyzing' ? (

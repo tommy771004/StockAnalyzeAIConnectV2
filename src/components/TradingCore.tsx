@@ -14,6 +14,7 @@ import { Watchlist } from './Watchlist';
 import { PriceBar } from './PriceBar';
 import { BacktestPanel } from './BacktestPanel';
 import { ChartSection } from './ChartSection';
+import { NewsSentimentBelowChart } from './NewsSentimentBelowChart';
 import { RightPanel } from './RightPanel';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWatchlist } from '../hooks/useQueryHooks';
@@ -30,13 +31,25 @@ interface Props {
   onSymbolChange?: (sym: string) => void;
   onGoBacktest?:   (sym: string) => void;  // ← navigate to BacktestPage with this symbol
   isLandscape?: boolean;
+  focusMode?: boolean; // 新增 focusMode prop
 }
 
-export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktest, isLandscape }: Props) {
+export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktest, isLandscape, focusMode: propFocusMode }: Props) {
   const { settings } = useSettings();
   const compact = Boolean(settings.compactMode);
   const [tab, setTab] = useState<'news' | 'calendar' | 'mtf'>('news');
   
+  // 原有的 local focusMode
+  const [localFocusMode, setLocalFocusMode] = useState(false);
+  
+  // 決定最終是否處於焦點模式：優先採用 prop，其次為 local state
+  const isFocusActive = propFocusMode !== undefined ? propFocusMode : localFocusMode;
+  
+  // 用於傳遞給 sub-components 的 setter，如果傳入 propFocusMode 則此 setter 僅影響內部
+  const handleSetFocusMode = useCallback((v: boolean) => {
+    setLocalFocusMode(v);
+  }, []);
+
   const {
     quote,
     hist,
@@ -122,7 +135,6 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
   const { executeOrder, orderStatus } = useTradeExecution(showToast, setPortfolio);
   const { addToWatchlist, wlSearch, setWlSearch, wlAdding, setWlAdding } = useWatchlistManagement(watchlist, showToast);
 
-  const [focusMode,    setFocusMode]    = useState(false);
   const [mobilePanel, setMobilePanel] = useState<'list' | 'chart' | 'panel'>('chart');
   const [orderQty,  setOrderQty]  = useState(Number(settings.defaultOrderQty) || 100);
   const [oSide,     setOSide]     = useState<'buy'|'sell'>('buy');
@@ -171,7 +183,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
 
 
       {/* ── LEFT: Watchlist + Portfolio Summary ── */}
-      {!focusMode && !isLandscape && (
+      {!isFocusActive && !isLandscape && (
         <div className={cn("w-full lg:w-72 flex flex-col shrink-0", compact ? "gap-2" : "gap-4", mobilePanel !== 'list' && "hidden lg:flex")}>
           {/* Portfolio Summary */}
           <div className={cn("liquid-glass-strong rounded-3xl border border-[var(--border-color)] shadow-xl", compact ? "p-3" : "p-5")}>
@@ -208,7 +220,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       )}
 
       {/* ── CENTER: Chart ── */}
-      <div className={cn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-2" : "gap-4", (!focusMode && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
+      <div className={cn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-2" : "gap-4", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
         {/* Price bar */}
         <div className={cn("shrink-0 overflow-hidden", isLandscape ? "bg-black border-b border-white/10" : "liquid-glass-strong rounded-3xl border border-[var(--border-color)]")}>
           <PriceBar
@@ -222,8 +234,8 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
             high={high}
             low={low}
             vol={vol}
-            focusMode={focusMode || Boolean(isLandscape)}
-            setFocusMode={setFocusMode}
+            focusMode={isFocusActive || Boolean(isLandscape)}
+            setFocusMode={handleSetFocusMode}
             onSetAlert={onSetAlert}
             loadData={loadData}
             isLandscape={isLandscape}
@@ -231,13 +243,18 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
         </div>
 
         {/* Chart */}
-        <div className={cn("flex-1 min-h-[300px] lg:min-h-0 overflow-hidden", isLandscape ? "p-0 rounded-none border-none bg-black" : "liquid-glass rounded-3xl border border-[var(--border-color)] p-1")}>
-          <ChartSection symbol={symbol} model={model} focusMode={focusMode || Boolean(isLandscape)} data={hist} />
+        <div className={cn("flex-1 min-h-[300px] lg:min-h-0 overflow-hidden flex flex-col", isLandscape ? "p-0 rounded-none border-none bg-black" : "liquid-glass rounded-3xl border border-[var(--border-color)] p-1")}>
+          <div className="flex-1 min-h-0"><ChartSection symbol={symbol} model={model} focusMode={isFocusActive || Boolean(isLandscape)} data={hist} /></div>
         </div>
+        
+        {/* News & AI Sentiment Below Chart */}
+        {!isLandscape && (
+          <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
+        )}
       </div>
 
       {/* ── RIGHT: Depth + News + Order ── */}
-      {!focusMode && !isLandscape && (
+      {!isFocusActive && !isLandscape && (
         <div className={cn("w-full lg:w-80 flex flex-col shrink-0 relative", compact ? "gap-2" : "gap-4", mobilePanel !== 'panel' && "hidden lg:flex")}>
           {toast && (
             <div className={cn("fixed top-16 left-1/2 -translate-x-1/2 lg:absolute lg:top-0 lg:-translate-y-full px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-2xl z-50 whitespace-nowrap animate-[slideUp_0.3s_ease-out] safe-area-top", toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500')}>
@@ -279,7 +296,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       )}
 
       {/* ── Mobile Panel Switcher (Bottom Bar) ── */}
-      {!focusMode && (
+      {!isFocusActive && (
         <div className="lg:hidden sticky bottom-0 left-0 right-0 z-40 flex gap-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl p-1.5 shrink-0 mt-auto safe-area-bottom shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
           {([
             { id: 'list'  as const, label: '自選股' },

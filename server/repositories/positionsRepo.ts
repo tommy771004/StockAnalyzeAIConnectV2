@@ -17,10 +17,39 @@ export async function replacePositions(
   return db.transaction(async (tx) => {
     await tx.delete(positions).where(eq(positions.userId, userId));
     if (items.length === 0) return [];
+
+    // Deduplicate items by symbol (keep the last one or merge)
+    // To be safe and predictable, we'll merge shares and avgCost
+    const merged = items.reduce((acc, item) => {
+      if (!item.symbol) return acc;
+      const sym = item.symbol.toUpperCase();
+      const shares = Number(item.shares);
+      const avgCost = Number(item.avgCost);
+      
+      if (!isFinite(shares) || !isFinite(avgCost)) return acc;
+
+      if (!acc[sym]) {
+        acc[sym] = { ...item, symbol: sym, shares, avgCost };
+      } else {
+        const existing = acc[sym];
+        const eShares = Number(existing.shares) || 0;
+        const eCost = Number(existing.avgCost) || 0;
+        
+        const totalShares = eShares + shares;
+        if (totalShares > 0) {
+          existing.avgCost = (eShares * eCost + shares * avgCost) / totalShares;
+          existing.shares = totalShares;
+        }
+      }
+      return acc;
+    }, {} as Record<string, typeof items[number]>);
+
+    const finalItems = Object.values(merged);
+
     return tx
       .insert(positions)
       .values(
-        items.map((p) => ({
+        finalItems.map((p) => ({
           userId,
           symbol:   p.symbol,
           name:     p.name ?? null,

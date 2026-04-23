@@ -91,7 +91,7 @@ async function main() {
     const mapped = positions.map(p => ({
       symbol: p.symbol,
       shares: String(p.shares ?? p.amount ?? 0),
-      avgPrice: String(p.avgPrice ?? 0),
+      avgCost: String(p.avgPrice ?? 0),
     }));
     await positionsRepo.replacePositions(userId, mapped);
     console.log(`  ✓ Positions: ${mapped.length} items migrated`);

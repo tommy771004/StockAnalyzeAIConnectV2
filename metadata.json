@@ -1,5 +1,7 @@
 {
-  "name": "",
-  "description": "",
-  "requestFramePermissions": []
+  "name": "Quantum AI Trading Terminal",
+  "description": "A high-performance trading dashboard featuring real-time analytics, AI-powered sentiment analysis, advanced backtesting, and a centralized portfolio management suite.",
+  "requestFramePermissions": [
+    "notifications"
+  ]
 }

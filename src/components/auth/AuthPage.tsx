@@ -4,6 +4,7 @@
  */
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { QuantumAnimation } from '../QuantumAnimation';
 
 export default function AuthPage() {
   const { login, register } = useAuth();
@@ -37,6 +38,7 @@ export default function AuthPage() {
       className="min-h-screen flex items-center justify-center relative overflow-hidden bg-grid"
       style={{ background: 'var(--md-background)', color: 'var(--md-on-surface)' }}
     >
+      <QuantumAnimation />
       {/* Ambient Glows */}
       <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full pointer-events-none"
         style={{ background: 'var(--md-primary-container)', mixBlendMode: 'screen', filter: 'blur(128px)', opacity: 0.2 }} />
@@ -159,7 +161,7 @@ export default function AuthPage() {
             {/* MFA Indicator */}
             <div className="flex items-start gap-3 rounded-xl p-3"
               style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-surface-container-high)' }}>
-              <span className="material-symbols-outlined mt-0.5" style={{ color: 'var(--md-tertiary)', fontSize: 20 }}>shield_locked</span>
+              <span className="material-symbols-outlined mt-0.5" style={{ color: 'var(--md-tertiary)', fontSize: 20 }}>shield_lock</span>
               <div>
                 <div className="text-sm font-semibold mb-0.5" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>
                   MFA 驗證已啟用

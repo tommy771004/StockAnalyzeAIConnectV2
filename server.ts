@@ -609,9 +609,16 @@ app.use(express.json());
 
   app.put('/api/positions', authMiddleware, async (req: AuthRequest, res) => {
     try {
+      if (!Array.isArray(req.body)) {
+        res.status(400).json({ error: 'Body must be an array of positions' });
+        return;
+      }
       await positionsRepo.replacePositions(req.userId!, req.body);
       res.json({ ok: true });
-    } catch (e: any) { res.status(500).json({ error: e.message }); }
+    } catch (e: any) {
+      console.error('[API] PUT /api/positions error:', e);
+      res.status(500).json({ error: e.message });
+    }
   });
 
   app.get('/api/trades', authMiddleware, async (req: AuthRequest, res) => {

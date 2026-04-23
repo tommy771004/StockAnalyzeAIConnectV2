@@ -263,7 +263,25 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
     if(!newPos.symbol||!newPos.shares||!newPos.avgCost){setSaveErr('請填入代碼、股數、均價');return;}
     if(!isFinite(sharesNum)||sharesNum<=0||!isFinite(avgCostNum)||avgCostNum<=0){setSaveErr('股數與均價必須為有效正數');return;}
     const pos:Position={symbol:newPos.symbol.toUpperCase(),name:newPos.name||newPos.symbol.toUpperCase(),shares:sharesNum,avgCost:avgCostNum,currency:newPos.currency};
-    const updated=[...positions,pos];
+    
+    // Merge if symbol already exists to prevent unique constraint violation
+    const existingIdx = positions.findIndex(p => p.symbol === pos.symbol);
+    let updated: Position[];
+    if (existingIdx !== -1) {
+      const existing = positions[existingIdx];
+      const newTotalShares = existing.shares + pos.shares;
+      const newAvgCost = (existing.shares * existing.avgCost + pos.shares * pos.avgCost) / newTotalShares;
+      const merged: Position = {
+        ...existing,
+        shares: newTotalShares,
+        avgCost: newAvgCost
+      };
+      updated = [...positions];
+      updated[existingIdx] = merged;
+    } else {
+      updated = [...positions, pos];
+    }
+    
     await persist(updated); setShowAdd(false); setNewPos({symbol:'',name:'',shares:'',avgCost:'',currency:'USD'}); await fetchAll(true);
   };
   const handleDelete=async(idx:number)=>{ const u=positions.filter((_,i)=>i!==idx); await persist(u); await fetchAll(true); };
