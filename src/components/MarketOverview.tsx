@@ -140,39 +140,39 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
       onClick={() => onSelect(s)}
       onKeyDown={e => e.key === 'Enter' && onSelect(s)}
       className={safeCn(
-        "relative glass-card rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-5 cursor-pointer transition group overflow-hidden border border-white/5 active:scale-[0.99]",
+        "relative glass-card rounded-[1.2rem] sm:rounded-[1.5rem] p-3 sm:p-4 cursor-pointer transition group overflow-hidden border border-white/5 active:scale-[0.99]",
         isSelected ? 'bg-indigo-500/10 border-indigo-500/40 ring-4 ring-indigo-500/5' : 'hover:border-white/10'
       )}
     >
       <div className="absolute inset-0 bg-white/[0.01] pointer-events-none group-hover:bg-white/[0.03] transition-colors" />
       
       <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(s.symbol); vibrate(20); }}
-        className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-2 rounded-2xl transition z-20 bg-black/40 border border-white/10 hover:bg-rose-500 hover:text-white hover:border-rose-400 text-zinc-500">
-        <X size={14}/>
+        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 p-1.5 rounded-xl transition z-20 bg-black/40 border border-white/10 hover:bg-rose-500 hover:text-white hover:border-rose-400 text-zinc-500">
+        <X size={12}/>
       </button>
 
-      <div className="flex items-start justify-between mb-5 relative z-10">
+      <div className="flex items-start justify-between mb-2 relative z-10">
         <div className="min-w-0 flex-1 pr-6">
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1" style={{ fontFamily: 'var(--font-heading)' }}>{s.symbol}</div>
-          <div className="text-sm font-black text-white tracking-tight truncate uppercase" style={{ fontFamily: 'var(--font-heading)' }}>{s.shortName || s.name}</div>
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-0.5" style={{ fontFamily: 'var(--font-heading)' }}>{s.symbol}</div>
+          <div className="text-xs font-black text-white tracking-tight truncate uppercase" style={{ fontFamily: 'var(--font-heading)' }}>{s.shortName || s.name}</div>
         </div>
         <div className={safeCn(
-          "text-[10px] font-black px-2.5 py-1 rounded-lg border tabular-nums shrink-0",
+          "text-[10px] font-black px-2 py-0.5 rounded-lg border tabular-nums shrink-0",
           isUp ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
         )} style={{ fontFamily: 'var(--font-data)' }}>
           {isUp ? '+' : ''}{s.changePct.toFixed(2)}%
         </div>
       </div>
 
-      <div className="text-2xl md:text-3xl font-black tabular-nums tracking-tighter relative z-10 mb-4 sm:mb-6"
+      <div className="text-xl sm:text-2xl font-black tabular-nums tracking-tighter relative z-10 mb-2"
         style={{ color: isUp ? '#fb7185' : '#34d399', fontFamily: 'var(--font-data)' }}>
         {formatters.formatPrice(s.price, s.symbol.includes('.TW') ? 'TWD' : 'USD')}
       </div>
 
-      <div className="flex items-center gap-3 text-data-xs uppercase tracking-[0.15em] font-black opacity-30 border-t border-white/5 pt-4 relative z-10">
+      <div className="flex items-center gap-3 text-data-xs uppercase tracking-[0.15em] font-black opacity-30 border-t border-white/5 pt-2 relative z-10">
         <div className="flex-1 flex justify-between">
-          <div className="flex items-center gap-2"><span>BID</span><span className="text-white opacity-100">{formatters.formatPrice(s.bid, s.symbol.includes('.TW') ? 'TWD' : 'USD')}</span></div>
-          <div className="flex items-center gap-2"><span>ASK</span><span className="text-white opacity-100">{formatters.formatPrice(s.ask, s.symbol.includes('.TW') ? 'TWD' : 'USD')}</span></div>
+          <div className="flex items-center gap-1.5"><span>BID</span><span className="text-white opacity-100">{formatters.formatPrice(s.bid, s.symbol.includes('.TW') ? 'TWD' : 'USD')}</span></div>
+          <div className="flex items-center gap-1.5"><span>ASK</span><span className="text-white opacity-100">{formatters.formatPrice(s.ask, s.symbol.includes('.TW') ? 'TWD' : 'USD')}</span></div>
         </div>
       </div>
     </div>
@@ -685,7 +685,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
               tabIndex={0}
               onClick={() => !showAdd && setShowAdd(true)}
               onKeyDown={e => e.key === 'Enter' && !showAdd && setShowAdd(true)}
-              className="glass-card rounded-[2rem] border-2 border-dashed border-white/10 p-6 sm:p-8 cursor-pointer transition flex flex-col items-center justify-center min-h-[160px] hover:border-indigo-500/40 hover:bg-indigo-500/5 group active:scale-[0.98]">
+              className="glass-card rounded-[1.2rem] sm:rounded-[1.5rem] border-2 border-dashed border-white/10 p-4 sm:p-5 cursor-pointer transition flex flex-col items-center justify-center min-h-[100px] hover:border-indigo-500/40 hover:bg-indigo-500/5 group active:scale-[0.98]">
               {showAdd ? (
                 <div className="w-full space-y-4" onClick={e => e.stopPropagation()}>
                   <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">ADD NEW SYMBOL</div>
@@ -714,8 +714,8 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                 </div>
               ) : (
                 <div className="text-center group-hover:scale-110 transition-transform">
-                  <div className="w-16 h-16 rounded-[2rem] bg-indigo-500/10 flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
-                    <Plus size={32} className="text-indigo-400"/>
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center mx-auto mb-2 border border-indigo-500/20">
+                    <Plus size={22} className="text-indigo-400"/>
                   </div>
                   <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-white transition-colors">INITIATE TRACKER</div>
                 </div>
@@ -771,7 +771,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       </div>
 
       {/* ── 3. 市場焦點與財經新聞 ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 flex-1 min-h-[250px] mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
         {/* 左側：熱門交易標的 */}
         <div className="lg:col-span-1 glass-card rounded-[1.5rem] p-4 sm:p-5 flex flex-col shadow-lg border border-white/5">
           <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
@@ -821,10 +821,10 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
               <Newspaper size={14} style={{ color: 'var(--md-secondary)' }}/> 國際財經快訊 (News)
             </h2>
           </div>
-          <div className="flex-1 overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 pr-1">
+          <div className="flex-1 overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 content-start pr-1 max-h-[340px]">
             {news.length > 0 ? news.map((n: NewsItem, i: number) => (
               <a key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer"
-                className="flex flex-col p-2.5 rounded-xl transition group"
+                className="flex flex-col p-2.5 rounded-xl transition group h-fit"
                 style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(173,198,255,0.3)')}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--md-outline-variant)')}>

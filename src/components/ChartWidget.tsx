@@ -81,6 +81,9 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     if (chartRef.current) {
       chartRef.current.remove();
     }
+    // Reset so the data effect re-applies the initial range on next render
+    isInitializedRef.current = false;
+    logicalRangeRef.current = null;
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
@@ -110,8 +113,8 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         borderColor: gridColor,
         timeVisible: true,
         fixLeftEdge: true,
-        rightOffset: 15, // Provide room at the edge
-        barSpacing: 12, // Slightly wider for better visual
+        rightOffset: 3,
+        barSpacing: 12,
         minBarSpacing: 1,
       },
       rightPriceScale: {
@@ -333,32 +336,26 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
       }
 
       // 3. Intelligently handle view
+      const barCount = uniqueData.length;
+      const RIGHT_PAD = 3;
       if (!isInitializedRef.current) {
-        // Show only the last 50-80 bars by default for "Professional" look - much thicker bars
-        const barCount = uniqueData.length;
+        // Show only the last 60 bars by default
         if (barCount > 60) {
           chart.timeScale().setVisibleLogicalRange({
             from: barCount - 60,
-            to: barCount + 5, // Small buffer at the right
+            to: barCount - 1 + RIGHT_PAD,
           });
         } else {
           chart.timeScale().fitContent();
         }
         isInitializedRef.current = true;
       } else if (logicalRangeRef.current) {
-        // Restore user's previous zoom, but ensure it's not sticking too far in the future
-        const barCount = uniqueData.length;
+        // Restore user's previous zoom, but always clamp right edge to data boundary
         const currentRange = logicalRangeRef.current;
-        
-        // If the 'to' range is very far beyond our current data, clamp it
-        if (currentRange.to > barCount + 50) {
-           chart.timeScale().setVisibleLogicalRange({
-             from: Math.max(0, barCount - (currentRange.to - currentRange.from)),
-             to: barCount + 5,
-           });
-        } else {
-           chart.timeScale().setVisibleLogicalRange(currentRange);
-        }
+        const spanBars = currentRange.to - currentRange.from;
+        const clampedTo = Math.min(currentRange.to, barCount - 1 + RIGHT_PAD);
+        const clampedFrom = Math.max(0, clampedTo - spanBars);
+        chart.timeScale().setVisibleLogicalRange({ from: clampedFrom, to: clampedTo });
       }
       
       dataRef.current = uniqueData;
