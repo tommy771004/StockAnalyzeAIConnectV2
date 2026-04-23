@@ -175,10 +175,34 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
       const [posData,tradeData,fxRate]=await Promise.all([
         api.getPositions(),
         api.getTrades(),
-        api.getForexRate('USDTWD=X'),
+        api.getForexRate('USDTWD=X').catch(() => 32.5),
       ]);
-      const pos=Array.isArray(posData.positions)?posData.positions:[];
+      let pos = Array.isArray(posData.positions) ? posData.positions : [];
       const rate = fxRate > 0 ? fxRate : (posData.usdtwd > 0 ? posData.usdtwd : 32.5);
+
+      // If backend didn't provide prices, fetch them in batch
+      const symbolsToFetch = pos.filter(p => p.currentPrice == null).map(p => p.symbol);
+      if (symbolsToFetch.length > 0) {
+        try {
+          const quotes = await api.getBatchQuotes(symbolsToFetch);
+          const qMap = new Map(quotes.map(q => [q.symbol, q.regularMarketPrice]));
+          pos = pos.map(p => {
+            const price = qMap.get(p.symbol);
+            if (price != null) {
+              const currentPrice = Number(price);
+              const pnl = (currentPrice - p.avgCost) * p.shares;
+              const pnlPercent = p.avgCost > 0 ? ((currentPrice / p.avgCost) - 1) * 100 : 0;
+              const marketValue = currentPrice * p.shares;
+              const marketValueTWD = p.currency === 'TWD' ? marketValue : marketValue * rate;
+              return { ...p, currentPrice, pnl, pnlPercent, marketValue, marketValueTWD };
+            }
+            return p;
+          });
+        } catch (err) {
+          console.warn('[Portfolio] Failed to fetch missing batch prices:', err);
+        }
+      }
+
       setPos(pos); setUsdtwd(rate);
       setTrades(Array.isArray(tradeData)?tradeData:[]);
       // Auto-set initial capital to total cost if not set by user
@@ -262,7 +286,19 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
     const avgCostNum = Number(newPos.avgCost);
     if(!newPos.symbol||!newPos.shares||!newPos.avgCost){setSaveErr('請填入代碼、股數、均價');return;}
     if(!isFinite(sharesNum)||sharesNum<=0||!isFinite(avgCostNum)||avgCostNum<=0){setSaveErr('股數與均價必須為有效正數');return;}
-    const pos:Position={symbol:newPos.symbol.toUpperCase(),name:newPos.name||newPos.symbol.toUpperCase(),shares:sharesNum,avgCost:avgCostNum,currency:newPos.currency};
+    
+    // Auto-detect currency for Taiwan stocks
+    const symUpper = newPos.symbol.toUpperCase();
+    const isTW = symUpper.endsWith('.TW') || symUpper.endsWith('.TWO');
+    const detectedCurrency = isTW ? 'TWD' : (newPos.currency || 'USD');
+
+    const pos:Position={
+      symbol:symUpper,
+      name:newPos.name||symUpper,
+      shares:sharesNum,
+      avgCost:avgCostNum,
+      currency:detectedCurrency
+    };
     
     // Merge if symbol already exists to prevent unique constraint violation
     const existingIdx = positions.findIndex(p => p.symbol === pos.symbol);
@@ -274,7 +310,8 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
       const merged: Position = {
         ...existing,
         shares: newTotalShares,
-        avgCost: newAvgCost
+        avgCost: newAvgCost,
+        currency: detectedCurrency // Update currency to TWD if merged with a TW stock string
       };
       updated = [...positions];
       updated[existingIdx] = merged;
@@ -346,14 +383,14 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
           {label:'今日已實現損益',value:`${todayPnL>=0?'+':''}$${todayPnL.toLocaleString(undefined,{maximumFractionDigits:0})}`,sub:today,up:todayPnL>=0,tip:'今天在交易日誌中記錄的損益合計'},
           {label:'最大回撤 (MDD)',value:`${(maxDD*100).toFixed(1)}%`,sub:`歷史最大帳面虧損`,up:maxDD<0.2,tip:'歷史淨值從高點回落的最大幅度'},
         ].map(c=>(
-          <div key={c.label} className={cn("glass-card rounded-3xl shadow-lg", compact ? "p-3" : "p-6")}>
-            <div className={cn("font-bold uppercase tracking-widest mb-2", compact ? "label-meta" : "text-xs")} style={{ color: 'var(--md-outline)' }}>{c.label}</div>
-            <div className={cn('font-black mb-1', compact ? "text-lg" : "text-2xl", c.up?'':'text-price-up')} style={{ fontFamily: 'var(--font-data)', color: c.up ? 'var(--md-on-surface)' : undefined }}>{c.value}</div>
-            <div className={cn("flex items-center gap-1.5 font-medium", compact ? "label-meta" : "text-xs")}>
+          <div key={c.label} className={cn("glass-card rounded-3xl shadow-xl", compact ? "p-3" : "p-6")}>
+            <div className={cn("font-black uppercase tracking-[0.16em] mb-3", compact ? "text-[9px]" : "text-[10px]")} style={{ color: 'var(--md-outline)', fontFamily: 'var(--font-data)' }}>{c.label}</div>
+            <div className={cn('font-black mb-1.5', compact ? "text-lg" : "text-2xl", c.up?'':'text-price-up')} style={{ fontFamily: 'var(--font-data)', color: c.up ? 'var(--md-on-surface)' : undefined }}>{c.value}</div>
+            <div className={cn("flex items-center gap-1.5 font-bold", compact ? "text-[9px]" : "text-[11px]")}>
               {c.up?<TrendingUp size={compact ? 10 : 12} style={{ color: 'var(--color-down)' }}/>:<TrendingDown size={compact ? 10 : 12} style={{ color: 'var(--color-up)' }}/>}
-              <span style={{ color: 'var(--md-outline)' }}>{c.sub}</span>
+              <span style={{ color: 'var(--md-on-surface-variant)' }}>{c.sub}</span>
             </div>
-            <div className={cn("mt-3 font-medium", compact ? "label-meta" : "text-xs")} style={{ color: 'var(--md-outline-variant)' }}>{c.tip}</div>
+            <div className={cn("mt-4 font-medium leading-relaxed", compact ? "text-[9px]" : "text-[11px]")} style={{ color: 'var(--md-on-surface-variant)', opacity: 0.7 }}>{c.tip}</div>
           </div>
         ))}
       </div>
@@ -514,9 +551,9 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
           <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
-              <tr className="border-b text-xs" style={{ borderColor: 'var(--md-outline-variant)', color: 'var(--md-outline)' }}>
+              <tr className="border-b" style={{ borderColor: 'var(--md-outline-variant)', color: 'var(--md-outline)' }}>
                 {['代碼 / 名稱','股數','均價','現價','市值 (TWD)','幣別','未實現損益','漲跌幅','操作'].map((h,i)=>(
-                  <th key={i} className={cn('pb-2.5 font-medium',i>=5?'text-right':'')}>{h}</th>
+                  <th key={i} className={cn('pb-3 font-black uppercase tracking-widest text-[9px]',i>=5?'text-right':'')}>{h}</th>
                 ))}
               </tr>
             </thead>

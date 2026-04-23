@@ -30,20 +30,21 @@ export default function PricingModal() {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-5xl bg-[var(--bg-color)] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative w-full max-w-5xl glass-card rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
-          <div className="p-6 md:p-8 text-center relative shrink-0 border-b border-[var(--border-color)]">
+          <div className="p-6 md:p-8 text-center relative shrink-0 border-b" style={{ borderColor: 'var(--md-outline-variant)' }}>
             <button 
               onClick={closeUpgradeModal}
-              className="absolute top-6 right-6 p-2 rounded-full bg-[var(--bg-color)] hover:bg-[var(--border-color)] text-zinc-500 hover:text-[var(--text-color)] transition-colors"
+              className="absolute top-6 right-6 p-2 rounded-full hover:bg-[var(--md-surface-container-highest)] transition-colors"
+              style={{ color: 'var(--md-outline)' }}
             >
               <X size={20} />
             </button>
-            <h2 className="text-2xl md:text-3xl font-black text-[var(--text-color)] mb-2 tracking-tight">
-              解鎖 <span className="text-emerald-400">Quantum AI</span> 的完整潛力
+            <h2 className="text-2xl md:text-3xl font-black mb-2 tracking-tight" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>
+              解鎖 <span className="text-gradient-primary">Quantum AI</span> 的完整潛力
             </h2>
-            <p className="text-zinc-500 text-sm md:text-base max-w-xl mx-auto">
+            <p className="text-xs md:text-sm max-w-xl mx-auto uppercase tracking-widest font-bold" style={{ color: 'var(--md-outline)' }}>
               選擇適合您的交易武器，透過頂尖 AI 模型掌握市場先機。
             </p>
           </div>
@@ -54,16 +55,16 @@ export default function PricingModal() {
               
               {/* Free Tier */}
               <div className={cn(
-                "relative rounded-3xl p-6 border flex flex-col",
-                tier === SubscriptionTier.FREE ? "bg-[var(--bg-color)] border-[var(--border-color)]" : "bg-[var(--card-bg)] border-[var(--border-color)]"
+                "relative rounded-3xl p-6 border flex flex-col transition-all",
+                tier === SubscriptionTier.FREE ? "bg-[var(--md-surface-container-high)] border-[var(--md-primary)]" : "bg-[var(--md-surface-container-low)] border-[var(--md-outline-variant)] hover:border-white/20"
               )}>
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-[var(--text-color)] mb-2">基礎版 (Free)</h3>
+                  <h3 className="text-xl font-black mb-2" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>基礎版 (Free)</h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-[var(--text-color)]">$0</span>
-                    <span className="text-zinc-500 text-sm">/ 月</span>
+                    <span className="text-3xl font-black font-mono tracking-tighter" style={{ color: 'var(--md-on-surface)' }}>$0</span>
+                    <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: 'var(--md-outline)' }}>/ 月</span>
                   </div>
-                  <p className="text-sm text-zinc-500 mt-2">適合剛開始接觸量化交易的新手</p>
+                  <p className="text-xs font-medium mt-2" style={{ color: 'var(--md-outline)' }}>適合剛開始接觸量化交易的新手</p>
                 </div>
                 
                 <div className="flex-1 space-y-4 mb-8">
@@ -78,8 +79,8 @@ export default function PricingModal() {
                   disabled={tier === SubscriptionTier.FREE}
                   onClick={() => handleSubscribe(SubscriptionTier.FREE)}
                   className={cn(
-                    "w-full py-3 rounded-xl font-bold transition-all",
-                    tier === SubscriptionTier.FREE ? "bg-[var(--border-color)] text-[var(--text-color)] cursor-default" : "bg-[var(--bg-color)] text-[var(--text-color)] opacity-70 hover:bg-[var(--border-color)]"
+                    "w-full py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all",
+                    tier === SubscriptionTier.FREE ? "bg-[var(--md-surface-container-highest)] text-[var(--md-outline)] cursor-default" : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
                   )}
                 >
                   {tier === SubscriptionTier.FREE ? '目前方案' : '降級至基礎版'}
@@ -88,27 +89,27 @@ export default function PricingModal() {
 
               {/* Basic Tier */}
               <div className={cn(
-                "relative rounded-3xl p-6 border flex flex-col",
-                tier === SubscriptionTier.BASIC ? "bg-emerald-500/10 border-emerald-500/30" : "bg-[var(--card-bg)] border-[var(--border-color)] hover:border-emerald-500/20 transition-colors"
+                "relative rounded-3xl p-6 border flex flex-col transition-all",
+                tier === SubscriptionTier.BASIC ? "bg-[var(--md-secondary-container)]/10 border-[var(--md-secondary)]" : "bg-[var(--md-surface-container-low)] border-[var(--md-outline-variant)] hover:border-white/20"
               )}>
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--md-secondary)] text-[var(--md-on-secondary)] text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-[0.2em]">
                   最受歡迎
                 </div>
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-emerald-400 mb-2 flex items-center gap-2">
+                  <h3 className="text-xl font-black mb-2 flex items-center gap-2" style={{ color: 'var(--md-secondary)', fontFamily: 'var(--font-heading)' }}>
                     <Zap size={20} /> 簡易模型
                   </h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-[var(--text-color)]">$199</span>
-                    <span className="text-zinc-500 text-sm">/ 月</span>
+                    <span className="text-3xl font-black font-mono tracking-tighter" style={{ color: 'var(--md-on-surface)' }}>$199</span>
+                    <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: 'var(--md-outline)' }}>/ 月</span>
                   </div>
-                  <p className="text-sm text-zinc-500 mt-2">解鎖 AI 趨勢評估與基本買賣建議</p>
+                  <p className="text-xs font-medium mt-2" style={{ color: 'var(--md-outline)' }}>解鎖 AI 趨勢評估與基本買賣建議</p>
                 </div>
                 
                 <div className="flex-1 space-y-4 mb-8">
                   <FeatureItem text="包含基礎版所有功能" />
-                  <FeatureItem text="AI 趨勢評估 (Trend Assessment)" highlight />
-                  <FeatureItem text="基本買賣訊號提示" highlight />
+                  <FeatureItem text="AI 趨勢評估 (Trend Assessment)" highlight color="secondary" />
+                  <FeatureItem text="基本買賣訊號提示" highlight color="secondary" />
                   <FeatureItem text="每日 50 次 AI 查詢額度" />
                   <FeatureItem text="深入推理與目標價預測" disabled />
                 </div>
@@ -117,10 +118,10 @@ export default function PricingModal() {
                   disabled={tier === SubscriptionTier.BASIC}
                   onClick={() => handleSubscribe(SubscriptionTier.BASIC)}
                   className={cn(
-                    "w-full py-3 rounded-xl font-bold transition-all",
+                    "w-full py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all",
                     tier === SubscriptionTier.BASIC 
-                      ? "bg-emerald-500/20 text-emerald-400 cursor-default" 
-                      : "bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.3)]"
+                      ? "bg-[var(--md-secondary-container)]/20 text-[var(--md-secondary)] cursor-default" 
+                      : "bg-[var(--md-secondary)] text-[var(--md-on-secondary)] hover:brightness-110 shadow-lg"
                   )}
                 >
                   {tier === SubscriptionTier.BASIC ? '目前方案' : '升級簡易模型'}
@@ -129,25 +130,25 @@ export default function PricingModal() {
 
               {/* Pro Tier */}
               <div className={cn(
-                "relative rounded-3xl p-6 border flex flex-col",
-                tier === SubscriptionTier.PRO ? "bg-indigo-500/10 border-indigo-500/30" : "bg-[var(--card-bg)] border-[var(--border-color)] hover:border-indigo-500/20 transition-colors"
+                "relative rounded-3xl p-6 border flex flex-col transition-all",
+                tier === SubscriptionTier.PRO ? "bg-[var(--md-primary-container)]/10 border-[var(--md-primary)]" : "bg-[var(--md-surface-container-low)] border-[var(--md-outline-variant)] hover:border-white/20"
               )}>
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-indigo-400 mb-2 flex items-center gap-2">
+                  <h3 className="text-xl font-black mb-2 flex items-center gap-2" style={{ color: 'var(--md-primary)', fontFamily: 'var(--font-heading)' }}>
                     <BrainCircuit size={20} /> 深入分析模型
                   </h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-[var(--text-color)]">$799</span>
-                    <span className="text-zinc-500 text-sm">/ 月</span>
+                    <span className="text-3xl font-black font-mono tracking-tighter" style={{ color: 'var(--md-on-surface)' }}>$799</span>
+                    <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: 'var(--md-outline)' }}>/ 月</span>
                   </div>
-                  <p className="text-sm text-zinc-500 mt-2">專為專業交易員打造的完整 AI 引擎</p>
+                  <p className="text-xs font-medium mt-2" style={{ color: 'var(--md-outline)' }}>專為專業交易員打造的完整 AI 引擎</p>
                 </div>
                 
                 <div className="flex-1 space-y-4 mb-8">
                   <FeatureItem text="包含簡易模型所有功能" />
-                  <FeatureItem text="AI 交易策略分析與推理邏輯" highlight color="indigo" />
-                  <FeatureItem text="精準目標價與停損價預測" highlight color="indigo" />
-                  <FeatureItem text="市場情緒深度解析" highlight color="indigo" />
+                  <FeatureItem text="AI 交易策略分析與推理邏輯" highlight color="primary" />
+                  <FeatureItem text="精準目標價與停損價預測" highlight color="primary" />
+                  <FeatureItem text="市場情緒深度解析" highlight color="primary" />
                   <FeatureItem text="無限制 AI 查詢額度" />
                 </div>
 
@@ -155,10 +156,10 @@ export default function PricingModal() {
                   disabled={tier === SubscriptionTier.PRO}
                   onClick={() => handleSubscribe(SubscriptionTier.PRO)}
                   className={cn(
-                    "w-full py-3 rounded-xl font-bold transition-all",
+                    "w-full py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all",
                     tier === SubscriptionTier.PRO 
-                      ? "bg-indigo-500/20 text-indigo-400 cursor-default" 
-                      : "bg-indigo-500 text-[var(--text-color)] hover:bg-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+                      ? "bg-[var(--md-primary-container)]/20 text-[var(--md-primary)] cursor-default" 
+                      : "bg-[var(--md-primary)] text-[var(--md-on-primary)] hover:brightness-110 shadow-lg"
                   )}
                 >
                   {tier === SubscriptionTier.PRO ? '目前方案' : '升級深入分析'}
@@ -169,8 +170,8 @@ export default function PricingModal() {
           </div>
           
           {/* Footer */}
-          <div className="p-4 border-t border-[var(--border-color)] text-center shrink-0">
-            <p className="text-xs text-zinc-500 flex items-center justify-center gap-1">
+          <div className="p-4 border-t text-center shrink-0" style={{ borderColor: 'var(--md-outline-variant)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2" style={{ color: 'var(--md-outline)' }}>
               <ShieldCheck size={14} /> 支援 iOS / Android 跨平台訂閱同步 (即將推出)
             </p>
           </div>
@@ -181,15 +182,15 @@ export default function PricingModal() {
   );
 }
 
-function FeatureItem({ text, disabled = false, highlight = false, color = 'emerald' }: { text: string, disabled?: boolean, highlight?: boolean, color?: 'emerald' | 'indigo' }) {
+function FeatureItem({ text, disabled = false, highlight = false, color = 'secondary' }: { text: string, disabled?: boolean, highlight?: boolean, color?: 'secondary' | 'primary' }) {
   return (
     <div className={cn("flex items-start gap-3 text-sm", disabled ? "opacity-40" : "")}>
       {disabled ? (
         <X size={18} className="text-zinc-500 shrink-0 mt-0.5" />
       ) : (
-        <CheckCircle2 size={18} className={cn("shrink-0 mt-0.5", highlight ? (color === 'indigo' ? 'text-indigo-400' : 'text-emerald-400') : "text-zinc-500")} />
+        <CheckCircle2 size={18} className={cn("shrink-0 mt-0.5", highlight ? (color === 'primary' ? 'text-[var(--md-primary)]' : 'text-[var(--md-secondary)]') : "text-zinc-500")} />
       )}
-      <span className={cn(highlight ? "text-[var(--text-color)] font-medium" : "text-[var(--text-color)] opacity-70")}>{text}</span>
+      <span className={cn(highlight ? "text-[var(--md-on-surface)] font-bold" : "text-[var(--md-on-surface)] opacity-70")}>{text}</span>
     </div>
   );
 }

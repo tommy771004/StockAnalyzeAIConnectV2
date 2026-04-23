@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 
 interface Notification {
   id: number;
@@ -71,22 +71,33 @@ export default function NotificationCenter({ open, onClose }: { open: boolean, o
   if (!context || !open) return null;
 
   return (
-    <div className="fixed top-16 right-2 sm:right-4 z-50 p-4 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl w-[calc(100vw-1rem)] sm:w-80 max-h-96 overflow-auto">
+    <div className="fixed top-16 right-2 sm:right-4 z-50 p-4 glass-card shadow-2xl w-[calc(100vw-1rem)] sm:w-80 max-h-[70vh] overflow-auto">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-bold text-white">通知中心</h3>
-        <button onClick={onClose} className="text-gray-500 hover:text-white">✕</button>
+        <h3 className="text-sm font-black tracking-tight" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>通知中心</h3>
+        <button onClick={onClose} className="p-1.5 rounded-full hover:bg-[var(--md-surface-container-highest)] transition-colors" style={{ color: 'var(--md-outline)' }}>
+          <X size={16} />
+        </button>
       </div>
       {context.notifications.length === 0 ? (
-        <p className="text-xs text-gray-500 text-center py-8">目前沒有通知</p>
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-outline)' }}>
+            <Bell size={24} className="opacity-20" />
+          </div>
+          <p className="text-xs font-medium" style={{ color: 'var(--md-outline)' }}>目前沒有通知</p>
+        </div>
       ) : (
         <div className="flex flex-col gap-3">
           {context.notifications.map(n => (
-            <div key={n.id} className={`p-3 rounded-lg border ${n.read ? 'bg-gray-800/30 border-gray-800' : 'bg-emerald-500/5 border-emerald-500/20'}`}>
-              <div className="flex justify-between items-start mb-1">
-                <span className="text-xs font-bold text-white">{n.title}</span>
-                <span className="text-[10px] text-gray-500">{n.time}</span>
+            <div key={n.id} className="p-3 rounded-xl border transition-all" 
+                 style={{ 
+                   background: n.read ? 'var(--md-surface-container-low)' : 'rgba(128, 131, 255, 0.08)',
+                   borderColor: n.read ? 'var(--md-outline-variant)' : 'rgba(128, 131, 255, 0.25)' 
+                 }}>
+              <div className="flex justify-between items-start mb-1 gap-2">
+                <span className="text-xs font-black tracking-tight" style={{ color: 'var(--md-on-surface)' }}>{n.title}</span>
+                <span className="text-[9px] font-mono shrink-0 whitespace-nowrap" style={{ color: 'var(--md-outline)' }}>{n.time}</span>
               </div>
-              <p className="text-[11px] text-gray-400 leading-relaxed">{n.message}</p>
+              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--md-on-surface-variant)' }}>{n.message}</p>
             </div>
           ))}
         </div>

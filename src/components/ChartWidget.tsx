@@ -31,6 +31,7 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
   const chartRef = useRef<IChartApi | null>(null);
   const volChartRef = useRef<IChartApi | null>(null);
   const subChartRef = useRef<IChartApi | null>(null);
+  const tooltipRef  = useRef<HTMLDivElement>(null);
 
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -245,6 +246,107 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
       if (source !== subChartRef.current && subChartRef.current) subChartRef.current.timeScale().setVisibleLogicalRange(range);
     };
 
+    const updateTooltip = (p: MouseEventParams, r: any, idx: number) => {
+      if (!tooltipRef.current || !mainRef.current) return;
+      if (!r || p.time === undefined || !p.point) {
+        tooltipRef.current.style.display = 'none';
+        return;
+      }
+
+      tooltipRef.current.style.display = 'block';
+      const d = new Date((p.time as number) * 1000);
+      const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      let html = `<div class="font-bold border-b border-[var(--border-color)] pb-1 mb-1">${dateStr}</div>`;
+      html += `<div class="grid grid-cols-2 gap-x-4 gap-y-0.5">`;
+      html += `<span class="opacity-60">Open:</span> <span class="text-right">${r.open.toFixed(2)}</span>`;
+      html += `<span class="opacity-60">High:</span> <span class="text-right">${r.high.toFixed(2)}</span>`;
+      html += `<span class="opacity-60">Low:</span> <span class="text-right">${r.low.toFixed(2)}</span>`;
+      const cClass = r.close >= r.open ? 'text-emerald-400' : 'text-rose-400';
+      html += `<span class="opacity-60">Close:</span> <span class="text-right font-bold ${cClass}">${r.close.toFixed(2)}</span>`;
+      
+      if (indics.has('Volume')) {
+        html += `<span class="opacity-60 text-indigo-400">Vol:</span> <span class="text-right">${Math.round(r.volume).toLocaleString()}</span>`;
+      }
+      if (indics.has('EMA1')) {
+        html += `<span class="opacity-60 text-amber-400">EMA${ema1Period}:</span> <span class="text-right">${ema1Data[idx]?.toFixed(2) ?? '-'}</span>`;
+      }
+      if (indics.has('EMA2')) {
+        html += `<span class="opacity-60 text-violet-400">EMA${ema2Period}:</span> <span class="text-right">${ema2Data[idx]?.toFixed(2) ?? '-'}</span>`;
+      }
+      
+      // Always show RSI/MACD in tooltip even if panel hidden? 
+      // User said "comprehensive information including RSI and MACD values"
+      const rsiVal = rsiIndicatorData[idx];
+      html += `<span class="opacity-60 text-sky-400">RSI:</span> <span class="text-right">${!isNaN(rsiVal) ? rsiVal.toFixed(1) : '-'}</span>`;
+      
+      const m = macdData[idx];
+      if (m) {
+        html += `<span class="opacity-60 text-sky-400">MACD:</span> <span class="text-right">${m.macd.toFixed(2)}</span>`;
+        html += `<span class="opacity-60 text-amber-400">Signal:</span> <span class="text-right">${m.signal.toFixed(2)}</span>`;
+        html += `<span class="opacity-60 text-[var(--text-color)]">Hist:</span> <span class="text-right">${m.hist.toFixed(2)}</span>`;
+      }
+      
+      html += `</div>`;
+      tooltipRef.current.innerHTML = html;
+
+      // Position tooltip safely
+      const containerRect = mainRef.current.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      let left = p.point.x + 15;
+      let top = p.point.y + 15;
+      
+      if (left + tooltipRect.width > containerRect.width) {
+        left = p.point.x - tooltipRect.width - 15;
+      }
+      if (top + tooltipRect.height > containerRect.height) {
+        top = p.point.y - tooltipRect.height - 15;
+      }
+      
+      tooltipRef.current.style.left = `${left}px`;
+      tooltipRef.current.style.top = `${top}px`;
+    };
+
+    const syncCrosshair = (p: MouseEventParams, sourceChart: IChartApi) => {
+      if (p.time !== undefined) {
+        updateLegendFromTime(p.time);
+        const idx = timeToIndex.get(p.time as Time);
+        const r = idx !== undefined ? rows[idx] : null;
+        
+        if (sourceChart === chartRef.current) {
+          updateTooltip(p, r, idx ?? -1);
+        }
+
+        // Sync to main chart
+        if (sourceChart !== chartRef.current && chartRef.current && candles) {
+          const price = idx !== undefined ? rows[idx].close : 0;
+          chartRef.current.setCrosshairPosition(price, p.time as Time, candles);
+        }
+        
+        // Sync to volume chart
+        if (sourceChart !== volChartRef.current && volChartRef.current && volSeries) {
+          const price = idx !== undefined ? rows[idx].volume : 0;
+          volChartRef.current.setCrosshairPosition(price, p.time as Time, volSeries);
+        }
+        
+        // Sync to sub chart
+        if (sourceChart !== subChartRef.current && subChartRef.current && primarySubSeries) {
+          let price = 0;
+          if (idx !== undefined) {
+            if (subPanel === 'RSI') price = rsiIndicatorData[idx];
+            else if (subPanel === 'MACD') price = macdData[idx].macd;
+          }
+          subChartRef.current.setCrosshairPosition(price, p.time as Time, primarySubSeries);
+        }
+      } else {
+        setLeg(last);
+        if (tooltipRef.current) tooltipRef.current.style.display = 'none';
+        if (sourceChart !== chartRef.current && chartRef.current) chartRef.current.clearCrosshairPosition();
+        if (sourceChart !== volChartRef.current && volChartRef.current) volChartRef.current.clearCrosshairPosition();
+        if (sourceChart !== subChartRef.current && subChartRef.current) subChartRef.current.clearCrosshairPosition();
+      }
+    };
+
     chart.timeScale().subscribeVisibleLogicalRangeChange(range => syncTimeScale(range, chart));
     if (volChartRef.current) volChartRef.current.timeScale().subscribeVisibleLogicalRangeChange(range => syncTimeScale(range, volChartRef.current!));
     if (subChartRef.current) subChartRef.current.timeScale().subscribeVisibleLogicalRangeChange(range => syncTimeScale(range, subChartRef.current!));
@@ -291,40 +393,6 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
       const idx = timeToIndex.get(time);
       if (idx !== undefined) {
         setLeg(rows[idx]);
-      }
-    };
-
-    const syncCrosshair = (p: MouseEventParams, sourceChart: IChartApi) => {
-      if (p.time !== undefined) {
-        updateLegendFromTime(p.time);
-        const idx = timeToIndex.get(p.time as Time);
-        
-        // Sync to main chart
-        if (sourceChart !== chartRef.current && chartRef.current && candles) {
-          const price = idx !== undefined ? rows[idx].close : 0;
-          chartRef.current.setCrosshairPosition(price, p.time as Time, candles);
-        }
-        
-        // Sync to volume chart
-        if (sourceChart !== volChartRef.current && volChartRef.current && volSeries) {
-          const price = idx !== undefined ? rows[idx].volume : 0;
-          volChartRef.current.setCrosshairPosition(price, p.time as Time, volSeries);
-        }
-        
-        // Sync to sub chart
-        if (sourceChart !== subChartRef.current && subChartRef.current && primarySubSeries) {
-          let price = 0;
-          if (idx !== undefined) {
-            if (subPanel === 'RSI') price = rsiIndicatorData[idx];
-            else if (subPanel === 'MACD') price = macdData[idx].macd;
-          }
-          subChartRef.current.setCrosshairPosition(price, p.time as Time, primarySubSeries);
-        }
-      } else {
-        setLeg(last);
-        if (sourceChart !== chartRef.current && chartRef.current) chartRef.current.clearCrosshairPosition();
-        if (sourceChart !== volChartRef.current && volChartRef.current) volChartRef.current.clearCrosshairPosition();
-        if (sourceChart !== subChartRef.current && subChartRef.current) subChartRef.current.clearCrosshairPosition();
       }
     };
 
@@ -481,6 +549,15 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
 
       <div className="flex-1 relative min-h-0">
         <div ref={mainRef} className="absolute inset-0" />
+        <div 
+          ref={tooltipRef} 
+          className="absolute hidden z-30 pointer-events-none p-2.5 rounded-xl shadow-2xl text-[10px] sm:text-xs font-mono min-w-[200px]" 
+          style={{ 
+            background: 'var(--md-surface-container)', 
+            border: '1px solid var(--md-outline-variant)',
+            color: 'var(--md-on-surface)'
+          }}
+        />
       </div>
 
       {indics.has('Volume') && (

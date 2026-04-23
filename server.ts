@@ -558,13 +558,16 @@ app.use(express.json());
       const trade = await tradesRepo.createTrade(userId, { ...order, time: new Date().toISOString() });
       const existing = await positionsRepo.getPositionsByUser(userId);
       const pos = existing.find(p => p.symbol === order.symbol);
+      const isTWD = order.symbol.endsWith('.TW') || order.symbol.endsWith('.TWO');
+      const currency = isTWD ? 'TWD' : 'USD';
+      
       if (order.side === 'buy') {
         if (pos) {
           const totalCost = Number(pos.shares) * Number(pos.avgCost) + order.total;
           const newShares = Number(pos.shares) + order.amount;
-          await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(newShares), avgCost: String(totalCost / newShares) });
+          await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(newShares), avgCost: String(totalCost / newShares), currency });
         } else {
-          await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(order.amount), avgCost: String(order.price) });
+          await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(order.amount), avgCost: String(order.price), currency });
         }
       } else {
         if (pos) {
@@ -572,7 +575,7 @@ app.use(express.json());
           if (newShares <= 0) {
             await positionsRepo.removePosition(userId, order.symbol);
           } else {
-            await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(newShares), avgCost: pos.avgCost });
+            await positionsRepo.upsertPosition(userId, { symbol: order.symbol, shares: String(newShares), avgCost: pos.avgCost, currency });
           }
         }
       }
@@ -609,8 +612,57 @@ app.use(express.json());
     let usdtwd = 32.5;
     try { const q = await NativeYahooApi.quote('USDTWD=X'); usdtwd = q?.regularMarketPrice ?? 32.5; } catch { /**/ }
     try {
-      const list = await positionsRepo.getPositionsByUser(req.userId!);
-      res.json({ positions: list.map(p => ({ symbol: p.symbol, shares: Number(p.shares), avgCost: Number(p.avgCost) })), usdtwd });
+      const userId = req.userId!;
+      const list = await positionsRepo.getPositionsByUser(userId);
+      
+      // Batch fetch prices to avoid UI spinners
+      const symbols = list.map(p => p.symbol);
+      let quotes: any[] = [];
+      if (symbols.length > 0) {
+        try {
+          const results = await NativeYahooApi.quote(symbols);
+          quotes = Array.isArray(results) ? results : [results];
+        } catch (err) {
+          console.warn('[API] Failed to fetch prices for positions:', err);
+        }
+      }
+      
+      const qMap = new Map(quotes.filter(q => q && q.symbol).map(q => [q.symbol, q]));
+      
+      const enriched = list.map(p => {
+        const q = qMap.get(p.symbol);
+        const shares = Number(p.shares);
+        const avgCost = Number(p.avgCost);
+        const cur = p.currency || 'USD';
+        
+        let currentPrice = q?.regularMarketPrice ?? null;
+        let pnl = null;
+        let pnlPercent = null;
+        let marketValue = null;
+        let marketValueTWD = null;
+
+        if (currentPrice != null) {
+          pnl = (currentPrice - avgCost) * shares;
+          pnlPercent = avgCost > 0 ? ((currentPrice / avgCost) - 1) * 100 : 0;
+          marketValue = currentPrice * shares;
+          marketValueTWD = cur === 'TWD' ? marketValue : marketValue * usdtwd;
+        }
+
+        return {
+          symbol: p.symbol,
+          name: q?.shortName || p.name || p.symbol,
+          shares,
+          avgCost,
+          currency: cur,
+          currentPrice,
+          pnl,
+          pnlPercent,
+          marketValue,
+          marketValueTWD
+        };
+      });
+
+      res.json({ positions: enriched, usdtwd });
     } catch (e: any) { res.status(500).json({ error: e.message }); }
   });
 

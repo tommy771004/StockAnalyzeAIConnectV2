@@ -1,5 +1,5 @@
 {
-  "autoTrade": false,
+  "autoTrade": true,
   "maxDailyLoss": 10000,
   "ollamaBaseUrl": "http://localhost:11434",
   "atrMultiplier": "1.5",

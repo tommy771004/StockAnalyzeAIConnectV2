@@ -219,11 +219,12 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
         orderType,
         priceType
       });
-      if (data.status === 'success') {
+      // Fix: Server returns { ok: true, trade: ... }
+      if (data.ok) {
         setToast({ msg: '交易成功', type: 'success' });
         setShowOrder(false);
       } else {
-        setToast({ msg: `交易結果: ${data.message}`, type: 'error' });
+        setToast({ msg: '交易失敗', type: 'error' });
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '交易請求失敗';

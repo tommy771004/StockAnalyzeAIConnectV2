@@ -21,10 +21,11 @@ interface PriceBarProps {
   onSetAlert: (symbol: string, price: number) => void;
   loadData: () => void;
   isLandscape?: boolean;
+  recommendation?: string;
 }
 
 export const PriceBar: React.FC<PriceBarProps> = React.memo(({
-  symbol, twse, loading, price, isUp, change, pct, high, low, vol, focusMode, setFocusMode, onSetAlert, loadData, isLandscape
+  symbol, twse, loading, price, isUp, change, pct, high, low, vol, focusMode, setFocusMode, onSetAlert, loadData, isLandscape, recommendation
 }) => {
   const { settings } = useSettings();
   const compact = settings.compactMode;
@@ -72,6 +73,16 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
           {!loading && change != null && (
             <span className={safeCn('data-num font-bold', compact ? 'text-xs' : 'text-sm', isUp ? 'text-emerald-400' : 'text-rose-400')}>
               {isUp ? '+' : ''}{safeN(change)} ({isUp ? '+' : ''}{safeN(pct)}%)
+            </span>
+          )}
+          {recommendation && (
+            <span className={safeCn(
+              "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
+              recommendation.includes('買進') ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" :
+              recommendation.includes('賣出') ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" :
+              "bg-zinc-500/20 text-zinc-400 border border-zinc-500/30"
+            )}>
+              {recommendation}
             </span>
           )}
           {loading && (

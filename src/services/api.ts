@@ -3,7 +3,7 @@
  * Unified data access layer — auto-detects Electron IPC vs web fetch.
  */
 
-import { Quote, NewsItem, CalendarData, WatchlistItem, Trade, Position, Alert, HistoricalData, BacktestResult, BacktestParams, ScreenerResult, TWSEData, MTFTrendRecord, TradeDTO, mapTradeDTO } from '../types';
+import { Quote, NewsItem, CalendarData, WatchlistItem, Trade, Position, Alert, HistoricalData, BacktestResult, BacktestParams, ScreenerResult, TWSEData, MTFTrendRecord, TradeDTO, mapTradeDTO, SearchResult } from '../types';
 
 declare global {
   interface Window {
@@ -76,37 +76,56 @@ export const getBatchQuotes = (syms: string[]): Promise<Quote[]> =>
 export const getNews = async (sym: string): Promise<NewsItem[]> => {
   const cached = getCachedData<NewsItem[]>(`news:${sym}`);
   if (cached) return cached;
-  try {
-    let data;
-    if (IS_ELECTRON) {
-      data = await E().getNews(sym);
-    } else {
-      try {
-        const tvNews = await fetchJ<Array<{ id: string; title: string; published: number; source: string; storyPath: string }>>(`/api/tv/news/${encodeURIComponent(sym)}`);
-        if (!tvNews || tvNews.length === 0) throw new Error('Empty TV news');
-        data = tvNews.map(item => ({
-          id: item.id || Math.random().toString(),
-          title: item.title,
-          link: item.storyPath ? `https://www.tradingview.com${item.storyPath}` : '',
-          publisher: item.source,
-          providerPublishTime: item.published
-        }));
-      } catch (tvError) {
-        console.warn('Fallback to Yahoo news:', tvError);
+  
+  // 為 getNews 整體設置一個 10 秒超時，防止無限轉圈
+  const timeoutPromise = new Promise<NewsItem[]>((_, reject) => 
+    setTimeout(() => reject(new Error('News fetch timeout')), 10000)
+  );
+
+  const fetchPromise = (async () => {
+    try {
+      let data: NewsItem[] = [];
+      if (IS_ELECTRON) {
+        data = await E().getNews(sym);
+      } else {
         try {
-          data = await fetchJ<NewsItem[]>(`/api/news/${sym}`);
-        } catch (yError) {
-          console.error('Yahoo news fallback failed:', yError);
-          data = [];
+          // 先嘗試 TV 新聞
+          const tvNews = await fetchJ<Array<{ id: string; title: string; published: number; source: string; storyPath: string }>>(`/api/tv/news/${encodeURIComponent(sym)}`);
+          if (tvNews && tvNews.length > 0) {
+            data = tvNews.map(item => ({
+              id: item.id || Math.random().toString(),
+              title: item.title,
+              link: item.storyPath ? `https://www.tradingview.com${item.storyPath}` : '',
+              publisher: item.source,
+              providerPublishTime: item.published,
+              type: 'NEWS'
+            }));
+          } else {
+            throw new Error('Empty TV news');
+          }
+        } catch (tvError) {
+          console.warn('Fallback to Yahoo news due to TV error:', tvError);
+          try {
+            // 回退到 Yahoo 新聞
+            data = await fetchJ<NewsItem[]>(`/api/news/${sym}`);
+          } catch (yError) {
+            console.error('Yahoo news fallback failed:', yError);
+            data = [];
+          }
         }
       }
+      setCachedData(`news:${sym}`, data);
+      return data;
+    } catch (e) {
+      apiWarn('getNews', e);
+      return []; // 失敗時回傳空陣列而非拋端，解除前端 loading 狀態
     }
-    setCachedData(`news:${sym}`, data);
-    return data;
-  } catch (e) {
-    apiWarn('getNews', e);
-    throw e;
-  }
+  })();
+
+  return Promise.race([fetchPromise, timeoutPromise]).catch(err => {
+    console.warn('[api.getNews] Timed out or failed, returning empty:', err);
+    return [];
+  });
 };
 
 export const getCalendar = async (sym: string): Promise<CalendarData> => {
@@ -190,9 +209,9 @@ export const updateTrade   = (t: Partial<Trade>): Promise<boolean> =>
 export const deleteTrade   = (id: number): Promise<boolean> =>
   IS_ELECTRON ? E().deleteTrade(id) : fetchJ(`/api/trades/${id}`, { method:'DELETE' }).then(() => true).catch(e => { apiWarn('deleteTrade', e); throw e; });
 
-export const executeTrade  = (order: Partial<Trade>): Promise<Trade> =>
-  IS_ELECTRON ? E().addTrade(order) // Fallback for electron if needed
-    : fetchJ<Trade>('/api/trade/execute', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
+export const executeTrade  = (order: Partial<Trade>): Promise<{ ok: boolean; trade: Trade }> =>
+  IS_ELECTRON ? E().addTrade(order).then(t => ({ ok: true, trade: t }))
+    : fetchJ<{ ok: boolean; trade: Trade }>('/api/trade/execute', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(order) });
 
 // ── Price Alerts ──────────────────────────────────────────────────────────────
 export const getAlerts     = (): Promise<Alert[]> =>
@@ -221,6 +240,9 @@ export const setSetting    = async <T>(key: string, val: T): Promise<boolean> =>
   });
   return !!r.ok;
 };
+
+export const searchStocks = (query: string): Promise<{ quotes: SearchResult[] }> =>
+  IS_ELECTRON ? Promise.resolve({ quotes: [] }) : fetchJ<{ quotes: SearchResult[] }>(`/api/search/${encodeURIComponent(query)}`);
 
 // ── DB Stats ──────────────────────────────────────────────────────────────────
 export const getDbStats    = (): Promise<unknown> =>

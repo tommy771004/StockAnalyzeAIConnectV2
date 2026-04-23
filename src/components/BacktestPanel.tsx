@@ -20,14 +20,36 @@ const BacktestPanelInner: React.FC<Props> = ({ history }) => {
     const signals: ('BUY' | 'SELL' | 'HOLD')[] = [];
     let position = 0;
 
+    // Use sliding window for SMA to avoid O(N^2)
+    let shortSum = 0;
+    let longSum = 0;
+
     for (let i = 0; i < history.length; i++) {
-      if (i < longPeriod) {
+      const close = Number(history[i]?.close) || 0;
+      
+      // Update sums
+      shortSum += close;
+      longSum += close;
+      
+      if (i >= shortPeriod) {
+        shortSum -= (Number(history[i - shortPeriod]?.close) || 0);
+      }
+      if (i >= longPeriod) {
+        longSum -= (Number(history[i - longPeriod]?.close) || 0);
+      }
+
+      if (i < longPeriod - 1) {
         signals.push('HOLD');
         continue;
       }
-      const shortSMA = history.slice(i - shortPeriod, i).reduce((a, b) => a + (Number(b?.close) || 0), 0) / shortPeriod;
-      const longSMA = history.slice(i - longPeriod, i).reduce((a, b) => a + (Number(b?.close) || 0), 0) / longPeriod;
-      if (!isFinite(shortSMA) || !isFinite(longSMA)) { signals.push('HOLD'); continue; }
+
+      const shortSMA = shortSum / shortPeriod;
+      const longSMA = longSum / longPeriod;
+      
+      if (!isFinite(shortSMA) || !isFinite(longSMA)) { 
+        signals.push('HOLD'); 
+        continue; 
+      }
 
       if (position === 0 && shortSMA > longSMA) {
         signals.push('BUY');

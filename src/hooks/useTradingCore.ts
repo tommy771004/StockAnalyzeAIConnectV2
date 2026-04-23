@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import * as api from '../services/api';
 import { STORAGE_KEYS } from '../utils/storage';
-import { Order, WatchlistItem } from '../types';
+import { Order, WatchlistItem, SearchResult } from '../types';
 
 export function useTradeExecution(
   showToast: (msg: string, type: 'success' | 'error' | 'info') => void,
@@ -22,9 +22,11 @@ export function useTradeExecution(
           mode: 'paper',
         });
 
-        if (res.status === 'success' || res.status === 'OPEN') {
+        // Fix: Server returns { ok: true, trade: ... }
+        if (res.ok) {
+          const trade = res.trade;
           const newOrder: Order = {
-            id: Date.now(),
+            id: trade.id || Date.now(),
             symbol: symbol,
             side: side.toUpperCase() as 'buy' | 'sell',
             qty,
@@ -34,7 +36,7 @@ export function useTradeExecution(
           setPortfolio((prev) => [...prev, newOrder]);
           showToast(`成功${side === 'buy' ? '買進' : '賣出'} ${qty} 股 ${symbol}`, 'success');
         } else {
-          throw new Error(res.message || '交易失敗');
+          throw new Error('交易失敗');
         }
       } catch (e: unknown) {
         console.error('[TradingCore] Order execution failed:', e);
@@ -56,6 +58,30 @@ export function useWatchlistManagement(
   const queryClient = useQueryClient();
   const [wlSearch, setWlSearch] = useState('');
   const [wlAdding, setWlAdding] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (wlSearch.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    const handler = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await api.searchStocks(wlSearch);
+        setSearchResults(res.quotes || []);
+      } catch (e) {
+        console.warn('[useWatchlistManagement] Search failed:', e);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [wlSearch]);
 
   const addToWatchlist = useCallback(
     async (sym: string) => {
@@ -75,5 +101,5 @@ export function useWatchlistManagement(
     [watchlist, queryClient, showToast]
   );
 
-  return { addToWatchlist, wlSearch, setWlSearch, wlAdding, setWlAdding };
+  return { addToWatchlist, wlSearch, setWlSearch, wlAdding, setWlAdding, searchResults, isSearching };
 }

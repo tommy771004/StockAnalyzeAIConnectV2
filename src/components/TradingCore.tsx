@@ -62,7 +62,8 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
     newsStatus,
     dataState,
     loadData,
-    norm
+    norm,
+    indic
   } = useStockAnalysis({
     symbol,
     model,
@@ -133,7 +134,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
   }, [quote, alerts, symbol, showToast]);
 
   const { executeOrder, orderStatus } = useTradeExecution(showToast, setPortfolio);
-  const { addToWatchlist, wlSearch, setWlSearch, wlAdding, setWlAdding } = useWatchlistManagement(watchlist, showToast);
+  const { addToWatchlist, wlSearch, setWlSearch, wlAdding, setWlAdding, searchResults, isSearching } = useWatchlistManagement(watchlist, showToast);
 
   const [mobilePanel, setMobilePanel] = useState<'list' | 'chart' | 'panel'>('chart');
   const [orderQty,  setOrderQty]  = useState(Number(settings.defaultOrderQty) || 100);
@@ -209,6 +210,8 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
               wlSearch={wlSearch}
               setWlSearch={setWlSearch}
               addToWatchlist={addToWatchlist}
+              searchResults={searchResults}
+              isSearching={isSearching}
               onSwipeAction={(sym, side) => {
                  if (onSymbolChange) onSymbolChange(sym);
                  setOSide(side);
@@ -239,6 +242,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
             onSetAlert={onSetAlert}
             loadData={loadData}
             isLandscape={isLandscape}
+            recommendation={indic?.recommendation}
           />
         </div>
 

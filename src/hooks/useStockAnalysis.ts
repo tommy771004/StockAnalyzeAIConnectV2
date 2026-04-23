@@ -18,7 +18,13 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
   const [hist, setHist] = useState<HistoricalData[]>([]);
   const [aiAns, setAiAns] = useState<AIAnalysisResult | null>(null);
   const [aiStatus, setAiStatus] = useState<'idle' | 'analyzing' | 'error'>('idle');
-  const [indic, setIndic] = useState<{ rsi: number, macd: { MACD: number; signal: number; histogram: number; } | null, sma20: number | null } | null>(null);
+  const [indic, setIndic] = useState<{ 
+    rsi: number, 
+    macd: { MACD: number; signal: number; histogram: number; } | null, 
+    sma20: number | null,
+    sma50: number | null,
+    recommendation: string
+  } | null>(null);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [cal, setCal] = useState<CalendarData>({});
   const [twse, setTwse] = useState<TWSEData | null>(null);
@@ -111,9 +117,37 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
   const closes = useMemo(() => hist.map(d => d.close).filter(isFinite), [hist]);
 
   const computedIndic = useMemo(() => {
-    if (closes.length < 20) return null;
+    if (closes.length < 50) return null;
     try {
-      return { rsi: _rsi(closes), macd: _macd(closes), sma20: _sma(closes, 20) };
+      const rsiVal = _rsi(closes);
+      const macdVal = _macd(closes);
+      const sma20Val = _sma(closes, 20);
+      const sma50Val = _sma(closes, 50);
+
+      // 綜合建議邏輯 (繁體中文)
+      let score = 0;
+      if (rsiVal < 30) score += 2; // 超賣
+      if (rsiVal > 70) score -= 2; // 超買
+
+      if (sma20Val && sma50Val && sma20Val > sma50Val) score += 1; // 黃金交叉
+      if (sma20Val && sma50Val && sma20Val < sma50Val) score -= 1; // 死亡交叉
+
+      if (macdVal && macdVal.histogram > 0) score += 1;
+      if (macdVal && macdVal.histogram < 0) score -= 1;
+
+      let rec = '觀望';
+      if (score >= 3) rec = '強烈買進';
+      else if (score >= 1) rec = '建議買進';
+      else if (score <= -3) rec = '強烈賣出';
+      else if (score <= -1) rec = '建議賣出';
+
+      return { 
+        rsi: rsiVal, 
+        macd: macdVal, 
+        sma20: sma20Val, 
+        sma50: sma50Val,
+        recommendation: rec
+      };
     } catch (e) {
       console.warn('[indicators]', e);
       return null;

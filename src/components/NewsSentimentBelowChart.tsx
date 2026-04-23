@@ -9,7 +9,7 @@ interface Props {
   newsStatus: 'idle' | 'loading' | 'error';
 }
 
-export function NewsSentimentBelowChart({ news, sentiment, newsStatus }: Props) {
+export const NewsSentimentBelowChart = React.memo(({ news, sentiment, newsStatus }: Props) => {
   if (newsStatus === 'loading') {
     return <div className="text-xs text-[var(--md-outline)] animate-pulse p-4 text-center w-full">正在獲取最新新聞與市場情緒...</div>;
   }
@@ -74,4 +74,4 @@ export function NewsSentimentBelowChart({ news, sentiment, newsStatus }: Props) 
       </div>
     </div>
   );
-}
+});

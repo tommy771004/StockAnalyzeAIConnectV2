@@ -21,7 +21,7 @@ interface WatchlistProps {
   onSwipeAction?: (sym: string, side: 'buy'|'sell') => void;
 }
 
-const SwipeableWatchlistItem = ({ w, isActive, wUp, compact, onClick, onSwipeAction }: any) => {
+const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick, onSwipeAction }: any) => {
   const controls = useAnimation();
   const [swipeSide, setSwipeSide] = React.useState<'buy' | 'sell' | null>(null);
   
@@ -39,6 +39,18 @@ const SwipeableWatchlistItem = ({ w, isActive, wUp, compact, onClick, onSwipeAct
       return () => clearTimeout(timer);
     }
   }, [w.price]);
+
+  const handleBuy = React.useCallback((e: React.MouseEvent) => { 
+    e.stopPropagation(); 
+    vibrate(30); 
+    onSwipeAction?.(w.symbol, 'buy'); 
+  }, [onSwipeAction, w.symbol]);
+
+  const handleSell = React.useCallback((e: React.MouseEvent) => { 
+    e.stopPropagation(); 
+    vibrate(30); 
+    onSwipeAction?.(w.symbol, 'sell'); 
+  }, [onSwipeAction, w.symbol]);
 
   return (
     <div className="relative overflow-hidden rounded-xl col-span-1 border border-transparent">
@@ -107,7 +119,7 @@ const SwipeableWatchlistItem = ({ w, isActive, wUp, compact, onClick, onSwipeAct
           {/* One-Touch Execution Buttons (B/S) */}
           <div className="flex flex-col gap-1 ml-2 shrink-0">
             <button 
-              onClick={(e) => { e.stopPropagation(); vibrate(30); onSwipeAction?.(w.symbol, 'buy'); }}
+              onClick={handleBuy}
               className={safeCn(
                 "rounded font-bold text-center flex items-center justify-center transition-colors border",
                 compact ? "w-6 h-5 text-[10px]" : "w-8 h-6 text-xs",
@@ -115,7 +127,7 @@ const SwipeableWatchlistItem = ({ w, isActive, wUp, compact, onClick, onSwipeAct
               )}
             >B</button>
             <button 
-              onClick={(e) => { e.stopPropagation(); vibrate(30); onSwipeAction?.(w.symbol, 'sell'); }}
+              onClick={handleSell}
               className={safeCn(
                 "rounded font-bold text-center flex items-center justify-center transition-colors border",
                 compact ? "w-6 h-5 text-[10px]" : "w-8 h-6 text-xs",
@@ -127,7 +139,7 @@ const SwipeableWatchlistItem = ({ w, isActive, wUp, compact, onClick, onSwipeAct
       </motion.div>
     </div>
   );
-};
+});
 
 export const Watchlist: React.FC<WatchlistProps> = React.memo(({
   watchlist, norm, symbol, onSymbolChange, wlAdding, setWlAdding, wlSearch, setWlSearch, addToWatchlist, searchResults = [], isSearching = false, onSwipeAction
