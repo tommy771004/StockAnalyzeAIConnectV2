@@ -42,8 +42,6 @@ export async function deleteStrategy(userId: string, id: number): Promise<boolea
 
 /** Ensure only one strategy is marked active per user. */
 export async function setActiveStrategy(userId: string, id: number): Promise<void> {
-  await db.transaction(async (tx) => {
-    await tx.update(strategies).set({ isActive: false }).where(eq(strategies.userId, userId));
-    await tx.update(strategies).set({ isActive: true }).where(and(eq(strategies.id, id), eq(strategies.userId, userId)));
-  });
+  await db.update(strategies).set({ isActive: false }).where(eq(strategies.userId, userId));
+  await db.update(strategies).set({ isActive: true }).where(and(eq(strategies.id, id), eq(strategies.userId, userId)));
 }

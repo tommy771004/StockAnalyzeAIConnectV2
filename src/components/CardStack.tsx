@@ -51,7 +51,7 @@ export default function CardStack<T extends { id: string | number }>({
           return (
             <motion.div
               key={item.id}
-              className="absolute w-full h-full cursor-grab active:scale-[0.98] touch-pan-y"
+              className="absolute w-full h-full cursor-grab active:scale-[0.98] touch-pan-y no-swipe"
               style={{
                 zIndex: items.length - i,
               }}

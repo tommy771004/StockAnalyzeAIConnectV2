@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS = {
   atrMultiplier: '1.5',
   dailyDrawdown: '5.0',
   aggressiveness: 'Balanced',
-  autoTrading: false,
+  autoTrading: true,
   priceAlerts: true,
   orderFillAlerts: true,
   riskAlerts: true,

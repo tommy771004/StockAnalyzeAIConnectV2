@@ -1,6 +1,6 @@
 {
-  "name": "Quantum AI Trading",
-  "short_name": "Quantum AI",
+  "name": "AI Stock Analysis",
+  "short_name": "ASA",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

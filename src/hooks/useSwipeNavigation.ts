@@ -12,7 +12,7 @@ import { useRef, useCallback } from 'react';
 interface Options {
   onSwipeLeft?: () => void;   // finger moves left  → go to next page
   onSwipeRight?: () => void;  // finger moves right → go to prev page
-  /** Minimum horizontal px before triggering (default: 55) */
+  /** Minimum horizontal px before triggering (default: 120) */
   threshold?: number;
   /** If |dy| / |dx| exceeds this ratio, treat as scroll not swipe (default: 0.8) */
   maxVerticalRatio?: number;
@@ -29,7 +29,7 @@ export interface SwipeHandlers {
 export function useSwipeNavigation({
   onSwipeLeft,
   onSwipeRight,
-  threshold = 90,
+  threshold = 120,
   maxVerticalRatio = 0.5,
   enabled = true,
 }: Options): SwipeHandlers {
@@ -39,6 +39,7 @@ export function useSwipeNavigation({
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     if (!enabled) return;
+    if ((e.target as Element).closest && (e.target as Element).closest('.no-swipe, .overflow-x-auto, .overflow-x-scroll')) return;
     const t = e.touches[0];
     start.current = { x: t.clientX, y: t.clientY };
     isScroll.current = false;
