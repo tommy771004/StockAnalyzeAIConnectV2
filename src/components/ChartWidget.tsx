@@ -436,112 +436,118 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
-      {/* Top Bar for Controls and Legend */}
-      <div className="flex flex-col gap-2 p-2 shrink-0 z-20 bg-[var(--bg-color)] border-b border-[var(--border-color)] relative">
-        {/* Controls */}
-        <div className="flex items-center gap-2 pb-1 relative" ref={settingsRef}>
-          <button 
-            onClick={() => setShowSettings(!showSettings)}
-            className={safeCn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all",
-              showSettings ? "bg-[var(--border-color)] text-[var(--text-color)]" : "text-[var(--text-color)] opacity-70 hover:opacity-100 hover:bg-[var(--border-color)]"
-            )}
-          >
-            <Settings className="w-4 h-4" />
-            <span>指標設定</span>
-            <ChevronDown className={safeCn("w-3 h-3 transition-transform", showSettings && "rotate-180")} />
-          </button>
+      {/* Indicator Settings Floating Button */}
+      <div className="absolute top-2 right-2 z-30" ref={settingsRef}>
+        <button 
+          onClick={() => setShowSettings(!showSettings)}
+          className={safeCn(
+            "flex items-center justify-center p-2 rounded-xl shadow-lg border transition-all backdrop-blur-md",
+            showSettings 
+              ? "bg-[var(--md-primary)] text-black border-[var(--md-primary)]" 
+              : "bg-black/40 text-[var(--text-color)] border-[var(--border-color)] hover:bg-black/60"
+          )}
+          aria-label="指標設定"
+        >
+          <Settings size={18} className={safeCn(showSettings && "animate-spin-slow")} />
+        </button>
 
-          {/* Dropdown Menu */}
+        {/* Dropdown Menu */}
+        <AnimatePresence>
           {showSettings && (
-            <div className="absolute top-full left-2 mt-1 w-64 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl shadow-2xl p-3 z-[60] flex flex-col gap-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: -10, x: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -10, x: 10 }}
+              className="absolute top-full right-0 mt-2 w-64 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-4 z-[60] flex flex-col gap-4 backdrop-blur-xl"
+            >
               {/* Main Overlays */}
               <div className="flex flex-col gap-2">
-                <div className="text-xs font-bold text-[var(--text-color)] opacity-50 uppercase tracking-wider">主圖疊加</div>
+                <div className="text-xs font-black text-[var(--text-color)] opacity-40 uppercase tracking-widest px-1">主圖疊加</div>
                 
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={safeCn("w-4 h-4 rounded border flex items-center justify-center transition-colors", indics.has('EMA1') ? "bg-amber-500 border-amber-500" : "border-[var(--border-color)] group-hover:border-[var(--text-color)]")}>
-                    {indics.has('EMA1') && <Check className="w-3 h-3 text-white" />}
+                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
+                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('EMA1') ? "bg-amber-500 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
+                    {indics.has('EMA1') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
                   </div>
                   <input type="checkbox" className="hidden" checked={indics.has('EMA1')} onChange={() => toggleIndic('EMA1')} />
-                  <span className="text-sm text-[var(--text-color)] flex-1">EMA 1</span>
+                  <span className="text-sm font-bold text-[var(--text-color)] flex-1">EMA 1</span>
                   <input 
                     type="number" 
                     value={ema1Period}
                     onChange={(e) => setEmaPersist(1, parseInt(e.target.value) || 20)}
-                    className="w-14 bg-[var(--bg-color)] border border-[var(--border-color)] rounded px-1.5 py-0.5 text-xs text-center text-amber-400 focus:outline-none focus:border-amber-500/50"
+                    className="w-16 bg-black/30 border border-[var(--border-color)] rounded-lg px-2 py-1 text-xs font-black text-center text-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </label>
 
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={safeCn("w-4 h-4 rounded border flex items-center justify-center transition-colors", indics.has('EMA2') ? "bg-violet-500 border-violet-500" : "border-[var(--border-color)] group-hover:border-[var(--text-color)]")}>
-                    {indics.has('EMA2') && <Check className="w-3 h-3 text-white" />}
+                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
+                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('EMA2') ? "bg-violet-500 border-violet-500 shadow-[0_0_10px_rgba(167,139,250,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
+                    {indics.has('EMA2') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
                   </div>
                   <input type="checkbox" className="hidden" checked={indics.has('EMA2')} onChange={() => toggleIndic('EMA2')} />
-                  <span className="text-sm text-[var(--text-color)] flex-1">EMA 2</span>
+                  <span className="text-sm font-bold text-[var(--text-color)] flex-1">EMA 2</span>
                   <input 
                     type="number" 
                     value={ema2Period}
                     onChange={(e) => setEmaPersist(2, parseInt(e.target.value) || 50)}
-                    className="w-14 bg-[var(--bg-color)] border border-[var(--border-color)] rounded px-1.5 py-0.5 text-xs text-center text-violet-400 focus:outline-none focus:border-violet-500/50"
+                    className="w-16 bg-black/30 border border-[var(--border-color)] rounded-lg px-2 py-1 text-xs font-black text-center text-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-500/50"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </label>
 
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={safeCn("w-4 h-4 rounded border flex items-center justify-center transition-colors", indics.has('BB') ? "bg-indigo-500 border-indigo-500" : "border-[var(--border-color)] group-hover:border-[var(--text-color)]")}>
-                    {indics.has('BB') && <Check className="w-3 h-3 text-white" />}
+                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
+                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('BB') ? "bg-indigo-500 border-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
+                    {indics.has('BB') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
                   </div>
                   <input type="checkbox" className="hidden" checked={indics.has('BB')} onChange={() => toggleIndic('BB')} />
-                  <span className="text-sm text-[var(--text-color)]">Bollinger Bands</span>
+                  <span className="text-sm font-bold text-[var(--text-color)]">布林通道 Bollinger</span>
                 </label>
               </div>
 
-              <div className="h-px bg-[var(--border-color)]" />
+              <div className="h-px bg-[var(--border-color)] opacity-50" />
 
               {/* Sub Panels */}
               <div className="flex flex-col gap-2">
-                <div className="text-xs font-bold text-[var(--text-color)] opacity-50 uppercase tracking-wider">副圖指標</div>
+                <div className="text-xs font-black text-[var(--text-color)] opacity-40 uppercase tracking-widest px-1">副圖指標</div>
                 
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={safeCn("w-4 h-4 rounded border flex items-center justify-center transition-colors", indics.has('Volume') ? "bg-emerald-500 border-emerald-500" : "border-[var(--border-color)] group-hover:border-[var(--text-color)]")}>
-                    {indics.has('Volume') && <Check className="w-3 h-3 text-white" />}
+                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
+                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('Volume') ? "bg-emerald-500 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
+                    {indics.has('Volume') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
                   </div>
                   <input type="checkbox" className="hidden" checked={indics.has('Volume')} onChange={() => toggleIndic('Volume')} />
-                  <span className="text-sm text-[var(--text-color)]">Volume</span>
+                  <span className="text-sm font-bold text-[var(--text-color)]">成交量 Volume</span>
                 </label>
 
-                <div className="flex items-center gap-2 mt-1 bg-[var(--bg-color)] p-1 rounded-lg">
+                <div className="flex items-center gap-1.5 mt-1 bg-black/20 p-1 rounded-xl">
                   {(['none','RSI','MACD'] as SubPanel[]).map(p => (
                     <button key={p} onClick={() => setSubPanelPersist(p)}
-                      className={safeCn('flex-1 px-2 py-1 rounded-md text-xs font-bold transition-all',
-                        subPanel===p ? 'bg-sky-500/20 text-sky-400' : 'text-[var(--text-color)] opacity-50 hover:opacity-100 hover:bg-[var(--border-color)]')}>
-                      {p==='none'?'無':p}
+                      className={safeCn('flex-1 py-2 rounded-lg text-xs font-black transition-all uppercase tracking-wider',
+                        subPanel===p ? 'bg-[var(--md-primary-container)] text-[var(--md-on-primary-container)] shadow-inner' : 'text-[var(--text-color)] opacity-40 hover:opacity-100 hover:bg-white/5')}>
+                      {p==='none'?'OFF':p}
                     </button>
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
+      </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-3 overflow-x-auto hide-scrollbar text-xs sm:text-sm font-mono pointer-events-none pb-1">
-          <div className="flex items-center gap-1 text-[var(--text-color)] opacity-70"><span>O</span><span id="legend-open" className="font-bold opacity-100">-</span></div>
-          <div className="flex items-center gap-1 text-[var(--text-color)] opacity-70"><span>H</span><span id="legend-high" className="font-bold opacity-100">-</span></div>
-          <div className="flex items-center gap-1 text-[var(--text-color)] opacity-70"><span>L</span><span id="legend-low" className="font-bold opacity-100">-</span></div>
-          <div className="flex items-center gap-1 text-[var(--text-color)] opacity-70"><span>C</span><span id="legend-close" className="font-bold opacity-100">-</span></div>
+      {/* Top Legend Bar (Minimized) */}
+      <div className="flex items-center gap-3 p-2 shrink-0 z-20 bg-black/20 border-b border-[var(--border-color)] relative overflow-x-auto no-scrollbar pointer-events-none">
+        <div className="flex items-center gap-3 pl-1 pr-12 min-w-max">
+          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">O</span><span id="legend-open" className="font-bold">-</span></div>
+          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">H</span><span id="legend-high" className="font-bold">-</span></div>
+          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">L</span><span id="legend-low" className="font-bold">-</span></div>
+          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">C</span><span id="legend-close" className="font-bold">-</span></div>
           
-          {indics.has('Volume') && <div className="flex items-center gap-1 text-indigo-400/70"><span>Vol</span><span id="legend-vol" className="text-indigo-300">-</span></div>}
-          {indics.has('EMA1') && <div className="flex items-center gap-1 text-amber-400/70"><span>EMA{ema1Period}</span><span id="legend-ema20" className="text-amber-300">-</span></div>}
-          {indics.has('EMA2') && <div className="flex items-center gap-1 text-violet-400/70"><span>EMA{ema2Period}</span><span id="legend-ema50" className="text-violet-300">-</span></div>}
-          {subPanel==='RSI' && <div className="flex items-center gap-1 font-bold text-sky-400"><span>RSI</span><span id="legend-rsi">-</span></div>}
+          {indics.has('Volume') && <div className="flex items-center gap-1 text-[11px] font-mono text-indigo-400 opacity-80"><span>VOL</span><span id="legend-vol" className="font-bold">-</span></div>}
+          {indics.has('EMA1') && <div className="flex items-center gap-1 text-[11px] font-mono text-amber-400 opacity-80"><span>EMA1</span><span id="legend-ema20" className="font-bold">-</span></div>}
+          {indics.has('EMA2') && <div className="flex items-center gap-1 text-[11px] font-mono text-violet-400 opacity-80"><span>EMA2</span><span id="legend-ema50" className="font-bold">-</span></div>}
+          {subPanel==='RSI' && <div className="flex items-center gap-1 text-[11px] font-mono text-sky-400 opacity-80"><span>RSI</span><span id="legend-rsi" className="font-bold">-</span></div>}
           {subPanel==='MACD' && (
-            <div className="flex items-center gap-2 font-bold text-xs">
-              <span className="text-sky-400">MACD <span id="legend-macd">-</span></span>
-              <span className="text-amber-400">Sig <span id="legend-macd-sig">-</span></span>
-              <span className="text-[var(--text-color)] opacity-70">Hist <span id="legend-macd-hist">-</span></span>
+            <div className="flex items-center gap-2 text-[11px] font-mono opacity-80">
+              <span className="text-sky-400">MACD <span id="legend-macd" className="font-bold">-</span></span>
+              <span className="text-amber-400">SIG <span id="legend-macd-sig" className="font-bold">-</span></span>
             </div>
           )}
         </div>
