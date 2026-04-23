@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Settings, Check, ChevronDown } from 'lucide-react';
 import {
   createChart, ColorType, CrosshairMode,
