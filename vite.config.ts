@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
 
   return {
-    base: '/',
+    base:    isProd ? './' : '/',
     root:    '.',
     publicDir: 'public',
     plugins: [

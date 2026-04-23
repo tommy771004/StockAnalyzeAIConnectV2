@@ -8,98 +8,19 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-/* ── Web-Optimized Interaction ── */
-* {
-  -webkit-tap-highlight-color: transparent;
-  /* Hide scrollbars for all elements but allow scrolling */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
-
-*::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Webkit */
-}
-
-/* Specific custom scrollbar for designated containers */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--md-outline-variant) transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  display: block;
-  width: 5px;
-  height: 5px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--md-outline-variant);
-  border-radius: 10px;
-}
-
-/* UI Controls should feel like buttons, but data should be selectable */
-button, nav, .stock-card:not(.selectable), [role="button"], a {
-  user-select: none;
-  -webkit-touch-callout: none; /* Disable long-press popup on iOS */
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--md-background);
-  /* Use dynamic viewport height, but allow natural containment */
-  min-height: 100dvh;
-  color: var(--md-on-background);
-}
-
-/* iOS Safe Area Padding (for notches/home bar) */
-.safe-p {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-
 /* Desktop base */
 /* Vercel web-design-guidelines: color-scheme on <html> fixes scrollbar & native inputs in dark mode */
-html {
-  font-size: 18px;
-  color-scheme: dark;
-  /* ── Pro Design Tokens ── */
-  --ui-gap: 1rem;       /* Standard Gap */
-  --ui-padding: 1rem;   /* Standard Padding */
-  --ui-card-p: 0.75rem; /* Inner Card Padding */
-  --icon-size: 1.125rem; /* 18px */
-}
-
-/* Base RWD Font Scaling */
-@media (max-width: 767px) {
-  html { font-size: 16px; }
-}
-
-/* ── Compact Mode (Pro Grid) ── */
-.compact-mode {
-  --ui-gap: 0.6rem;
-  --ui-padding: 0.6rem;
-  --ui-card-p: 0.45rem;
-  --icon-size: 1rem;    /* 16px */
-}
+html { font-size: 18px; color-scheme: dark; }
+html.font-size-small { font-size: 16px; }
+html.font-size-normal { font-size: 18px; }
+html.font-size-large { font-size: 20px; }
 
 /* Mobile base — smaller font size for mobile helps prevent card overflow */
 @media (max-width: 767px) {
-  html { 
-    font-size: 14px; 
-    --ui-gap: 1rem;
-    --ui-padding: 1rem;
-  }
+  html { font-size: 14px; }
   html.font-size-small { font-size: 12px; }
   html.font-size-normal { font-size: 14px; }
   html.font-size-large { font-size: 16px; }
-  
-  html.compact-mode {
-    --ui-gap: 0.5rem;
-    --ui-padding: 0.75rem;
-  }
 }
 
 /* ── Material Design 3 Deep Space Color Palette ─────────────────── */

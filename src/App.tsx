@@ -96,20 +96,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: '#0c1324' }}>
-        {/* Ambient Glows during loading */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-          <div className="absolute top-[20%] left-[20%] w-64 h-64 bg-indigo-500 blur-[100px] rounded-full" />
-          <div className="absolute bottom-[20%] right-[20%] w-64 h-64 bg-emerald-500 blur-[100px] rounded-full" />
-        </div>
-        <div className="relative z-10 flex flex-col items-center gap-6">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-500/10 border border-indigo-500/20 shadow-xl shadow-indigo-500/10">
-            <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-sm font-black tracking-[0.2em] uppercase text-indigo-300">System Initializing</span>
-            <span className="text-[10px] font-bold tracking-widest uppercase text-zinc-500 animate-pulse">驗證執行環境中...</span>
-          </div>
+      <div className="w-screen h-screen flex items-center justify-center" style={{ background: 'var(--md-background, #0B0E14)' }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--md-primary, #34d399)', borderTopColor: 'transparent' }} />
+          <span className="text-sm font-medium" style={{ color: 'var(--md-on-surface-variant, #8B8FA8)' }}>驗證中…</span>
         </div>
       </div>
     );
@@ -244,14 +234,6 @@ function MainApp() {
   }, [settings.fontSize]);
 
   useEffect(() => {
-    if (settings.compactMode) {
-      document.documentElement.classList.add('compact-mode');
-    } else {
-      document.documentElement.classList.remove('compact-mode');
-    }
-  }, [settings.compactMode]);
-
-  useEffect(() => {
     if (settings.commuteMode) {
       document.body.classList.add('commute-mode');
     } else {
@@ -342,7 +324,7 @@ function MainApp() {
   });
 
   return (
-    <div className={cn("h-screen w-screen flex flex-col overflow-hidden relative font-sans safe-p")}
+    <div className={cn("h-screen w-screen flex flex-col overflow-hidden select-none relative font-sans")}
          style={{ background: 'var(--md-background)', color: 'var(--md-on-background)' }}>
       {/* Ambient glow effects */}
       <div className="ambient-glow-primary" aria-hidden="true" />

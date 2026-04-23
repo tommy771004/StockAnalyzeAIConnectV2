@@ -104,7 +104,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         borderColor: gridColor,
         timeVisible: true,
         fixLeftEdge: true,
-        rightOffset: 2, // 減少右側偏移量，避免大片空白
+        rightOffset: 15, // Provide room at the edge
         barSpacing: 12, // Slightly wider for better visual
         minBarSpacing: 1,
       },
@@ -328,12 +328,12 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
       // 3. Intelligently handle view
       if (!isInitializedRef.current) {
-        // Show only the last 60 bars by default for "Professional" look
+        // Show only the last 100 bars by default for "Professional" look - much thicker bars
         const barCount = uniqueData.length;
-        if (barCount > 60) {
+        if (barCount > 100) {
           chart.timeScale().setVisibleLogicalRange({
-            from: barCount - 60,
-            to: barCount + 1,
+            from: barCount - 100,
+            to: barCount,
           });
         } else {
           chart.timeScale().fitContent();

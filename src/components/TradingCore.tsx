@@ -230,23 +230,23 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={safeCn("h-full w-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden", isLandscape ? "p-0 gap-0" : "p-[var(--ui-padding)] gap-[var(--ui-gap)]")}
+      className={safeCn("h-full w-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden", isLandscape ? "p-0 gap-0" : compact ? "p-2 sm:p-4 gap-2 lg:gap-4" : "p-2 sm:p-4 gap-4 lg:gap-6")}
     >
 
 
       {/* ── LEFT: Watchlist + Portfolio Summary ── */}
       {!isFocusActive && !isLandscape && (
-        <div className={safeCn("w-full lg:w-[320px] flex flex-col shrink-0 lg:overflow-y-auto custom-scrollbar lg:pr-2 lg:-mr-2", "gap-[var(--ui-gap)]", mobilePanel !== 'list' && "hidden lg:flex")}>
+        <div className={safeCn("w-full lg:w-[320px] flex flex-col shrink-0 lg:overflow-y-auto custom-scrollbar lg:pr-2 lg:-mr-2", compact ? "gap-3" : "gap-5", mobilePanel !== 'list' && "hidden lg:flex")}>
           {/* Portfolio Summary Group */}
-          <div className="flex flex-col gap-[var(--ui-gap)]">
+          <div className="flex flex-col gap-3">
              <div className="px-4">
                 <span className="text-[9px] md:text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] md:tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>資產概覽 ASSET OVERVIEW</span>
              </div>
-             <div className={safeCn("glass-card border border-white/5 rounded-3xl shadow-2xl relative overflow-hidden group", "p-[var(--ui-padding)]")}>
+             <div className={safeCn("glass-card border border-white/5 rounded-3xl shadow-2xl relative overflow-hidden group", compact ? "p-4" : "p-6")}>
                 <div className="absolute inset-0 bg-indigo-500/[0.03] pointer-events-none group-hover:bg-indigo-500/[0.05] transition-colors" />
                 <div className="relative z-10 flex flex-col">
                   <div className="label-meta font-black text-zinc-600 uppercase tracking-widest mb-2 text-[9px] md:text-[10px]">當前權益 EQUITY</div>
-                  <div className={safeCn("font-black text-white tracking-tighter tabular-nums flex items-baseline gap-2 data-num", compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
+                  <div className={safeCn("font-black text-white tracking-tighter tabular-nums flex items-baseline gap-2", compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
                     <span className="text-xs sm:text-sm opacity-30 font-medium">NT$</span>
                     {portfolio.length > 0 ? portfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
                   </div>
@@ -289,7 +289,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       )}
 
       {/* ── CENTER: Chart ── */}
-      <div className={safeCn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0 lg:overflow-y-auto custom-scrollbar", isLandscape ? "gap-0" : "gap-[var(--ui-gap)]", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
+      <div className={safeCn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0 lg:overflow-y-auto custom-scrollbar", isLandscape ? "gap-0" : compact ? "gap-3" : "gap-5", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
         {/* Main Display Unit */}
         <div className={safeCn(
           "shrink-0 flex flex-col overflow-hidden relative", 
@@ -364,7 +364,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
 
       {/* ── RIGHT: Analysis Engine ── */}
       {!isFocusActive && !isLandscape && (
-        <div className={safeCn("w-full lg:w-[340px] flex flex-col shrink-0 relative lg:overflow-y-auto custom-scrollbar lg:pl-1 lg:-ml-1", "gap-[var(--ui-gap)]", mobilePanel !== 'panel' && "hidden lg:flex")}>
+        <div className={safeCn("w-full lg:w-[340px] flex flex-col shrink-0 relative lg:overflow-y-auto custom-scrollbar lg:pl-1 lg:-ml-1", compact ? "gap-3" : "gap-5", mobilePanel !== 'panel' && "hidden lg:flex")}>
           <div className="glass-card rounded-3xl border border-white/5 overflow-hidden shadow-2xl relative">
             <div className="absolute inset-0 bg-amber-500/[0.02] pointer-events-none" />
             <BacktestPanel history={hist} />
