@@ -8,7 +8,6 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import * as api from '../services/api';
 import { STORAGE_KEYS, saveToStorage, loadFromStorage } from '../utils/storage';
 import { chatWithAI } from '../services/aiService';
-import { cn } from '../lib/utils';
 import { safeCn, safeN, vibrate } from '../utils/helpers';
 import { motion } from 'motion/react';
 import { Watchlist } from './Watchlist';
@@ -208,7 +207,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={cn("h-full flex flex-col lg:flex-row overflow-y-auto", isLandscape ? "p-0 gap-0" : compact ? "p-2 sm:p-4 gap-2" : "p-2 sm:p-4 gap-4")}
+      className={safeCn("h-full flex flex-col lg:flex-row overflow-y-auto", isLandscape ? "p-0 gap-0" : compact ? "p-2 sm:p-4 gap-2" : "p-2 sm:p-4 gap-4")}
     >
 
 
@@ -267,9 +266,9 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
       )}
 
       {/* ── CENTER: Chart ── */}
-      <div className={cn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-3" : "gap-5", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
+      <div className={safeCn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-3" : "gap-5", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
         {/* Main Display Unit */}
-        <div className={cn(
+        <div className={safeCn(
           "flex-1 flex flex-col overflow-hidden relative", 
           (isLandscape || isFocusActive) ? "p-0 rounded-none border-none bg-[#050505]" : "glass-card border border-white/5 rounded-3xl shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)]"
         )}>
@@ -304,7 +303,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
         
         {/* Sub-Data Grid */}
         {!isLandscape && (
-          <div className={cn(isFocusActive && "px-4 animate-in fade-in slide-in-from-bottom-4 duration-700")}>
+          <div className={safeCn(isFocusActive && "px-4 animate-in fade-in slide-in-from-bottom-4 duration-700")}>
             <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
           </div>
         )}
@@ -312,7 +311,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
 
       {/* ── RIGHT: Analysis Engine ── */}
       {!isFocusActive && !isLandscape && (
-        <div className={cn("w-full lg:w-[340px] flex flex-col shrink-0 relative", compact ? "gap-3" : "gap-5", mobilePanel !== 'panel' && "hidden lg:flex")}>
+        <div className={safeCn("w-full lg:w-[340px] flex flex-col shrink-0 relative", compact ? "gap-3" : "gap-5", mobilePanel !== 'panel' && "hidden lg:flex")}>
           <div className="glass-card rounded-3xl border border-white/5 overflow-hidden shadow-2xl relative">
             <div className="absolute inset-0 bg-amber-500/[0.02] pointer-events-none" />
             <BacktestPanel history={hist} />
@@ -360,7 +359,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
             <button
               key={p.id}
               onClick={() => { setMobilePanel(p.id); }}
-              className={cn(
+              className={safeCn(
                 'flex-1 py-3 min-h-[48px] rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase transition-all press-feedback',
                 mobilePanel === p.id
                   ? 'bg-emerald-500 text-black shadow-[0_0_12px_rgba(52,211,153,0.3)]'

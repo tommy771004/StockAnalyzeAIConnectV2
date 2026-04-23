@@ -114,13 +114,78 @@ export const runBacktest = (
   const finalEquity = roundTo(capital + (shares * (data[data.length - 1]?.close || 0)));
   const totalReturn = ((finalEquity - config.initialCapital) / config.initialCapital) * 100;
 
+  // 計算進階績效指標 (KPIs)
+  let winningTrades = 0;
+  let grossProfit = 0;
+  let grossLoss = 0;
+
+  // 為了計算 Profit/Loss，我們需要成對的買賣紀錄，不過現有 trades 陣列包含 BUY 和 SELL 單筆紀錄
+  // 我們可以簡單計算平倉 PnL，每次 SELL 就是平掉前面的 BUY。
+  let currentEntryValue = 0;
+  trades.forEach(t => {
+    if (t.type === 'BUY') {
+      currentEntryValue = (t.price * t.shares) + t.fee;
+    } else if (t.type === 'SELL') {
+      const exitValue = (t.price * t.shares) - t.fee;
+      const pnl = exitValue - currentEntryValue;
+      if (pnl > 0) {
+        winningTrades++;
+        grossProfit += pnl;
+      } else {
+        grossLoss += Math.abs(pnl);
+      }
+      currentEntryValue = 0; // 重置
+    }
+  });
+
+  const completedTrades = trades.filter(t => t.type === 'SELL').length;
+  const winRate = completedTrades > 0 ? (winningTrades / completedTrades) * 100 : 0;
+  const avgWin = winningTrades > 0 ? grossProfit / winningTrades : 0;
+  const avgLoss = (completedTrades - winningTrades) > 0 ? grossLoss / (completedTrades - winningTrades) : 0;
+  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : (grossProfit > 0 ? 999 : 0);
+
+  // 計算 Sharpe Ratio 與年化報酬率 CAGR
+  let sharpe = 0;
+  const tradingDays = equityCurve.length;
+  if (tradingDays > 0) {
+    // 簡單年化
+    const years = tradingDays / 252;
+    // const cagr = (Math.pow(finalEquity / config.initialCapital, 1 / years) - 1) * 100;
+
+    // 計算日報酬率陣列
+    const dailyReturns: number[] = [];
+    for (let i = 1; i < equityCurve.length; i++) {
+        const prev = equityCurve[i - 1].equity;
+        const curr = equityCurve[i].equity;
+        dailyReturns.push(prev > 0 ? (curr - prev) / prev : 0);
+    }
+    
+    if (dailyReturns.length > 0) {
+        const meanReturn = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+        const variance = dailyReturns.reduce((a, b) => a + Math.pow(b - meanReturn, 2), 0) / dailyReturns.length;
+        const stdDev = Math.sqrt(variance);
+        // 假設無風險利率 0%
+        sharpe = stdDev > 0 ? (meanReturn / stdDev) * Math.sqrt(252) : 0;
+    }
+  }
+
   return {
     initialCapital: config.initialCapital,
     finalEquity,
     totalReturn: roundTo(totalReturn),
     maxDrawdown: roundTo(maxDrawdown * 100),
     trades,
-    totalTrades: trades.length,
+    totalTrades: completedTrades, // 改用已平倉交易數
     equityCurve,
+    metrics: {
+      roi: roundTo(totalReturn),
+      sharpe: roundTo(sharpe, 2),
+      maxDrawdown: roundTo(maxDrawdown * 100),
+      winRate: roundTo(winRate),
+      totalTrades: completedTrades,
+      avgWin: roundTo(avgWin),
+      avgLoss: roundTo(avgLoss),
+      profitFactor: roundTo(profitFactor, 2)
+    }
   };
 };
