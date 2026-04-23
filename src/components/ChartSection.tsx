@@ -5,9 +5,12 @@ import { motion } from 'motion/react';
 import { useSettings } from '../contexts/SettingsContext';
 import { HistoricalData } from '../types';
 
-const ChartWidget = React.lazy(() => import('./ChartWidget').catch(() => ({
-  default: () => <div className="absolute inset-0 flex items-center justify-center text-rose-400 text-xs">圖表載入失敗</div>,
-})));
+const ChartWidget = React.lazy(() => import('./ChartWidget').catch((err: any) => {
+  console.error('Failed to lazy-load ChartWidget:', err);
+  return {
+    default: () => <div className="absolute inset-0 flex items-center justify-center text-rose-400 text-xs">圖表載入失敗</div>,
+  };
+}));
 
 interface ChartSectionProps {
   symbol: string;

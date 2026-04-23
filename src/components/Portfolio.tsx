@@ -369,7 +369,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
 
       {/* Toolbar */}
       <div className="flex items-center justify-end gap-2 shrink-0">
-        <button type="button" onClick={() => buildPortfolioPdf(positions, totalMV, usdtwd)}
+        <button type="button" onClick={() => buildPortfolioPdf(positions, trades, { totalValue: totalMV, totalPnl: totalPnL, totalPnlPct: totalPct, winRate: parseFloat(winRate) })}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}
         >
           <Download size={13} /> 匯出 PDF
