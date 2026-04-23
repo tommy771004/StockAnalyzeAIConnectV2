@@ -17,6 +17,7 @@ import {
   Plus, X, Search, Zap, AlertCircle, Sun, Moon
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { safeCn, safeN, vibrate } from '../utils/helpers';
 import * as api from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
