@@ -332,7 +332,7 @@ function MainApp() {
   });
 
   return (
-    <div className={cn("h-screen w-screen flex flex-col overflow-hidden select-none relative font-sans")}
+    <div className={cn("h-screen w-screen flex flex-col overflow-hidden relative font-sans safe-p")}
          style={{ background: 'var(--md-background)', color: 'var(--md-on-background)' }}>
       {/* Ambient glow effects */}
       <div className="ambient-glow-primary" aria-hidden="true" />

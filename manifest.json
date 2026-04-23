@@ -4,8 +4,8 @@
   "description": "AI-Powered Trading Dashboard",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#0c1324",
+  "theme_color": "#0c1324",
   "icons": [
     {
       "src": "/icon.png",
