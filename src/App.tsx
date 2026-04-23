@@ -14,6 +14,7 @@ import { MODELS, FREE_MODEL } from './constants';
 import { useSwipeNavigation } from './hooks/useSwipeNavigation';
 import { useDeviceType } from './hooks/useDeviceType';
 
+import { TickerTape } from './components/TickerTape';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import MarketOverview from './components/MarketOverview';
 import TradingCore    from './components/TradingCore';
@@ -329,6 +330,8 @@ function MainApp() {
       <div className="ambient-glow-primary" aria-hidden="true" />
       <div className="ambient-glow-secondary" aria-hidden="true" />
       <div className="ambient-glow-accent" aria-hidden="true" />
+
+      <TickerTape />
 
       {isOffline && (
          <div className="w-full text-xs font-bold py-1.5 px-4 flex items-center justify-center gap-2 border-b shrink-0 z-[100]"
@@ -677,19 +680,8 @@ function MainApp() {
                   </>
                 )}
               </div>
-              {/* Mobile ticker strip */}
-              <div className="md:hidden flex items-center gap-3 overflow-x-auto mobile-hide-scrollbar">
-                {tickers.slice(0,4).map(t=>{
-                  const up=t.pct>=0;
-                  return (
-                    <button key={t.symbol} onClick={()=>goTrading(t.symbol)}
-                      className="flex items-center gap-1 shrink-0 text-[10px] font-mono">
-                      <span style={{ color: 'var(--md-outline)' }}>{t.symbol.replace('-USD','').replace('^','')}</span>
-                      <span className={cn('font-black')} style={{ color: up ? 'var(--color-up)' : 'var(--color-down)' }}>{up?'+':''}{(t.pct||0).toFixed(1)}%</span>
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Mobile ticker space reserved / removed for top ticker tape */}
+              <div className="md:hidden flex-1" />
             </div>
           )}
 

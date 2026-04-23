@@ -12,7 +12,7 @@ interface MarketDataContextType {
 
 const MarketDataContext = createContext<MarketDataContextType | undefined>(undefined);
 
-const TICKER_SYMBOLS = ['TSLA', 'AAPL', 'BTC-USD', 'ETH-USD', 'NVDA', '^GSPC'];
+const TICKER_SYMBOLS = ['TSLA', 'AAPL', 'NVDA', 'GOOGL', 'MSFT', 'AMZN', 'META', 'BTC-USD', 'ETH-USD', '^GSPC', '^IXIC', '^TWII'];
 
 export const MarketDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tickers, setTickers] = useState<TickerItem[]>([]);
