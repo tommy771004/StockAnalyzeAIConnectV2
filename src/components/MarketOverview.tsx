@@ -68,50 +68,55 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
       tabIndex={0}
       onClick={() => onSelect(idx.symbol)}
       onKeyDown={e => e.key === 'Enter' && onSelect(idx.symbol)}
-      className={cn(
-        "min-w-[82vw] sm:min-w-[280px] md:min-w-0 shrink-0 md:shrink glass-card cursor-pointer transition-all group snap-start md:snap-center active:scale-[0.98] overflow-hidden",
-        compact ? "p-4" : "p-5 md:p-6 lg:p-8"
+      className={safeCn(
+        "relative flex flex-col glass-card cursor-pointer transition-all group overflow-hidden border border-white/5 hover:border-indigo-500/30 active:scale-[0.98] rounded-[2rem]",
+        compact ? "p-4" : "p-6"
       )}
-      style={{ border: '1px solid var(--md-outline-variant)' }}
-      onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(128,131,255,0.4)')}
-      onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--md-outline-variant)')}>
-
-      <div className={cn("flex items-start justify-between", compact ? "mb-4" : "mb-6")}>
-        <div className="flex items-center gap-3 md:gap-4 min-w-0">
-          <div className="shrink-0 p-3 md:p-4 rounded-2xl" style={isUp ? { background: 'rgba(255,77,79,0.12)', color: 'var(--color-up)' } : { background: 'rgba(82,196,26,0.12)', color: 'var(--color-down)' }}>
-            <idx.icon size={compact ? 20 : 28} />
+    >
+      <div className="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none group-hover:bg-indigo-500/[0.04] transition-colors" />
+      
+      <div className={safeCn("flex items-start justify-between relative z-10", compact ? "mb-3" : "mb-5")}>
+        <div className="flex items-center gap-4 min-w-0">
+          <div className={safeCn(
+            "shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 shadow-lg border",
+            isUp ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+          )}>
+            <idx.icon size={22} strokeWidth={2.5} />
           </div>
           <div className="min-w-0">
-            <div className="text-base sm:text-lg md:text-xl font-black tracking-tight truncate" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>{idx.name}</div>
-            <div className="text-xs sm:text-sm md:text-base font-mono uppercase tracking-widest truncate" style={{ color: 'var(--md-outline)' }}>{idx.symbol}</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 mb-0.5" style={{ fontFamily: 'var(--font-heading)' }}>{idx.name}</div>
+            <div className="text-[9px] font-black uppercase tracking-[0.15em] opacity-40 tabular-nums" style={{ fontFamily: 'var(--font-data)' }}>{idx.symbol}</div>
           </div>
+        </div>
+        <div className="w-16 h-8 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={idx.chartData}>
+              <YAxis domain={['dataMin', 'dataMax']} hide />
+              <Area 
+                type="monotone" 
+                dataKey="close" 
+                stroke={isUp ? '#fb7185' : '#34d399'} 
+                strokeWidth={2} 
+                fill="transparent"
+                isAnimationActive={false} 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="flex items-end justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-mono font-black text-[var(--text-color)] mb-2 tracking-tighter truncate">
+      <div className="flex items-end justify-between relative z-10">
+        <div className="flex flex-col">
+          <div className="text-2xl md:text-3xl font-black tabular-nums tracking-tighter text-white" style={{ fontFamily: 'var(--font-data)' }}>
             {idx.price ? idx.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '---'}
           </div>
-          <div className="flex items-center gap-1.5 text-xs sm:text-base font-black px-2 py-1 md:px-3 md:py-1.5 rounded-lg w-fit"
-            style={isUp ? { background: 'rgba(255,77,79,0.1)', color: 'var(--color-up)' } : { background: 'rgba(82,196,26,0.1)', color: 'var(--color-down)' }}>
-            {isUp ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}
+          <div className={safeCn(
+            "flex items-center gap-1.5 mt-1 text-[10px] font-black uppercase tracking-widest",
+            isUp ? "text-rose-400" : "text-emerald-400"
+          )} style={{ fontFamily: 'var(--font-data)' }}>
+            <span className="opacity-40">{isUp ? <TrendingUp size={10} strokeWidth={3}/> : <TrendingDown size={10} strokeWidth={3}/>}</span>
             {isUp ? '+' : ''}{idx.changePct ? idx.changePct.toFixed(2) : '0.00'}%
           </div>
-        </div>
-        <div className="w-20 sm:w-24 h-10 sm:h-12 shrink-0">
-          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-            <AreaChart data={idx.chartData}>
-              <defs>
-                <linearGradient id={`g-${idx.symbol}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={isUp?"#10b981":"#f43f5e"} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={isUp?"#10b981":"#f43f5e"} stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <YAxis domain={['dataMin', 'dataMax']} hide />
-              <Area type="monotone" dataKey="close" stroke={isUp ? '#ff4d4f' : '#52c41a'} strokeWidth={2} fill={`url(#g-${idx.symbol})`} isAnimationActive={false} />
-            </AreaChart>
-          </ResponsiveContainer>
         </div>
       </div>
     </div>
@@ -132,38 +137,41 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
       tabIndex={0}
       onClick={() => onSelect(s)}
       onKeyDown={e => e.key === 'Enter' && onSelect(s)}
-      className="relative glass-card rounded-xl p-3 sm:p-4 cursor-pointer transition-all group overflow-hidden"
-      style={isSelected ? { borderColor: 'rgba(128,131,255,0.5)', background: 'rgba(128,131,255,0.06)' } : {}}
-      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.borderColor = 'rgba(128,131,255,0.3)'; }}
-      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.borderColor = 'var(--md-outline-variant)'; }}>
-
-      <button onClick={e => { e.stopPropagation(); onRemove(s.symbol); }}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-full transition-all z-10 shrink-0"
-        style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-outline)' }}
-        onMouseEnter={e => { e.currentTarget.style.color = 'var(--md-error)'; }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'var(--md-outline)'; }}>
-        <X size={12}/>
+      className={safeCn(
+        "relative glass-card rounded-[2rem] p-5 sm:p-6 cursor-pointer transition-all group overflow-hidden border border-white/5 active:scale-[0.99]",
+        isSelected ? 'bg-indigo-500/10 border-indigo-500/40 ring-4 ring-indigo-500/5' : 'hover:border-white/10'
+      )}
+    >
+      <div className="absolute inset-0 bg-white/[0.01] pointer-events-none group-hover:bg-white/[0.03] transition-colors" />
+      
+      <button onClick={e => { e.stopPropagation(); onRemove(s.symbol); vibrate(20); }}
+        className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-2 rounded-2xl transition-all z-20 bg-black/40 border border-white/10 hover:bg-rose-500 hover:text-white hover:border-rose-400 text-zinc-500">
+        <X size={14}/>
       </button>
 
-      <div className="flex items-start justify-between mb-3 min-w-0">
-        <div className="min-w-0 flex-1 pr-4">
-          <div className="text-base sm:text-lg font-black tracking-tight truncate" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>{s.symbol}</div>
-          <div className="text-xs sm:text-sm truncate" style={{ color: 'var(--md-outline)' }}>{s.shortName || s.name}</div>
+      <div className="flex items-start justify-between mb-5 relative z-10">
+        <div className="min-w-0 flex-1 pr-6">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1" style={{ fontFamily: 'var(--font-heading)' }}>{s.symbol}</div>
+          <div className="text-sm font-black text-white tracking-tight truncate uppercase" style={{ fontFamily: 'var(--font-heading)' }}>{s.shortName || s.name}</div>
         </div>
-        <span className="text-xs sm:text-sm px-2 py-0.5 sm:px-3 sm:py-1 rounded font-mono font-bold shrink-0"
-          style={{ color: isUp ? 'var(--color-up)' : 'var(--color-down)' }}>
+        <div className={safeCn(
+          "text-[10px] font-black px-2.5 py-1 rounded-lg border tabular-nums shrink-0",
+          isUp ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+        )} style={{ fontFamily: 'var(--font-data)' }}>
           {isUp ? '+' : ''}{s.changePct.toFixed(2)}%
-        </span>
+        </div>
       </div>
 
-      <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black font-mono tracking-tighter truncate"
-        style={{ color: isUp ? 'var(--color-up)' : 'var(--color-down)', fontFamily: 'var(--font-data)' }}>
+      <div className="text-3xl md:text-4xl font-black tabular-nums tracking-tighter relative z-10 mb-6"
+        style={{ color: isUp ? '#fb7185' : '#34d399', fontFamily: 'var(--font-data)' }}>
         {s.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
       </div>
 
-      <div className="flex justify-between text-[10px] sm:text-xs mt-4 sm:mt-6 font-mono border-t pt-2" style={{ color: 'var(--md-outline)', borderColor: 'var(--md-outline-variant)' }}>
-        <span className="truncate mr-1">B {s.bid.toFixed(2)}</span>
-        <span className="truncate">A {s.ask.toFixed(2)}</span>
+      <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.15em] font-black opacity-30 border-t border-white/5 pt-4 relative z-10" style={{ fontFamily: 'var(--font-data)' }}>
+        <div className="flex-1 flex justify-between">
+          <div className="flex items-center gap-2"><span>BID</span><span className="text-white opacity-100">{s.bid.toFixed(2)}</span></div>
+          <div className="flex items-center gap-2"><span>ASK</span><span className="text-white opacity-100">{s.ask.toFixed(2)}</span></div>
+        </div>
       </div>
     </div>
   );
@@ -524,88 +532,95 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       )}
 
       {/* ── 1. Time Contextual Dashboard ── */}
-      <div className="flex flex-col gap-3 mb-4 shrink-0">
+      <div className="flex flex-col gap-3 mb-4 shrink-0 stagger-item">
         {(() => {
           const hour = new Date().getHours();
           const isMorning = hour < 12;
           return (
-            <div className="px-5 py-4 rounded-2xl border flex flex-col gap-4 shadow-lg overflow-hidden relative"
-              style={isMorning ? { background: 'rgba(255,183,131,0.08)', borderColor: 'rgba(255,183,131,0.3)', color: 'var(--md-tertiary)' } : { background: 'rgba(173,198,255,0.08)', borderColor: 'rgba(173,198,255,0.25)', color: 'var(--md-secondary)' }}>
+            <div className={cn(
+              "px-6 py-5 rounded-3xl border flex flex-col gap-5 shadow-2xl overflow-hidden relative glass-card group",
+              isMorning ? "border-amber-500/20" : "border-indigo-500/20"
+            )}>
+              {/* Background gradient hint */}
+              <div className={cn(
+                "absolute inset-0 opacity-[0.03] transition-opacity group-hover:opacity-[0.06]",
+                isMorning ? "bg-gradient-to-br from-amber-500 to-transparent" : "bg-gradient-to-br from-indigo-500 to-transparent"
+              )} />
 
               <div className="flex items-center justify-between z-10 relative">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2.5 rounded-xl border backdrop-blur-md", isMorning ? "bg-amber-500/20 border-amber-500/20" : "bg-indigo-500/20 border-indigo-500/20")}>
-                    {isMorning ? <Sun size={20} style={{ color: 'var(--md-tertiary)' }} /> : <Moon size={20} style={{ color: 'var(--md-secondary)' }} />}
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-12 h-12 rounded-2xl flex items-center justify-center border backdrop-blur-xl shadow-inner",
+                    isMorning ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
+                  )}>
+                    {isMorning ? <Sun size={24} strokeWidth={2.5} /> : <Moon size={24} strokeWidth={2.5} />}
                   </div>
                   <div>
-                    <h3 className="text-base font-black tracking-widest uppercase">{isMorning ? '早安！早盤通勤摘要' : '晚安！收盤結算摘要'}</h3>
-                    <p className="text-xs opacity-70 mt-0.5">{isMorning ? '準備開盤，請關注以下重點資訊' : '今日盤勢已收，為您總結帳戶與市場概況'}</p>
+                    <h3 className="text-lg font-black tracking-tight uppercase" style={{ fontFamily: 'var(--font-heading)' }}>
+                      {isMorning ? '早安！早盤預判報告' : '晚安！盤後數據結核'}
+                    </h3>
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mt-0.5">
+                      {isMorning ? 'Market Pre-Opening Analysis' : 'Daily Market Liquidation Summary'}
+                    </p>
                   </div>
                 </div>
-                <div className="text-[10px] text-zinc-500 font-mono bg-black/40 border border-white/10 px-2 py-1 rounded truncate max-w-[120px] hidden sm:block">
-                  LAST: {lastUpdate} {!navigator.onLine && <span className="text-amber-500 ml-1">[離線資料]</span>}
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-white/5 font-mono text-[10px] tabular-nums tracking-widest opacity-60">
+                   <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                   SYNC: {lastUpdate} {!navigator.onLine && <span className="text-amber-500 ml-1">[OFFLINE]</span>}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 z-10 relative">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 z-10 relative">
                 {isMorning ? (
                   <>
                     {marketData.some(m => m.symbol === '^GSPC' || m.symbol === '^IXIC') && (
-                      <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-md">
-                        <div className="text-[10px] text-amber-400/80 font-bold mb-1 tracking-wider">美股夜盤總結</div>
-                        <div className="text-sm font-medium">
+                      <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
+                        <div className="text-[10px] font-black text-amber-400/50 uppercase tracking-widest mb-2">美股隔夜行情 OVERNIGHT</div>
+                        <div className="space-y-1.5">
                           {(() => {
                             const gspc = marketData.find(m => m.symbol === '^GSPC');
                             const ixic = marketData.find(m => m.symbol === '^IXIC');
                             return (
-                              <div className="flex flex-col gap-1">
-                                {gspc && <div>S&P 500: {gspc.price.toLocaleString()} ({gspc.changePct > 0 ? '+' : ''}{gspc.changePct.toFixed(2)}%)</div>}
-                                {ixic && <div>NASDAQ: {ixic.price.toLocaleString()} ({ixic.changePct > 0 ? '+' : ''}{ixic.changePct.toFixed(2)}%)</div>}
-                              </div>
+                              <>
+                                {gspc && <div className="flex justify-between text-[11px] font-mono"><span className="opacity-60">S&P 500</span><span className="font-bold">{gspc.price.toLocaleString()} ({gspc.changePct > 0 ? '+' : ''}{gspc.changePct.toFixed(2)}%)</span></div>}
+                                {ixic && <div className="flex justify-between text-[11px] font-mono"><span className="opacity-60">NASDAQ</span><span className="font-bold">{ixic.price.toLocaleString()} ({ixic.changePct > 0 ? '+' : ''}{ixic.changePct.toFixed(2)}%)</span></div>}
+                              </>
                             );
                           })()}
                         </div>
                       </div>
                     )}
-                    {aiSummary && aiSummary.aiAdvice && (
-                      <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-md">
-                        <div className="text-[10px] text-amber-400/80 font-bold mb-1 tracking-wider">盤前 AI 分析</div>
-                        <div className="text-sm font-medium line-clamp-2">{aiSummary.aiAdvice}</div>
-                      </div>
-                    )}
-                    {aiSummary && aiSummary.keyDrivers && aiSummary.keyDrivers.length > 0 && (
-                      <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-md">
-                        <div className="text-[10px] text-amber-400/80 font-bold mb-1 tracking-wider">市場情緒重點</div>
-                        <div className="text-sm font-bold text-amber-300 line-clamp-2">{aiSummary.keyDrivers.join('；')}</div>
+                    {aiSummary && (
+                      <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md md:col-span-2 hover:border-white/10 transition-colors">
+                        <div className="text-[10px] font-black text-amber-400/50 uppercase tracking-widest mb-2">AI 戰略預警 STRATEGIC ADVISORY</div>
+                        <div className="text-xs font-medium leading-relaxed opacity-80 italic">"{aiSummary.aiAdvice}"</div>
                       </div>
                     )}
                   </>
                 ) : (
                   <>
                     {marketData.some(m => m.symbol === '2330.TW') && (
-                      <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-md">
-                        <div className="text-[10px] text-indigo-400/80 font-bold mb-1 tracking-wider">今日台股收盤結算</div>
-                        <div className="text-sm font-medium">
-                          {(() => {
-                            const tsm = marketData.find(m => m.symbol === '2330.TW');
-                            if (!tsm) return null;
-                            return `台積電 (2330.TW): ${tsm.price.toLocaleString()} (${tsm.changePct >= 0 ? '+' : ''}${tsm.changePct.toFixed(2)}%)`;
-                          })()}
-                        </div>
+                      <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
+                        <div className="text-[10px] font-black text-indigo-400/50 uppercase tracking-widest mb-2">台股收盤摘要 DAILY CLOSE</div>
+                        {(() => {
+                          const tsm = marketData.find(m => m.symbol === '2330.TW');
+                          if (!tsm) return null;
+                          return <div className="text-sm font-mono font-bold tracking-tight">2330.TW: {tsm.price.toLocaleString()} <span className={tsm.changePct >= 0 ? "text-rose-400" : "text-emerald-400"}>({tsm.changePct >= 0 ? '+' : ''}{tsm.changePct.toFixed(2)}%)</span></div>;
+                        })()}
                       </div>
                     )}
                     {posInfo.totalVal > 0 && (
-                      <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-md">
-                        <div className="text-[10px] text-indigo-400/80 font-bold mb-1 tracking-wider">個人帳戶總損益</div>
-                        <div className={cn("text-sm font-mono font-bold", posInfo.plVal >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                      <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
+                        <div className="text-[10px] font-black text-indigo-400/50 uppercase tracking-widest mb-2">投資組合效益 ASSET PERFORMANCE</div>
+                        <div className={cn("text-sm font-mono font-black tracking-tighter", posInfo.plVal >= 0 ? "text-rose-400" : "text-emerald-400")}>
                           {posInfo.plVal >= 0 ? '+' : ''}{posInfo.plVal.toLocaleString(undefined, { maximumFractionDigits: 0 })} TWD ({posInfo.plPct >= 0 ? '+' : ''}{posInfo.plPct.toFixed(2)}%)
                         </div>
                       </div>
                     )}
-                    {aiSummary && aiSummary.aiAdvice && (
-                      <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-md">
-                        <div className="text-[10px] text-indigo-400/80 font-bold mb-1 tracking-wider">市場情緒與動向</div>
-                        <div className="text-sm font-medium line-clamp-2">{aiSummary.aiAdvice}</div>
+                    {aiSummary && (
+                      <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
+                        <div className="text-[10px] font-black text-indigo-400/50 uppercase tracking-widest mb-2">市場情緒摘要 SENTIMENT SUMMARY</div>
+                        <div className="text-xs font-medium leading-relaxed opacity-80 line-clamp-2 italic">"{aiSummary.aiAdvice}"</div>
                       </div>
                     )}
                   </>
@@ -614,38 +629,38 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
             </div>
           );
         })()}
-        <div className="sm:hidden text-[10px] text-zinc-500 font-mono bg-black/40 border border-white/10 px-2 py-1 rounded w-fit">
-          LAST: {lastUpdate} {!navigator.onLine && <span className="text-amber-500 ml-1">[離線資料]</span>}
-        </div>
       </div>
 
       {/* ── 大盤指數 ── */}
-      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 shrink-0 w-full min-w-0 overflow-x-auto pb-2 md:pb-0 -mx-4 md:mx-0 px-4 md:px-0 mobile-hide-scrollbar snap-x snap-mandatory md:snap-none scroll-px-4 scroll-smooth">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 shrink-0 w-full mb-8 stagger-item">
         {marketData.map((idx) => (
           <IndexCard key={idx.symbol} idx={idx} compact={compact} onSelect={onSelectSymbol} />
         ))}
       </div>
 
       {/* ── 2. Watchlist & Deep Analysis ── */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between shrink-0">
-          <h2 className="text-lg font-black tracking-tight" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>Watchlist</h2>
+      <div className="flex flex-col gap-6 stagger-item mb-10 px-1">
+        <div className="flex items-center justify-between shrink-0 mb-4">
+          <div className="flex flex-col">
+            <span className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>自選關注 WATCHLIST</span>
+            <div className="h-0.5 w-16 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] rounded-full" />
+          </div>
           <div className="flex items-center gap-2 flex-wrap">
             {BROKERS.map((b, i) => (
-              <button key={i} onClick={() => setBroker(b)}
-                className="px-3 py-1.5 sm:py-1 rounded text-[10px] font-mono uppercase transition-all border"
-                style={broker === b
-                  ? { background: 'rgba(128,131,255,0.12)', color: 'var(--md-primary)', borderColor: 'rgba(128,131,255,0.3)' }
-                  : { background: 'var(--md-surface-container)', color: 'var(--md-outline)', borderColor: 'var(--md-outline-variant)' }}>
-                {b}
+              <button key={i} onClick={() => { setBroker(b); vibrate(20); }}
+                className={safeCn(
+                  "px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-lg",
+                  broker === b ? "bg-indigo-500 text-black border-indigo-400" : "bg-black/40 text-zinc-400 border-white/5 hover:text-white"
+                )}>
+                {b.split(' ')[0]}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col xl:flex-row gap-6">
           {/* 左側：自選股 Grid */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {stocks.map(s => (
               <WatchlistStockCard
                 key={s.symbol}
@@ -656,87 +671,91 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
               />
             ))}
 
-            {/* ── FIX TS1003: 新增自選股 Card ──
-                原始碼在此處有兩個嵌套的開頭元素，外層 <div role="button"> 缺少結束 `>`，
-                導致 TypeScript 將內層 <div className="glass-card..."> 解析為屬性名稱。
-                修法：移除多餘的外層包裝，直接在 glass-card div 上加 role/tabIndex/onClick/onKeyDown。
-            */}
             <div
               role="button"
               tabIndex={0}
               onClick={() => !showAdd && setShowAdd(true)}
               onKeyDown={e => e.key === 'Enter' && !showAdd && setShowAdd(true)}
-              className="glass-card rounded-2xl border-dashed p-4 cursor-pointer transition-all flex flex-col items-center justify-center min-h-[160px]"
-              style={{ borderColor: 'var(--md-outline-variant)' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(128,131,255,0.4)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--md-outline-variant)')}>
-
+              className="glass-card rounded-[2rem] border-2 border-dashed border-white/10 p-8 cursor-pointer transition-all flex flex-col items-center justify-center min-h-[180px] hover:border-indigo-500/40 hover:bg-indigo-500/5 group active:scale-[0.98]">
               {showAdd ? (
-                <div className="w-full space-y-3" onClick={e => e.stopPropagation()}>
-                  <div className="text-base font-bold text-zinc-100 mb-3">新增自選股</div>
-                  <div className="flex items-center gap-2 bg-zinc-950 rounded-xl px-4 border border-zinc-800">
-                    <Search size={16} className="text-zinc-500 shrink-0"/>
+                <div className="w-full space-y-4" onClick={e => e.stopPropagation()}>
+                  <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">ADD NEW SYMBOL</div>
+                  <div className="flex items-center gap-3 bg-black/60 rounded-2xl px-5 border border-white/5 focus-within:border-indigo-500/50 transition-all">
+                    <Search size={16} className="text-zinc-600 shrink-0"/>
                     <input
                       autoFocus
                       value={addInput}
                       onChange={e => { setAddInput(e.target.value.toUpperCase()); setAddErr(''); }}
                       onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                      placeholder="輸入代碼..."
-                      className="flex-1 bg-transparent py-3 text-base text-zinc-100 focus:outline-none"
+                      placeholder="SYMBOL..."
+                      className="flex-1 bg-transparent py-4 text-sm font-bold text-white focus:outline-none placeholder:text-zinc-700"
                     />
                   </div>
-                  {addErr && <div className="text-sm text-rose-400 px-1">{addErr}</div>}
+                  {addErr && <div className="text-[10px] font-bold text-rose-400 px-1">{addErr}</div>}
                   <div className="flex gap-3">
                     <button onClick={handleAdd} disabled={busy}
-                      className="flex-1 py-2.5 rounded-lg text-sm flex items-center justify-center"
-                      style={{ background: 'rgba(128,131,255,0.12)', color: 'var(--md-primary)', border: '1px solid rgba(128,131,255,0.3)' }}>
-                      {busy ? <Loader2 size={14} className="animate-spin mr-1.5"/> : null} 確認
+                      className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-indigo-500 text-black hover:bg-indigo-400 transition-all shadow-lg active:scale-95 flex items-center justify-center">
+                      {busy ? <Loader2 size={14} className="animate-spin mr-2"/> : null} CONFIRM
                     </button>
                     <button
                       onClick={() => { setShowAdd(false); setAddInput(''); setAddErr(''); }}
-                      className="flex-1 py-2.5 rounded-lg text-sm"
-                      style={{ background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
-                      取消
+                      className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white/5 text-zinc-400 border border-white/10 hover:text-white transition-all">
+                      CANCEL
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="text-center">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: 'var(--md-surface-container-high)' }}>
-                    <Plus size={24} style={{ color: 'var(--md-outline)' }}/>
+                <div className="text-center group-hover:scale-110 transition-transform">
+                  <div className="w-16 h-16 rounded-[2rem] bg-indigo-500/10 flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
+                    <Plus size={32} className="text-indigo-400"/>
                   </div>
-                  <div className="text-sm font-semibold" style={{ color: 'var(--md-outline)' }}>新增標的</div>
+                  <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-white transition-colors">INITIATE TRACKER</div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* 右側：五檔與逐筆成交 */}
+          {/* 右側：報價詳情 */}
           {selected && (
-            <div className="w-full lg:w-[260px] flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-              <div className="glass-card rounded-2xl p-4 flex-1 flex flex-col shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-sm font-bold" style={{ color: 'var(--md-on-surface)' }}>報價詳情</h3>
-                  </div>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded" style={{ background: 'rgba(128,131,255,0.12)', color: 'var(--md-primary)' }}>{selected.symbol}</span>
-                </div>
-                <div className="text-xs font-mono space-y-2 mt-4">
-                  {[
-                    ['開盤價', selected.open?.toFixed(2) ?? '-', ''],
-                    ['最高價', selected.high?.toFixed(2) ?? '-', 'up'],
-                    ['最低價', selected.low?.toFixed(2) ?? '-', 'down'],
-                    ['成交量', selected.volume?.toLocaleString() ?? '-', ''],
-                    ['買進價', selected.bid?.toFixed(2) ?? '-', ''],
-                    ['賣出價', selected.ask?.toFixed(2) ?? '-', ''],
-                  ].map(([label, val, dir]) => (
-                    <div key={label} className="flex justify-between py-1 border-b" style={{ borderColor: 'var(--md-outline-variant)' }}>
-                      <span style={{ color: 'var(--md-outline)' }}>{label}</span>
-                      <span style={{ color: dir === 'up' ? 'var(--color-up)' : dir === 'down' ? 'var(--color-down)' : 'var(--md-on-surface)' }}>{val}</span>
+            <div className="w-full xl:w-[320px] shrink-0">
+               <div className="glass-card rounded-[2rem] p-6 lg:p-8 flex flex-col shadow-2xl relative overflow-hidden border border-white/5 h-full">
+                  <div className="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none" />
+                  <div className="flex items-center justify-between mb-8 relative z-10">
+                    <div>
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] block mb-1">DATA CORE</span>
+                      <h3 className="text-sm font-black text-white uppercase tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>報價詳情 QUOTE</h3>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <span className="text-[11px] font-black px-3 py-1 rounded-xl bg-indigo-500 text-black shadow-lg" style={{ fontFamily: 'var(--font-data)' }}>{selected.symbol}</span>
+                  </div>
+                  <div className="space-y-4 relative z-10">
+                    {[
+                      ['開盤價 OPEN', (selected.open || selected.price)?.toFixed(2), ''],
+                      ['最高價 HIGH', selected.high?.toFixed(2) || selected.price?.toFixed(2), 'up'],
+                      ['最低價 LOW', selected.low?.toFixed(2) || selected.price?.toFixed(2), 'down'],
+                      ['成交量 VOL', selected.volume?.toLocaleString() || '-', ''],
+                      ['買進價 BID', selected.bid?.toFixed(2) || selected.price?.toFixed(2), ''],
+                      ['賣出價 ASK', selected.ask?.toFixed(2) || selected.price?.toFixed(2), ''],
+                    ].map(([label, val, dir]) => (
+                      <div key={label} className="flex justify-between py-3 border-b border-white/5 last:border-0 group">
+                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-400 transition-colors">{label}</span>
+                        <span 
+                          className="text-xs font-black tabular-nums transition-colors" 
+                          style={{ 
+                            color: dir === 'up' ? '#fb7185' : dir === 'down' ? '#34d399' : 'white', 
+                            fontFamily: 'var(--font-data)' 
+                          }}
+                        >
+                          {val}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-8 pt-8 border-t border-white/5 relative z-10 flex items-center justify-center">
+                     <button className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98]">
+                        EXPORT ANALYTICS
+                     </button>
+                  </div>
+               </div>
             </div>
           )}
         </div>

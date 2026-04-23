@@ -54,54 +54,79 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className={safeCn(isLandscape ? "flex flex-col sm:flex-row sm:items-center justify-between p-2 gap-2" : "liquid-glass rounded-2xl shrink-0 flex flex-col sm:flex-row sm:items-center justify-between bg-[var(--card-bg)] border border-[var(--border-color)]", !isLandscape && compact ? "p-2 gap-2" : !isLandscape ? "p-3 sm:p-4 gap-2 sm:gap-4" : "")}
+        className={safeCn(
+          "shrink-0 flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 bg-[#0a0a0c]/80 backdrop-blur-xl relative z-40 overflow-hidden",
+          isLandscape ? "p-3 px-4 gap-3" : compact ? "p-2.5 px-4 gap-2" : "p-4 px-6 gap-3 sm:gap-6",
+          !isLandscape && "rounded-t-3xl sm:rounded-3xl border border-white/5 shadow-2xl"
+        )}
       >
-        <div className={safeCn("flex items-center flex-wrap", compact ? "gap-2" : "gap-2 sm:gap-4")}>
-          <span className={safeCn("font-black text-[var(--text-color)]", compact ? "text-lg" : "text-xl sm:text-2xl")}>{symbol}</span>
-          {twse && <span className={safeCn("px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30", compact ? "label-meta" : "text-xs")}>TWSE</span>}
+        <div className={safeCn("flex items-center flex-wrap min-w-0", compact ? "gap-3" : "gap-4 sm:gap-6")}>
+          <div className="flex flex-col">
+            <span className={safeCn("font-black tracking-tighter text-white uppercase leading-none", compact ? "text-xl" : "text-2xl sm:text-3xl")} style={{ fontFamily: 'var(--font-heading)' }}>{symbol}</span>
+            {twse && <span className="text-[9px] font-black tracking-[0.2em] text-emerald-400 mt-1 uppercase opacity-60">TWSE TERMINAL</span>}
+          </div>
+
+          <div className="w-px h-8 bg-white/10 hidden sm:block mx-1" />
+
           {loading ? (
-            <div className="flex items-center gap-2">
-              <div className={safeCn("bg-[var(--border-color)] animate-pulse rounded", compact ? "w-16 h-6" : "w-24 h-8")} />
-              <Loader2 size={compact ? 16 : 20} className="animate-spin text-[var(--text-color)] opacity-50" />
+            <div className="flex items-center gap-3">
+              <div className={safeCn("bg-white/5 animate-pulse rounded-xl", compact ? "w-20 h-7" : "w-28 h-9")} />
+              <Loader2 size={18} className="animate-spin text-indigo-400" />
             </div>
           ) : price != null && (
-            <div className="flex items-center gap-2">
-              <span className={safeCn('data-num font-black', compact ? 'text-xl' : 'text-2xl sm:text-3xl', isUp ? 'text-emerald-400' : 'text-rose-400')}>{safeN(price)}</span>
-              {isUp ? <TrendingUp size={compact ? 16 : 18} className="text-emerald-400" /> : <TrendingDown size={compact ? 16 : 18} className="text-rose-400" />}
+            <div className="flex flex-col sm:flex-row sm:items-end gap-1 sm:gap-3">
+              <div className="flex items-center gap-2">
+                <span className={safeCn('font-black tabular-nums tracking-tighter', compact ? 'text-2xl' : 'text-3xl sm:text-4xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
+                  {safeN(price)}
+                </span>
+                <div className={safeCn("p-1 rounded-lg", isUp ? "bg-rose-500/10 text-rose-400" : "bg-emerald-500/10 text-emerald-400")}>
+                  {isUp ? <TrendingUp size={16} strokeWidth={2.5} /> : <TrendingDown size={16} strokeWidth={2.5} />}
+                </div>
+              </div>
+              <div className={safeCn('font-black tabular-nums flex items-center gap-2 pb-0.5', compact ? 'text-[11px]' : 'text-[13px]', isUp ? 'text-rose-400 opacity-80' : 'text-emerald-400 opacity-80')} style={{ fontFamily: 'var(--font-data)' }}>
+                <span>{isUp ? '+' : ''}{safeN(change)}</span>
+                <span className="opacity-40">({isUp ? '+' : ''}{safeN(pct)}%)</span>
+              </div>
             </div>
           )}
-          {!loading && change != null && (
-            <span className={safeCn('data-num font-bold', compact ? 'text-xs' : 'text-sm', isUp ? 'text-emerald-400' : 'text-rose-400')}>
-              {isUp ? '+' : ''}{safeN(change)} ({isUp ? '+' : ''}{safeN(pct)}%)
-            </span>
-          )}
+
           {recommendation && (
-            <span className={safeCn(
-              "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider",
-              recommendation.includes('買進') ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" :
-              recommendation.includes('賣出') ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" :
-              "bg-zinc-500/20 text-zinc-400 border border-zinc-500/30"
+            <div className={safeCn(
+              "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] border shadow-sm",
+              recommendation.includes('買進') ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+              recommendation.includes('賣出') ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+              "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
             )}>
               {recommendation}
-            </span>
-          )}
-          {loading && (
-            <div className={safeCn("bg-[var(--border-color)] animate-pulse rounded", compact ? "w-20 h-4" : "w-28 h-5")} />
+            </div>
           )}
         </div>
-        <div className={safeCn("flex items-center text-[var(--text-color)] opacity-60 font-mono flex-wrap", compact ? "gap-2 label-meta" : "gap-2 sm:gap-3 text-xs sm:text-sm")}>
-          {high != null && <span className="whitespace-nowrap">高 <span className="text-emerald-400">{safeN(high)}</span></span>}
-          {low != null && <span className="whitespace-nowrap">低 <span className="text-rose-400">{safeN(low)}</span></span>}
-          {vol != null && !isNaN(Number(vol)) && <span className="whitespace-nowrap">量 <span className="text-[var(--text-color)]">{Number(vol) >= 1e6 ? `${(Number(vol) / 1e6).toFixed(1)}M` : Number(vol).toLocaleString()}</span></span>}
-          <button onClick={() => setFocusMode(!focusMode)} aria-label="專注模式" aria-pressed={focusMode} className={safeCn("rounded-xl transition-colors whitespace-nowrap", compact ? "p-1" : "p-1.5 sm:p-2", focusMode ? "bg-emerald-500/20 text-emerald-400" : "hover:bg-[var(--bg-color)] text-[var(--text-color)] opacity-60 hover:opacity-100")}>
-            ✨ 專注
-          </button>
-          <button onClick={() => { setAlertVal(String(price ?? '')); setAlertOpen(true); }} aria-label="設定價格警示" className={safeCn("rounded-xl hover:bg-[var(--bg-color)] text-[var(--text-color)] opacity-60 hover:opacity-100", compact ? "p-1" : "p-1.5 sm:p-2")}>
-            🔔 警示
-          </button>
-          <button onClick={loadData} disabled={loading} aria-label="重新載入資料" className={safeCn("rounded-xl hover:bg-[var(--bg-color)] text-[var(--text-color)] opacity-60 hover:opacity-100", compact ? "p-1" : "p-1.5 sm:p-2")}>
-            <RefreshCw size={compact ? 12 : 14} className={loading ? 'animate-spin' : ''} />
-          </button>
+
+        <div className={safeCn("flex items-center font-mono flex-wrap bg-black/40 p-1.5 px-3 rounded-2xl border border-white/5", compact ? "gap-3 text-[10px]" : "gap-4 sm:gap-5 text-[11px]")}>
+          {high != null && <div className="flex flex-col"><span className="opacity-30 font-black">HIGH</span><span className="text-rose-400 font-bold tabular-nums">{safeN(high)}</span></div>}
+          {low != null && <div className="flex flex-col"><span className="opacity-30 font-black">LOW</span><span className="text-emerald-400 font-bold tabular-nums">{safeN(low)}</span></div>}
+          {vol != null && !isNaN(Number(vol)) && (
+            <div className="flex flex-col">
+              <span className="opacity-30 font-black">VOL</span>
+              <span className="text-white font-bold tabular-nums">{Number(vol) >= 1e6 ? `${(Number(vol) / 1e6).toFixed(1)}M` : Number(vol).toLocaleString()}</span>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-1.5 ml-2">
+            <button onClick={() => { setFocusMode(!focusMode); vibrate(20); }} aria-label="專注模式" aria-pressed={focusMode} 
+              className={safeCn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all font-black uppercase tracking-widest text-[9px]", 
+                focusMode ? "bg-indigo-500 text-white shadow-lg" : "bg-white/5 text-zinc-400 hover:text-white")}>
+              <span className={cn(focusMode ? "scale-110" : "opacity-40 animate-pulse")}>✨</span> 專注
+            </button>
+            <button onClick={() => { setAlertVal(String(price ?? '')); setAlertOpen(true); vibrate(20); }} aria-label="設定價格警示" 
+              className="p-1.5 rounded-xl bg-white/5 text-zinc-400 hover:text-white border border-transparent hover:border-white/10 transition-all">
+              🔔
+            </button>
+            <button onClick={() => { loadData(); vibrate(20); }} disabled={loading} aria-label="重新載入資料" 
+              className="p-1.5 rounded-xl bg-white/5 text-zinc-400 hover:text-white border border-transparent hover:border-white/10 transition-all">
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
       </motion.div>
 

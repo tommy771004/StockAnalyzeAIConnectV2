@@ -356,14 +356,14 @@ function MainApp() {
               <Menu size={18}/>
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/10"
                    style={{ background: 'var(--md-primary-container)' }}>
-                <span className="material-symbols-outlined text-[20px]" style={{ color: 'var(--md-on-primary-container)', fontVariationSettings: "'FILL' 1" }}>terminal</span>
+                <span className="material-symbols-outlined text-[22px]" style={{ color: 'var(--md-on-primary-container)', fontVariationSettings: "'FILL' 1" }}>terminal</span>
               </div>
-              <div className="hidden sm:flex flex-col leading-none">
-                <span className="text-base font-black tracking-tight text-gradient-primary"
-                      style={{ fontFamily: 'var(--font-heading)', background: 'linear-gradient(120deg, var(--md-primary) 0%, #adc6ff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>QUANTUM</span>
-                <span className="text-[9px] font-bold tracking-[0.18em] uppercase" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-outline)', letterSpacing: '0.18em' }}>COMMAND</span>
+              <div className="hidden sm:flex flex-col leading-tight">
+                <span className="text-lg font-black tracking-tighter text-gradient-primary uppercase"
+                      style={{ fontFamily: 'var(--font-heading)' }}>QUANTUM</span>
+                <span className="text-[10px] font-bold tracking-[0.25em] uppercase opacity-60" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-outline)' }}>CORE SYSTEM</span>
               </div>
             </div>
             {/* Desktop search bar */}
@@ -586,24 +586,23 @@ function MainApp() {
                 </div>
               </div>
             )}
-            <nav className="flex-1 py-4 space-y-1 px-3 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 py-6 space-y-1.5 px-3 overflow-y-auto custom-scrollbar">
               {(isMobile ? NAV : visibleNav).map(item => {
                 const Icon = item.icon, active = page === item.id;
                 return (
                   <button key={item.id} onClick={() => handleNav(item)} title={!sidebar ? item.label : undefined}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-all relative"
+                    className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all relative group"
                     style={active
-                      ? { background: 'rgba(128,131,255,0.12)', color: 'var(--md-primary)', borderRight: sidebar ? '2px solid var(--md-primary)' : 'none' }
+                      ? { background: 'rgba(128,131,255,0.15)', color: 'var(--md-primary)' }
                       : { color: 'var(--md-outline)' }}
                     onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(192,193,255,0.06)'; e.currentTarget.style.color = 'var(--md-on-surface)'; } }}
                     onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--md-outline)'; } }}>
-                    <Icon size={18} className="shrink-0" />
-                    {(sidebar || isMobile) && <span className="flex-1 truncate text-left tracking-tight">{item.label}</span>}
+                    {active && <motion.div layoutId="nav-active-pill" className="absolute left-0 w-1 h-6 bg-current rounded-r-full" />}
+                    <Icon size={19} className={cn("shrink-0 transition-transform group-hover:scale-110", active && "scale-110")} />
+                    {(sidebar || isMobile) && <span className="flex-1 truncate text-left tracking-tight font-medium uppercase text-[12px]">{item.label}</span>}
                     {sidebar && item.shortcut && (
-                      <kbd className="hidden lg:inline text-[10px] border rounded px-1.5 font-mono shrink-0 transition-colors"
-                           style={active
-                             ? { background: 'rgba(192,193,255,0.12)', border: '1px solid rgba(192,193,255,0.2)', color: 'var(--md-primary)' }
-                             : { background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-outline)' }}>
+                      <kbd className="hidden lg:inline text-[9px] border border-white/10 rounded px-1.5 font-mono shrink-0 opacity-40 font-black"
+                           style={active ? { color: 'var(--md-primary)', borderColor: 'var(--md-primary)' } : {}}>
                         {item.shortcut}
                       </kbd>
                     )}
@@ -636,7 +635,7 @@ function MainApp() {
                    } : {}),
                  }}
                  aria-label="導覽路徑" role="navigation">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
                 {/* Mobile prev/next page buttons */}
                 {isMobile && (
                   <>
@@ -650,10 +649,10 @@ function MainApp() {
                         background: 'transparent',
                         opacity: currentPageIndex <= 0 ? 0.35 : 1,
                       }}>
-                      <ChevronLeft size={15} />
+                      <ChevronLeft size={14} />
                     </button>
-                    <span className="font-mono text-[10px] tabular-nums px-0.5" style={{ color: 'var(--md-outline)', fontFamily: 'var(--font-mono)' }}>
-                      {currentPageIndex + 1}<span style={{ color: 'var(--md-outline-variant)' }}>/{NAV.length}</span>
+                    <span className="font-mono tabular-nums px-1 opacity-40">
+                      {currentPageIndex + 1}<span>/{NAV.length}</span>
                     </span>
                     <button
                       onClick={goNextPage}
@@ -665,18 +664,18 @@ function MainApp() {
                         background: 'transparent',
                         opacity: currentPageIndex >= NAV.length - 1 ? 0.35 : 1,
                       }}>
-                      <ChevronRight size={15} />
+                      <ChevronRight size={14} />
                     </button>
-                    <span style={{ color: 'var(--md-outline-variant)', fontSize: 10, margin: '0 2px' }}>|</span>
+                    <div className="w-px h-3 bg-white/10 mx-1" />
                   </>
                 )}
-                <span style={{ color: 'var(--md-outline-variant)', fontFamily: 'var(--font-data)', letterSpacing: '0.06em' }}>{TOP_TABS.find(t=>t.id===topTab)?.label}</span>
-                <span style={{ color: 'var(--md-outline-variant)' }}>/</span>
-                <span style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)', fontWeight: 600, letterSpacing: '-0.01em' }}>{activeLabel}</span>
+                <span className="opacity-40" style={{ fontFamily: 'var(--font-data)' }}>{TOP_TABS.find(t=>t.id===topTab)?.label}</span>
+                <ChevronRight size={10} className="mx-1 opacity-20" />
+                <span className="text-[var(--md-on-surface)]" style={{ fontFamily: 'var(--font-heading)' }}>{activeLabel}</span>
                 {page==='trading'&& (
                   <>
-                    <span style={{ color: 'var(--md-outline-variant)' }}>/</span>
-                    <span className="font-mono" style={{ color: 'var(--md-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>{symbol}</span>
+                    <ChevronRight size={10} className="mx-1 opacity-20" />
+                    <span className="text-[var(--md-primary)] font-black tracking-wide" style={{ fontFamily: 'var(--font-data)' }}>{symbol}</span>
                   </>
                 )}
               </div>

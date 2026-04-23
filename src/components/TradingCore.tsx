@@ -185,121 +185,137 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
 
       {/* ── LEFT: Watchlist + Portfolio Summary ── */}
       {!isFocusActive && !isLandscape && (
-        <div className={cn("w-full lg:w-72 flex flex-col shrink-0", compact ? "gap-2" : "gap-4", mobilePanel !== 'list' && "hidden lg:flex")}>
-          {/* Portfolio Summary */}
-          <div className={cn("liquid-glass-strong rounded-3xl border border-[var(--border-color)] shadow-xl", compact ? "p-3" : "p-5")}>
-            <div className="label-meta font-bold text-zinc-500 uppercase tracking-widest mb-1">委託概覽</div>
-            <div className={cn("font-black text-[var(--text-color)] tracking-tight", compact ? "text-lg" : "text-2xl")}>
-              {portfolio.length > 0 ? `$${portfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
-            </div>
-            {portfolio.length > 0 && (
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="label-meta font-bold text-zinc-400">{portfolio.length} 筆委託</span>
-              </div>
-            )}
+        <div className={safeCn("w-full lg:w-[320px] flex flex-col shrink-0", compact ? "gap-3" : "gap-5", mobilePanel !== 'list' && "hidden lg:flex")}>
+          {/* Portfolio Summary Group */}
+          <div className="flex flex-col gap-3">
+             <div className="px-4">
+                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>資產概覽 ASSET OVERVIEW</span>
+             </div>
+             <div className={safeCn("glass-card border border-white/5 rounded-3xl shadow-2xl relative overflow-hidden group", compact ? "p-4" : "p-6")}>
+                <div className="absolute inset-0 bg-indigo-500/[0.03] pointer-events-none group-hover:bg-indigo-500/[0.05] transition-colors" />
+                <div className="relative z-10 flex flex-col">
+                  <div className="label-meta font-black text-zinc-600 uppercase tracking-widest mb-2">當前權益 EQUITY</div>
+                  <div className={safeCn("font-black text-white tracking-tighter tabular-nums flex items-baseline gap-2", compact ? "text-2xl" : "text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
+                    <span className="text-sm opacity-30 font-medium">NT$</span>
+                    {portfolio.length > 0 ? portfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+                  </div>
+                  {portfolio.length > 0 && (
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{portfolio.length} 筆活動委託 ACTIVE ORDERS</span>
+                    </div>
+                  )}
+                </div>
+             </div>
           </div>
-          {/* Watchlist */}
-          <div className="flex-1 min-h-[260px] md:min-h-[400px] lg:min-h-0 liquid-glass rounded-3xl border border-[var(--border-color)] overflow-hidden flex flex-col">
-            <Watchlist
-              watchlist={watchlist}
-              norm={norm}
-              symbol={symbol}
-              onSymbolChange={onSymbolChange || (() => {})}
-              wlAdding={wlAdding}
-              setWlAdding={setWlAdding}
-              wlSearch={wlSearch}
-              setWlSearch={setWlSearch}
-              addToWatchlist={addToWatchlist}
-              searchResults={searchResults}
-              isSearching={isSearching}
-              onSwipeAction={(sym, side) => {
-                 if (onSymbolChange) onSymbolChange(sym);
-                 setOSide(side);
-                 setMobilePanel('panel');
-              }}
-            />
+          
+          {/* Watchlist Group */}
+          <div className="flex-1 min-h-[300px] md:min-h-[400px] lg:min-h-0 flex flex-col gap-3">
+             <div className="glass-card flex-1 rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-2xl relative">
+               <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
+               <Watchlist
+                 watchlist={watchlist}
+                 norm={norm}
+                 symbol={symbol}
+                 onSymbolChange={onSymbolChange || (() => {})}
+                 wlAdding={wlAdding}
+                 setWlAdding={setWlAdding}
+                 wlSearch={wlSearch}
+                 setWlSearch={setWlSearch}
+                 addToWatchlist={addToWatchlist}
+                 searchResults={searchResults}
+                 isSearching={isSearching}
+                 onSwipeAction={(sym, side) => {
+                    vibrate(30);
+                    if (onSymbolChange) onSymbolChange(sym);
+                    setOSide(side);
+                    setMobilePanel('panel');
+                 }}
+               />
+             </div>
           </div>
         </div>
       )}
 
       {/* ── CENTER: Chart ── */}
-      <div className={cn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-2" : "gap-4", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
-        {/* Price bar */}
-        <div className={cn("shrink-0 overflow-hidden", (isLandscape || isFocusActive) ? "bg-black border-b border-white/10" : "liquid-glass-strong rounded-3xl border border-[var(--border-color)]")}>
-          <PriceBar
-            symbol={symbol}
-            twse={twse}
-            loading={dataState.status === 'loading'}
-            price={price}
-            isUp={isUp}
-            change={change}
-            pct={pct}
-            high={high}
-            low={low}
-            vol={vol}
-            focusMode={isFocusActive || Boolean(isLandscape)}
-            setFocusMode={handleSetFocusMode}
-            onSetAlert={onSetAlert}
-            loadData={loadData}
-            isLandscape={isLandscape}
-            recommendation={indic?.recommendation}
-          />
-        </div>
-
-        {/* Chart */}
+      <div className={cn("flex-1 flex flex-col min-w-0 min-h-[400px] lg:min-h-0", isLandscape ? "gap-0" : compact ? "gap-3" : "gap-5", (!isFocusActive && !isLandscape) && mobilePanel !== 'chart' && "hidden lg:flex")}>
+        {/* Main Display Unit */}
         <div className={cn(
-          "flex-1 min-h-[300px] lg:min-h-0 overflow-hidden flex flex-col", 
-          (isLandscape || isFocusActive) ? "p-0 rounded-none border-none bg-black" : "liquid-glass rounded-3xl border border-[var(--border-color)] p-0.5 sm:p-1"
+          "flex-1 flex flex-col overflow-hidden relative", 
+          (isLandscape || isFocusActive) ? "p-0 rounded-none border-none bg-[#050505]" : "glass-card border border-white/5 rounded-3xl shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)]"
         )}>
-          <div className="flex-1 min-h-0"><ChartSection symbol={symbol} model={model} focusMode={isFocusActive || Boolean(isLandscape)} data={hist} /></div>
+          {/* Internal Top Bar */}
+          <div className="shrink-0 border-b border-white/5 bg-black/40 backdrop-blur-md relative z-40">
+            <PriceBar
+              symbol={symbol}
+              twse={twse}
+              loading={dataState.status === 'loading'}
+              price={price}
+              isUp={isUp}
+              change={change}
+              pct={pct}
+              high={high}
+              low={low}
+              vol={vol}
+              focusMode={isFocusActive || Boolean(isLandscape)}
+              setFocusMode={handleSetFocusMode}
+              onSetAlert={onSetAlert}
+              loadData={loadData}
+              isLandscape={true} // Force cleaner look inside the glass container
+              recommendation={indic?.recommendation}
+            />
+          </div>
+
+          {/* Core Chart Field */}
+          <div className="flex-1 min-h-0 relative">
+            <div className="absolute inset-0 z-0 bg-[#0a0a0c] pointer-events-none" />
+            <ChartSection symbol={symbol} model={model} focusMode={isFocusActive || Boolean(isLandscape)} data={hist} />
+          </div>
         </div>
         
-        {/* News & AI Sentiment Below Chart */}
+        {/* Sub-Data Grid */}
         {!isLandscape && (
-          <div className={cn(isFocusActive && "px-4")}>
+          <div className={cn(isFocusActive && "px-4 animate-in fade-in slide-in-from-bottom-4 duration-700")}>
             <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
           </div>
         )}
       </div>
 
-      {/* ── RIGHT: Depth + News + Order ── */}
+      {/* ── RIGHT: Analysis Engine ── */}
       {!isFocusActive && !isLandscape && (
-        <div className={cn("w-full lg:w-80 flex flex-col shrink-0 relative", compact ? "gap-2" : "gap-4", mobilePanel !== 'panel' && "hidden lg:flex")}>
-          {toast && (
-            <div className={cn("fixed top-16 left-1/2 -translate-x-1/2 lg:absolute lg:top-0 lg:-translate-y-full px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-2xl z-50 whitespace-nowrap animate-[slideUp_0.3s_ease-out] safe-area-top", toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500')}>
-              {toast.type === 'success' ? '\u2713 ' : '\u2717 '}{toast.msg}
-            </div>
-          )}
-          <div className="liquid-glass rounded-3xl border border-[var(--border-color)] p-1">
+        <div className={cn("w-full lg:w-[340px] flex flex-col shrink-0 relative", compact ? "gap-3" : "gap-5", mobilePanel !== 'panel' && "hidden lg:flex")}>
+          <div className="glass-card rounded-3xl border border-white/5 overflow-hidden shadow-2xl relative">
+            <div className="absolute inset-0 bg-amber-500/[0.02] pointer-events-none" />
             <BacktestPanel history={hist} />
           </div>
-          <div className="flex-1 min-h-[300px] md:min-h-[500px] lg:min-h-0 liquid-glass rounded-3xl border border-[var(--border-color)] overflow-y-auto">
-            <RightPanel
-              price={price}
-              symbol={symbol}
-              news={news}
-              sentiment={sentiment}
-              newsStatus={newsStatus}
-              tab={tab}
-              setTab={setTab}
-              eDateFmt={eDateFmt}
-              chat={chat}
-              setChat={setChat}
-              chatRep={chatRep}
-              chatStatus={chatStatus}
-              handleChat={handleChat}
-              oSide={oSide}
-              setOSide={setOSide}
-              orderQty={orderQty}
-              setOrderQty={setOrderQty}
-              isUp={isUp}
-              onGoBacktest={onGoBacktest}
-              executeOrder={executeOrder}
-              mtfData={mtfData}
-              mtfStatus={mtfStatus}
-              portfolio={portfolio}
-              orderStatus={orderStatus}
-            />
+          
+          <div className="flex-1 flex flex-col min-h-[300px] md:min-h-[500px] lg:min-h-0 relative">
+             <RightPanel
+               price={price}
+               symbol={symbol}
+               news={news}
+               sentiment={sentiment}
+               newsStatus={newsStatus}
+               tab={tab}
+               setTab={setTab}
+               eDateFmt={eDateFmt}
+               chat={chat}
+               setChat={setChat}
+               chatRep={chatRep}
+               chatStatus={chatStatus}
+               handleChat={handleChat}
+               oSide={oSide}
+               setOSide={setOSide}
+               orderQty={orderQty}
+               setOrderQty={setOrderQty}
+               isUp={isUp}
+               onGoBacktest={onGoBacktest}
+               executeOrder={executeOrder}
+               mtfData={mtfData}
+               mtfStatus={mtfStatus}
+               portfolio={portfolio}
+               orderStatus={orderStatus}
+             />
           </div>
         </div>
       )}

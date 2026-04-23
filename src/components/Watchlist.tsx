@@ -53,10 +53,10 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
   }, [onSwipeAction, w.symbol]);
 
   return (
-    <div className="relative overflow-hidden rounded-xl col-span-1 border border-transparent">
-      <div className={safeCn("absolute inset-0 flex items-center px-4 transition-colors duration-200", swipeSide === 'buy' ? 'bg-emerald-500 justify-start' : swipeSide === 'sell' ? 'bg-rose-500 justify-end' : 'bg-transparent')}>
-        {swipeSide === 'buy' && <span className="font-bold text-black text-sm tracking-widest">買進</span>}
-        {swipeSide === 'sell' && <span className="font-bold text-white text-sm tracking-widest">賣出</span>}
+    <div className="relative overflow-hidden rounded-2xl col-span-1 border border-transparent">
+      <div className={safeCn("absolute inset-0 flex items-center px-4 transition-all duration-300 backdrop-blur-md", swipeSide === 'buy' ? 'bg-emerald-500/80 justify-start' : swipeSide === 'sell' ? 'bg-rose-500/80 justify-end' : 'bg-transparent')}>
+        {swipeSide === 'buy' && <span className="font-black text-black text-[10px] tracking-[0.2em] uppercase">BUY EXEC</span>}
+        {swipeSide === 'sell' && <span className="font-black text-white text-[10px] tracking-[0.2em] uppercase">SELL EXEC</span>}
       </div>
       <motion.div
         drag={onSwipeAction ? "x" : false}
@@ -85,54 +85,53 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
         role="option"
         aria-selected={isActive}
         className={safeCn(
-          'stock-card flex flex-col rounded-xl cursor-pointer transition-all active:scale-[0.98] bg-[var(--card-bg)] z-10 relative overflow-hidden',
-          compact ? 'p-2 md:p-3' : 'p-3 md:p-5',
+          'stock-card flex flex-col rounded-2xl cursor-pointer transition-all active:scale-[0.98] bg-[#0a0a0c]/40 z-10 relative overflow-hidden',
+          compact ? 'p-3' : 'p-4',
           isActive
-            ? 'bg-emerald-950/30 border border-emerald-900/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
-            : 'border border-[var(--border-color)] hover:border-zinc-700/50'
+            ? 'bg-indigo-500/10 border-2 border-indigo-500/30 ring-4 ring-indigo-500/5'
+            : 'border border-white/5 hover:border-white/10'
         )}>
         {/* Flash Background layer */}
         <div className={safeCn(
           "absolute inset-0 transition-opacity duration-300 pointer-events-none z-0",
-          flashDir === 'up' ? "bg-emerald-500/20 opacity-100" : flashDir === 'down' ? "bg-rose-500/20 opacity-100" : "opacity-0"
+          flashDir === 'up' ? "bg-emerald-500/10 opacity-100" : flashDir === 'down' ? "bg-rose-500/10 opacity-100" : "opacity-0"
         )} />
         
-        <div className="flex justify-between items-start mb-1 md:mb-2 relative z-10">
-          <div className={safeCn('font-bold truncate pr-1', compact ? 'text-sm md:text-base' : 'text-base md:text-lg', isActive ? 'text-emerald-300' : 'text-[var(--text-color)]')}>{w.shortName ?? w.name ?? ''}</div>
-          <div className={safeCn('font-bold truncate shrink-0', compact ? 'text-xs' : 'text-sm', 'text-zinc-500')}>{w.symbol}</div>
+        <div className="flex justify-between items-start mb-1.5 relative z-10 min-w-0">
+          <div className={safeCn('font-black tracking-tighter truncate pr-1', compact ? 'text-xs md:text-sm' : 'text-sm md:text-base', isActive ? 'text-indigo-300' : 'text-white')} style={{ fontFamily: 'var(--font-heading)' }}>
+            {w.shortName ?? w.name ?? ''}
+          </div>
+          <div className="text-[9px] font-black tracking-widest text-zinc-600 uppercase shrink-0" style={{ fontFamily: 'var(--font-data)' }}>{w.symbol}</div>
         </div>
         
-        <div className="flex items-center justify-between relative z-10">
+        <div className="flex items-end justify-between relative z-10 w-full">
           <div className="flex flex-col">
             <div className={safeCn(
-              'font-mono font-bold transition-colors duration-150', 
+              'font-black tabular-nums tracking-tighter transition-colors duration-150 leading-none mb-1', 
               compact ? 'text-lg md:text-xl' : 'text-xl md:text-2xl', 
-              flashDir === 'up' ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : flashDir === 'down' ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.8)]' : isActive ? 'text-emerald-300' : 'text-[var(--text-color)]'
-            )}>{safeN(w.price)}</div>
+              flashDir === 'up' ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : flashDir === 'down' ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.8)]' : isActive ? 'text-indigo-300' : 'text-white'
+            )} style={{ fontFamily: 'var(--font-data)' }}>
+              {safeN(w.price)}
+            </div>
             
-            <div className={safeCn('font-mono font-medium flex items-center gap-1', compact ? 'text-[10px] md:text-xs' : 'text-xs md:text-sm', wUp ? 'text-emerald-400' : 'text-rose-400')}>
-              {wUp ? <TrendingUp size={compact ? 10 : 12} /> : <TrendingDown size={compact ? 10 : 12} />}
+            <div className={safeCn(
+              'font-black tabular-nums flex items-center gap-1.5 leading-none', 
+              compact ? 'text-[9px]' : 'text-[10px]', 
+              wUp ? 'text-emerald-400' : 'text-rose-400'
+            )} style={{ fontFamily: 'var(--font-data)' }}>
+              <span className="opacity-40">{wUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}</span>
               {wUp ? '+' : ''}{safeN(w.changePct)}%
             </div>
           </div>
           
-          {/* One-Touch Execution Buttons (B/S) */}
-          <div className="flex flex-col gap-1 ml-2 shrink-0">
+          <div className="flex gap-1.5 ml-2 shrink-0">
             <button 
               onClick={handleBuy}
-              className={safeCn(
-                "rounded font-bold text-center flex items-center justify-center transition-colors border",
-                compact ? "w-6 h-5 text-[10px]" : "w-8 h-6 text-xs",
-                "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/30 hover:border-emerald-500/40"
-              )}
+              className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 text-[10px] font-black hover:text-black transition-all flex items-center justify-center active:scale-95"
             >B</button>
             <button 
               onClick={handleSell}
-              className={safeCn(
-                "rounded font-bold text-center flex items-center justify-center transition-colors border",
-                compact ? "w-6 h-5 text-[10px]" : "w-8 h-6 text-xs",
-                "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/30 hover:border-rose-500/40"
-              )}
+              className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500 text-[10px] font-black hover:text-white transition-all flex items-center justify-center active:scale-95"
             >S</button>
           </div>
         </div>
@@ -158,91 +157,131 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
   }, [watchlist, filter]);
 
   return (
-    <div className={safeCn("liquid-glass rounded-2xl flex-1 flex flex-col min-h-0 bg-[var(--card-bg)] border-[var(--border-color)]", compact ? "p-2" : "p-4")}>
-      <div className={safeCn("flex items-center justify-between shrink-0", compact ? "mb-1" : "mb-3")}>
-        <span className={safeCn("font-bold text-zinc-500 uppercase tracking-wider", compact ? "label-meta" : "text-sm")}>追蹤清單</span>
-        <div className="flex gap-1">
-          <select value={filter} onChange={e => setFilter(e.target.value as 'all' | 'bullish' | 'bearish')} className={safeCn("bg-[var(--bg-color)] text-[var(--text-color)] rounded-lg focus:outline-none border border-[var(--border-color)]", compact ? "label-meta px-1 py-0.5" : "text-xs px-2 py-1")}>
-            <option value="all">全部</option>
-            <option value="bullish">偏多</option>
-            <option value="bearish">偏空</option>
+    <div className={safeCn("flex-1 flex flex-col min-h-0 bg-transparent", compact ? "p-3" : "p-4")}>
+      <div className="flex items-center justify-between shrink-0 mb-4 px-1">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>追蹤清單 WATCHLIST</span>
+          <span className="text-[9px] font-bold text-zinc-700 tracking-widest uppercase">REAL-TIME MONITOR</span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <select 
+            value={filter} 
+            onChange={e => { setFilter(e.target.value as 'all' | 'bullish' | 'bearish'); vibrate(15); }} 
+            className="bg-black/40 text-[10px] font-black uppercase tracking-widest text-zinc-400 rounded-xl px-3 py-1.5 focus:outline-none border border-white/5 cursor-pointer hover:text-white transition-colors"
+          >
+            <option value="all">ALL</option>
+            <option value="bullish">BULL</option>
+            <option value="bearish">BEAR</option>
           </select>
-          <button onClick={() => setWlAdding(v => !v)} className={safeCn("flex items-center justify-center rounded-lg hover:bg-[var(--border-color)] text-zinc-500 hover:text-emerald-400 transition-colors", compact ? "w-6 h-6" : "w-8 h-8")}>
-            {wlAdding ? <X size={compact ? 12 : 14} /> : <Plus size={compact ? 12 : 14} />}
+          <button 
+            onClick={() => { setWlAdding(v => !v); vibrate(20); }} 
+            className={safeCn(
+              "w-8 h-8 flex items-center justify-center rounded-xl transition-all border",
+              wlAdding ? "bg-indigo-500 text-black border-indigo-400 rotate-45 shadow-lg" : "bg-white/5 text-zinc-400 border-white/10 hover:text-white"
+            )}
+          >
+            <Plus size={16} strokeWidth={2.5} />
           </button>
         </div>
       </div>
 
-      {wlAdding && (
-        <div className="mb-3 flex flex-col gap-2 shrink-0 relative z-50">
-          <div className="flex gap-2">
-            <input
-              value={wlSearch}
-              onChange={e => setWlSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addToWatchlist(wlSearch.toUpperCase())}
-              placeholder="搜尋代碼或名稱 e.g. AAPL"
-              autoFocus
-              className="flex-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text-color)] focus:outline-none focus:border-emerald-500/50"
-            />
-            <button onClick={() => addToWatchlist(wlSearch.toUpperCase())} className="w-8 h-8 flex items-center justify-center rounded-xl bg-emerald-950 text-emerald-400 hover:bg-emerald-900 transition-colors border border-emerald-900/50 shrink-0 self-center">
-              <Plus size={12} />
-            </button>
-          </div>
-          
-          {/* Auto-complete Dropdown */}
-          {wlSearch.length >= 2 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden z-[60] max-h-60 overflow-y-auto">
-              {isSearching ? (
-                <div className="p-3 text-center text-xs text-[var(--text-color)] opacity-50">搜尋中...</div>
-              ) : searchResults.length > 0 ? (
-                searchResults.map((res, i) => (
-                  <button
-                    key={`${res.symbol}-${i}`}
-                    onClick={() => {
-                      addToWatchlist(res.symbol);
-                      setWlSearch('');
-                      setWlAdding(false);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-[var(--border-color)] flex items-center justify-between border-b border-[var(--border-color)] last:border-0 transition-colors"
-                  >
-                    <div className="flex flex-col overflow-hidden">
-                      <span className="text-sm font-bold text-[var(--text-color)]">{res.symbol}</span>
-                      <span className="text-xs text-[var(--text-color)] opacity-50 truncate">{res.shortname || res.longname}</span>
-                    </div>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--border-color)] text-[var(--text-color)] opacity-70 shrink-0">{res.exchDisp}</span>
-                  </button>
-                ))
-              ) : (
-                <div className="p-3 text-center text-xs text-[var(--text-color)] opacity-50">找不到相關標的</div>
-              )}
+      <AnimatePresence>
+        {wlAdding && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            className="mb-4 flex flex-col gap-2 shrink-0 relative z-50 overflow-hidden"
+          >
+            <div className="flex gap-2 p-1">
+              <input
+                value={wlSearch}
+                onChange={e => setWlSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addToWatchlist(wlSearch.toUpperCase())}
+                placeholder="搜尋代碼或名稱 SYMBOL..."
+                autoFocus
+                className="flex-1 bg-black/60 border border-white/5 rounded-2xl px-4 py-3 text-xs font-bold text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all shadow-inner"
+              />
+              <button 
+                onClick={() => { addToWatchlist(wlSearch.toUpperCase()); vibrate(20); }} 
+                className="aspect-square flex items-center justify-center rounded-2xl bg-indigo-500 text-black hover:bg-indigo-400 transition-all shadow-lg active:scale-95 group shrink-0"
+              >
+                <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
+              </button>
             </div>
-          )}
-        </div>
-      )}
-
-      <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-2 min-h-0 content-start p-1 custom-scrollbar" role="listbox" aria-label="追蹤清單">
-        <AnimatePresence>
-          {filteredWatchlist.length === 0
-            ? <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="col-span-2 flex flex-col items-center justify-center gap-2 py-6">
-                <div className="w-10 h-10 rounded-xl bg-zinc-800/50 flex items-center justify-center border border-zinc-800">
-                  <TrendingUp size={16} className="text-zinc-700"/>
-                </div>
-                <p className="text-xs text-zinc-500 font-bold">{filter === 'all' ? '追蹤清單為空' : `無${filter === 'bullish' ? '偏多' : '偏空'}的股票`}</p>
-                {filter === 'all' && <p className="text-xs text-zinc-700">點擊 + 新增第一檔追蹤標的</p>}
+            
+            {/* Auto-complete Dropdown */}
+            {wlSearch.length >= 2 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute top-full left-0 right-0 mt-2 glass-card border border-white/5 rounded-3xl shadow-2xl overflow-hidden z-[60] max-h-60 overflow-y-auto backdrop-blur-3xl"
+              >
+                {isSearching ? (
+                  <div className="p-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 flex items-center justify-center gap-3">
+                    <Loader2 size={16} className="animate-spin text-indigo-400" /> PROXY SEARCHING...
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((res, i) => (
+                    <button
+                      key={`${res.symbol}-${i}`}
+                      onClick={() => {
+                        addToWatchlist(res.symbol);
+                        setWlSearch('');
+                        setWlAdding(false);
+                        vibrate(20);
+                      }}
+                      className="w-full text-left px-5 py-3 hover:bg-indigo-500/[0.08] flex items-center justify-between border-b border-white/5 last:border-0 transition-all group"
+                    >
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-black text-white group-hover:text-indigo-400 transition-colors" style={{ fontFamily: 'var(--font-heading)' }}>{res.symbol}</span>
+                        <span className="text-[10px] font-medium text-zinc-500 truncate group-hover:text-zinc-400">{res.shortname || res.longname}</span>
+                      </div>
+                      <span className="text-[9px] font-black px-2 py-1 rounded bg-white/5 text-zinc-500 uppercase tracking-widest">{res.exchDisp}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 opacity-40">NO RESULTS FOUND</div>
+                )}
               </motion.div>
-            : filteredWatchlist.map(w => {
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-3 min-h-0 content-start p-1 custom-scrollbar" role="listbox" aria-label="追蹤清單">
+        <AnimatePresence mode="popLayout">
+          {filteredWatchlist.length === 0
+            ? <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="col-span-2 flex flex-col items-center justify-center gap-4 py-20 opacity-30">
+                <div className="w-16 h-16 rounded-[2rem] bg-zinc-800/20 flex items-center justify-center border-2 border-zinc-700/20">
+                  <TrendingUp size={24} className="text-zinc-600"/>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <p className="text-[10px] font-black tracking-[0.2em] text-zinc-500 uppercase">{filter === 'all' ? 'EMPTY MONITOR' : `NO ${filter.toUpperCase()} TRENDS`}</p>
+                  {filter === 'all' && <p className="text-[9px] font-bold text-zinc-700 tracking-wider">TAP + TO TRACK ASSETS</p>}
+                </div>
+              </motion.div>
+            : filteredWatchlist.map((w, idx) => {
               const isActive = w.symbol === norm || w.symbol === symbol;
               const wUp = (Number(w.changePct) || 0) >= 0;
               return (
-                <SwipeableWatchlistItem
+                <motion.div
                   key={w.symbol}
-                  w={w}
-                  isActive={isActive}
-                  wUp={wUp}
-                  compact={compact}
-                  onClick={() => onSymbolChange(w.symbol)}
-                  onSwipeAction={onSwipeAction}
-                />
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.03 }}
+                >
+                  <SwipeableWatchlistItem
+                    w={w}
+                    isActive={isActive}
+                    wUp={wUp}
+                    compact={compact}
+                    onClick={() => onSymbolChange(w.symbol)}
+                    onSwipeAction={onSwipeAction}
+                  />
+                </motion.div>
               );
             })}
         </AnimatePresence>

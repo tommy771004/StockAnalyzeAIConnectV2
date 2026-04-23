@@ -438,91 +438,107 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative">
       {/* Indicator Settings Floating Button */}
-      <div className="absolute top-2 right-2 z-30" ref={settingsRef}>
+      <div className="absolute top-3 right-3 z-30" ref={settingsRef}>
         <button 
-          onClick={() => setShowSettings(!showSettings)}
+          onClick={() => { setShowSettings(!showSettings); vibrate(20); }}
           className={safeCn(
-            "flex items-center justify-center p-2 rounded-xl shadow-lg border transition-all backdrop-blur-md",
+            "flex items-center justify-center w-10 h-10 rounded-2xl shadow-xl transition-all backdrop-blur-xl border border-white/10",
             showSettings 
-              ? "bg-[var(--md-primary)] text-black border-[var(--md-primary)]" 
-              : "bg-black/40 text-[var(--text-color)] border-[var(--border-color)] hover:bg-black/60"
+              ? "bg-indigo-500 text-white border-indigo-400 rotate-90" 
+              : "bg-black/60 text-zinc-400 hover:bg-black/80 hover:text-white"
           )}
           aria-label="指標設定"
         >
-          <Settings size={18} className={safeCn(showSettings && "animate-spin-slow")} />
+          <Settings size={20} strokeWidth={2.5} />
         </button>
 
         {/* Dropdown Menu */}
         <AnimatePresence>
           {showSettings && (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: -10, x: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -10, x: 10 }}
-              className="absolute top-full right-0 mt-2 w-64 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-4 z-[60] flex flex-col gap-4 backdrop-blur-xl"
+              initial={{ opacity: 0, scale: 0.95, y: -10, x: 10, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, scale: 1, y: 0, x: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 0.95, y: -10, x: 10, filter: 'blur(10px)' }}
+              className="absolute top-full right-0 mt-3 w-72 glass-card border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-6 z-[60] flex flex-col gap-6 backdrop-blur-3xl overflow-hidden"
             >
+              <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />
+              
               {/* Main Overlays */}
-              <div className="flex flex-col gap-2">
-                <div className="text-xs font-black text-[var(--text-color)] opacity-40 uppercase tracking-widest px-1">主圖疊加</div>
+              <div className="flex flex-col gap-3 relative z-10">
+                <div className="text-[10px] font-black opacity-30 uppercase tracking-[0.25em] px-1" style={{ fontFamily: 'var(--font-data)' }}>分析疊加 OVERLAYS</div>
                 
-                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
-                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('EMA1') ? "bg-amber-500 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
-                    {indics.has('EMA1') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
-                  </div>
-                  <input type="checkbox" className="hidden" checked={indics.has('EMA1')} onChange={() => toggleIndic('EMA1')} />
-                  <span className="text-sm font-bold text-[var(--text-color)] flex-1">EMA 1</span>
-                  <input 
-                    type="number" 
-                    value={ema1Period}
-                    onChange={(e) => setEmaPersist(1, parseInt(e.target.value) || 20)}
-                    className="w-16 bg-black/30 border border-[var(--border-color)] rounded-lg px-2 py-1 text-xs font-black text-center text-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </label>
+                <div className="space-y-1">
+                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                    <div className={safeCn(
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      indics.has('EMA1') ? "bg-amber-500 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]" : "border-white/10 group-hover:border-white/30"
+                    )}>
+                      {indics.has('EMA1') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
+                    </div>
+                    <input type="checkbox" className="hidden" checked={indics.has('EMA1')} onChange={() => { toggleIndic('EMA1'); vibrate(15); }} />
+                    <span className="text-sm font-black text-zinc-200 flex-1" style={{ fontFamily: 'var(--font-heading)' }}>EMA 1</span>
+                    <input 
+                      type="number" 
+                      value={ema1Period}
+                      onChange={(e) => setEmaPersist(1, parseInt(e.target.value) || 20)}
+                      className="w-14 bg-black/40 border border-white/10 rounded-xl py-1.5 text-[11px] font-black text-center text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </label>
 
-                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
-                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('EMA2') ? "bg-violet-500 border-violet-500 shadow-[0_0_10px_rgba(167,139,250,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
-                    {indics.has('EMA2') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
-                  </div>
-                  <input type="checkbox" className="hidden" checked={indics.has('EMA2')} onChange={() => toggleIndic('EMA2')} />
-                  <span className="text-sm font-bold text-[var(--text-color)] flex-1">EMA 2</span>
-                  <input 
-                    type="number" 
-                    value={ema2Period}
-                    onChange={(e) => setEmaPersist(2, parseInt(e.target.value) || 50)}
-                    className="w-16 bg-black/30 border border-[var(--border-color)] rounded-lg px-2 py-1 text-xs font-black text-center text-violet-400 focus:outline-none focus:ring-1 focus:ring-violet-500/50"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </label>
+                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                    <div className={safeCn(
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      indics.has('EMA2') ? "bg-violet-500 border-violet-400 shadow-[0_0_15px_rgba(167,139,250,0.3)]" : "border-white/10 group-hover:border-white/30"
+                    )}>
+                      {indics.has('EMA2') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
+                    </div>
+                    <input type="checkbox" className="hidden" checked={indics.has('EMA2')} onChange={() => { toggleIndic('EMA2'); vibrate(15); }} />
+                    <span className="text-sm font-black text-zinc-200 flex-1" style={{ fontFamily: 'var(--font-heading)' }}>EMA 2</span>
+                    <input 
+                      type="number" 
+                      value={ema2Period}
+                      onChange={(e) => setEmaPersist(2, parseInt(e.target.value) || 50)}
+                      className="w-14 bg-black/40 border border-white/10 rounded-xl py-1.5 text-[11px] font-black text-center text-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </label>
 
-                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
-                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('BB') ? "bg-indigo-500 border-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
-                    {indics.has('BB') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
-                  </div>
-                  <input type="checkbox" className="hidden" checked={indics.has('BB')} onChange={() => toggleIndic('BB')} />
-                  <span className="text-sm font-bold text-[var(--text-color)]">布林通道 Bollinger</span>
-                </label>
+                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                    <div className={safeCn(
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      indics.has('BB') ? "bg-indigo-500 border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]" : "border-white/10 group-hover:border-white/30"
+                    )}>
+                      {indics.has('BB') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
+                    </div>
+                    <input type="checkbox" className="hidden" checked={indics.has('BB')} onChange={() => { toggleIndic('BB'); vibrate(15); }} />
+                    <span className="text-sm font-black text-zinc-200" style={{ fontFamily: 'var(--font-heading)' }}>布林通道 BOLLINGER</span>
+                  </label>
+                </div>
               </div>
 
-              <div className="h-px bg-[var(--border-color)] opacity-50" />
+              <div className="h-px bg-white/10 relative z-10" />
 
               {/* Sub Panels */}
-              <div className="flex flex-col gap-2">
-                <div className="text-xs font-black text-[var(--text-color)] opacity-40 uppercase tracking-widest px-1">副圖指標</div>
+              <div className="flex flex-col gap-3 relative z-10">
+                <div className="text-[10px] font-black opacity-30 uppercase tracking-[0.25em] px-1" style={{ fontFamily: 'var(--font-data)' }}>震盪指標 OSCILLATORS</div>
                 
-                <label className="flex items-center gap-3 p-1 rounded-lg hover:bg-white/5 cursor-pointer group transition-colors">
-                  <div className={safeCn("w-5 h-5 rounded-md border flex items-center justify-center transition-all", indics.has('Volume') ? "bg-emerald-500 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]" : "border-[var(--border-color)] group-hover:border-[var(--md-outline)]")}>
-                    {indics.has('Volume') && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
+                <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition-all">
+                  <div className={safeCn(
+                    "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                    indics.has('Volume') ? "bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "border-white/10 group-hover:border-white/30"
+                  )}>
+                    {indics.has('Volume') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
                   </div>
-                  <input type="checkbox" className="hidden" checked={indics.has('Volume')} onChange={() => toggleIndic('Volume')} />
-                  <span className="text-sm font-bold text-[var(--text-color)]">成交量 Volume</span>
+                  <input type="checkbox" className="hidden" checked={indics.has('Volume')} onChange={() => { toggleIndic('Volume'); vibrate(15); }} />
+                  <span className="text-sm font-black text-zinc-200" style={{ fontFamily: 'var(--font-heading)' }}>成交量 VOLUME</span>
                 </label>
 
-                <div className="flex items-center gap-1.5 mt-1 bg-black/20 p-1 rounded-xl">
+                <div className="flex items-center gap-1.5 mt-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
                   {(['none','RSI','MACD'] as SubPanel[]).map(p => (
-                    <button key={p} onClick={() => setSubPanelPersist(p)}
-                      className={safeCn('flex-1 py-2 rounded-lg text-xs font-black transition-all uppercase tracking-wider',
-                        subPanel===p ? 'bg-[var(--md-primary-container)] text-[var(--md-on-primary-container)] shadow-inner' : 'text-[var(--text-color)] opacity-40 hover:opacity-100 hover:bg-white/5')}>
+                    <button key={p} onClick={() => { setSubPanelPersist(p); vibrate(15); }}
+                      className={safeCn('flex-1 py-2.5 rounded-xl text-[10px] font-black transition-all uppercase tracking-widest',
+                        subPanel===p ? 'bg-indigo-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/5')}>
                       {p==='none'?'OFF':p}
                     </button>
                   ))}
@@ -534,34 +550,34 @@ export default function ChartWidget({ data: history, focusMode = false }: Props)
       </div>
 
       {/* Top Legend Bar (Minimized) */}
-      <div className="flex items-center gap-3 p-2 shrink-0 z-20 bg-black/20 border-b border-[var(--border-color)] relative overflow-x-auto no-scrollbar pointer-events-none">
-        <div className="flex items-center gap-3 pl-1 pr-12 min-w-max">
-          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">O</span><span id="legend-open" className="font-bold">-</span></div>
-          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">H</span><span id="legend-high" className="font-bold">-</span></div>
-          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">L</span><span id="legend-low" className="font-bold">-</span></div>
-          <div className="flex items-center gap-1 text-[11px] font-mono"><span className="opacity-40">C</span><span id="legend-close" className="font-bold">-</span></div>
+      <div className="flex items-center gap-4 px-4 py-2.5 shrink-0 z-20 bg-black/40 border-b border-white/5 relative overflow-x-auto no-scrollbar pointer-events-none backdrop-blur-md">
+        <div className="flex items-center gap-4 pr-12 min-w-max">
+          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">O</span><span id="legend-open" className="font-bold opacity-80">-</span></div>
+          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">H</span><span id="legend-high" className="font-bold opacity-80">-</span></div>
+          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">L</span><span id="legend-low" className="font-bold opacity-80">-</span></div>
+          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">C</span><span id="legend-close" className="font-bold">-</span></div>
           
-          {indics.has('Volume') && <div className="flex items-center gap-1 text-[11px] font-mono text-indigo-400 opacity-80"><span>VOL</span><span id="legend-vol" className="font-bold">-</span></div>}
-          {indics.has('EMA1') && <div className="flex items-center gap-1 text-[11px] font-mono text-amber-400 opacity-80"><span>EMA1</span><span id="legend-ema20" className="font-bold">-</span></div>}
-          {indics.has('EMA2') && <div className="flex items-center gap-1 text-[11px] font-mono text-violet-400 opacity-80"><span>EMA2</span><span id="legend-ema50" className="font-bold">-</span></div>}
-          {subPanel==='RSI' && <div className="flex items-center gap-1 text-[11px] font-mono text-sky-400 opacity-80"><span>RSI</span><span id="legend-rsi" className="font-bold">-</span></div>}
+          <div className="w-px h-3 bg-white/10 mx-1" />
+
+          {indics.has('Volume') && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-indigo-400/80 uppercase tracking-tighter"><span>VOL</span><span id="legend-vol" className="font-bold opacity-100">-</span></div>}
+          {indics.has('EMA1') && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-amber-400/80 uppercase tracking-tighter"><span>EMA1</span><span id="legend-ema20" className="font-bold opacity-100">-</span></div>}
+          {indics.has('EMA2') && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-violet-400/80 uppercase tracking-tighter"><span>EMA2</span><span id="legend-ema50" className="font-bold opacity-100">-</span></div>}
+          {subPanel==='RSI' && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-sky-400/80 uppercase tracking-tighter"><span>RSI</span><span id="legend-rsi" className="font-bold opacity-100">-</span></div>}
           {subPanel==='MACD' && (
-            <div className="flex items-center gap-2 text-[11px] font-mono opacity-80">
-              <span className="text-sky-400">MACD <span id="legend-macd" className="font-bold">-</span></span>
-              <span className="text-amber-400">SIG <span id="legend-macd-sig" className="font-bold">-</span></span>
+            <div className="flex items-center gap-3 text-[10px] font-mono font-black uppercase tracking-tighter">
+              <span className="text-sky-400/80">MACD <span id="legend-macd" className="font-bold opacity-100">-</span></span>
+              <span className="text-amber-400/80">SIG <span id="legend-macd-sig" className="font-bold opacity-100">-</span></span>
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex-1 relative min-h-0">
+      <div className="flex-1 relative min-h-0 bg-[#0a0a0c]">
         <div ref={mainRef} className="absolute inset-0" />
         <div 
           ref={tooltipRef} 
-          className="absolute hidden z-30 pointer-events-none p-2.5 rounded-xl shadow-2xl text-[10px] sm:text-xs font-mono min-w-[200px]" 
+          className="absolute hidden z-30 pointer-events-none p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] text-[10px] sm:text-[11px] font-mono min-w-[220px] glass-card border border-white/10 backdrop-blur-2xl" 
           style={{ 
-            background: 'var(--md-surface-container)', 
-            border: '1px solid var(--md-outline-variant)',
             color: 'var(--md-on-surface)'
           }}
         />
