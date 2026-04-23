@@ -54,7 +54,7 @@ export default function AuthPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2"
             style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>
-            QUANTUM COMMAND
+            ASA 
           </h1>
           <p className="text-sm" style={{ color: 'var(--md-on-surface-variant)' }}>
             量化交易・安全登入

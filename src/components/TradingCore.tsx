@@ -9,6 +9,7 @@ import * as api from '../services/api';
 import { STORAGE_KEYS, saveToStorage, loadFromStorage } from '../utils/storage';
 import { chatWithAI } from '../services/aiService';
 import { cn } from '../lib/utils';
+import { safeCn, safeN, vibrate } from '../utils/helpers';
 import { motion } from 'motion/react';
 import { Watchlist } from './Watchlist';
 import { PriceBar } from './PriceBar';
