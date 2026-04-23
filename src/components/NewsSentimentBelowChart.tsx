@@ -26,7 +26,7 @@ export const NewsSentimentBelowChart = React.memo(({ news, sentiment, newsStatus
   const isNegative = overall.includes('negative') || overall.includes('bearish') || overall.includes('看空') || overall.includes('負向');
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 w-full bg-black/40 lg:bg-transparent lg:border lg:border-[var(--md-outline-variant)] rounded-2xl p-4 shrink-0 min-h-[140px] mt-2 mb-2 lg:mb-0">
+    <div className="flex flex-col md:flex-row gap-3 w-full bg-black/40 lg:bg-transparent lg:border lg:border-[var(--md-outline-variant)] rounded-2xl p-3 shrink-0 min-h-[120px] mt-1 mb-1 lg:mb-0">
       {/* Sentiment Overview */}
       <div className="flex flex-col gap-2 md:w-1/3 shrink-0 border-b md:border-b-0 md:border-r border-[var(--md-outline-variant)] pb-4 md:pb-0 md:pr-4">
         <div className="flex items-center gap-1.5 font-bold text-sm" style={{ color: 'var(--md-primary)' }}>
@@ -58,7 +58,7 @@ export const NewsSentimentBelowChart = React.memo(({ news, sentiment, newsStatus
           const dt = new Date(item.providerPublishTime * 1000);
           return (
             <a key={item.id || idx} href={item.link} target="_blank" rel="noreferrer" 
-               className="group flex flex-col gap-1 rounded-xl p-2.5 transition-colors hover:bg-[var(--md-surface-container-high)] border border-transparent hover:border-[var(--md-outline-variant)]">
+               className="group flex flex-col gap-0.5 rounded-xl p-2 transition-colors hover:bg-[var(--md-surface-container-high)] border border-transparent hover:border-[var(--md-outline-variant)]">
                <div className="font-medium text-xs leading-snug text-[var(--md-on-surface)] group-hover:text-[var(--md-primary)] transition-colors line-clamp-2">
                  {item.title}
                </div>

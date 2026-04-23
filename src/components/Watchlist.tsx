@@ -123,9 +123,9 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
             </div>
           </div>
           
-          <div className="flex gap-1.5 ml-2 shrink-0">
-            <button type="button" onClick={handleBuy} className="w-6 h-6 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] font-black hover:bg-emerald-500/20 transition-colors">B</button>
-            <button type="button" onClick={handleSell} className="w-6 h-6 flex items-center justify-center rounded-lg bg-rose-500/10 text-rose-400 text-[10px] font-black hover:bg-rose-500/20 transition-colors">S</button>
+          <div className="flex gap-1 ml-2 shrink-0">
+            <button type="button" onClick={handleBuy} className="w-5 h-5 flex items-center justify-center rounded-md bg-emerald-500/10 text-emerald-400 text-[9px] font-black hover:bg-emerald-500/20 transition-colors">B</button>
+            <button type="button" onClick={handleSell} className="w-5 h-5 flex items-center justify-center rounded-md bg-rose-500/10 text-rose-400 text-[9px] font-black hover:bg-rose-500/20 transition-colors">S</button>
           </div>
         </div>
       </motion.div>
@@ -239,7 +239,7 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
         )}
       </AnimatePresence>
 
-      <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-3 min-h-0 content-start p-1 custom-scrollbar" role="listbox" aria-label="追蹤清單">
+      <div className={safeCn("flex-1 overflow-y-auto grid grid-cols-2 gap-3 min-h-0 content-start p-1 custom-scrollbar", compact ? "gap-2" : "gap-3")} role="listbox" aria-label="追蹤清單">
         <AnimatePresence mode="popLayout">
           {filteredWatchlist.length === 0
             ? <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="col-span-2 flex flex-col items-center justify-center gap-4 py-20 opacity-30">

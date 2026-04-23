@@ -157,7 +157,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
         ))}
       </div>
       
-      <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar min-h-0">
+      <div className="flex-1 overflow-y-auto px-3 py-2 custom-scrollbar min-h-0">
         <AnimatePresence mode="wait">
           {tab === 'news' ? (
             <motion.div 
@@ -165,7 +165,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
               initial={{ opacity: 0, x: -10 }} 
               animate={{ opacity: 1, x: 0 }} 
               exit={{ opacity: 0, x: 10 }}
-              className="space-y-2.5"
+              className="space-y-1.5"
             >
               {newsStatus === 'loading' ? (
                 <div className="flex items-center justify-center py-10 text-zinc-500 gap-3">
@@ -180,7 +180,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer" 
-                  className="block p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition group overflow-hidden relative"
+                  className="block p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition group overflow-hidden relative"
                 >
                   <div className="absolute inset-y-0 left-0 w-1 bg-white/20 scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
                   <div className="text-xs font-medium text-zinc-200 leading-snug line-clamp-2 tracking-tight group-hover:text-white transition-colors">{n.title}</div>
@@ -297,8 +297,8 @@ const AIChat = React.memo(({ chat, setChat, chatRep, chatStatus, handleChat, com
 
 const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOrderQty, isUp, onGoBacktest, executeOrder, orderStatus, compact }: any) => {
   return (
-    <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative", compact ? "p-4" : "p-6")}>
-      <div className="flex items-center justify-between mb-5 relative z-10">
+    <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative", compact ? "p-3" : "p-4")}>
+      <div className="flex items-center justify-between mb-4 relative z-10">
         <span className="text-heading-xs text-zinc-500" style={{ fontFamily: 'var(--font-heading)' }}>{compact ? '下單' : '終端交易 TERMINAL'}</span>
         <div className="flex gap-1 bg-black/40 rounded-xl p-1 border border-white/5 overflow-hidden">
           {(['buy', 'sell'] as const).map(s => (
@@ -316,8 +316,8 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
         </div>
       </div>
       
-      <div className="space-y-5 relative z-10">
-        <div className="flex justify-between items-baseline bg-white/5 p-3 rounded-2xl border border-white/5">
+      <div className="space-y-4 relative z-10">
+        <div className="flex justify-between items-baseline bg-white/5 p-2.5 rounded-xl border border-white/5">
           <span className="text-data-xs font-black text-zinc-500 uppercase tracking-widest">市場報價</span>
           <span className={safeCn('font-black tracking-tighter tabular-nums', compact ? 'text-base md:text-lg' : 'text-lg md:text-xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
             <span className="text-[9px] md:text-[10px] opacity-40 mr-1 font-medium italic">LAST</span>

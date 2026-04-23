@@ -64,6 +64,12 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     };
   }, [processedData]);
 
+  // Reset initialization when symbol changes
+  useEffect(() => {
+    isInitializedRef.current = false;
+    logicalRangeRef.current = null;
+  }, [symbol]);
+
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
@@ -130,7 +136,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     // Add Main Series
     let series: ISeriesApi<any>;
     if (chartType === 'candle') {
-      series = chart.addSeries(CandlestickSeries, {
+      series = chart.addCandlestickSeries({
         upColor: '#10b981',
         downColor: '#ef4444',
         borderVisible: false,
@@ -138,14 +144,14 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         wickDownColor: '#ef4444',
       });
     } else if (chartType === 'area') {
-      series = chart.addSeries(AreaSeries, {
+      series = chart.addAreaSeries({
         lineColor: '#6366f1',
         topColor: 'rgba(99, 102, 241, 0.4)',
         bottomColor: 'rgba(99, 102, 241, 0)',
         lineWidth: 2,
       });
     } else {
-      series = chart.addSeries(LineSeries, {
+      series = chart.addLineSeries({
         color: '#6366f1',
         lineWidth: 2,
       });
@@ -153,7 +159,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     mainSeriesRef.current = series;
 
     // Add Volume
-    const volumeSeries = chart.addSeries(HistogramSeries, {
+    const volumeSeries = chart.addHistogramSeries({
       priceFormat: { type: 'volume' },
       priceScaleId: '',
     });
@@ -163,7 +169,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     volumeSeriesRef.current = volumeSeries;
 
     // Add SMA
-    const smaSeries = chart.addSeries(LineSeries, {
+    const smaSeries = chart.addLineSeries({
       color: '#f59e0b',
       lineWidth: 2,
       priceLineVisible: false,
@@ -268,7 +274,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
       // Re-add based on current type
       if (chartType === 'candle') {
-        mainSeriesRef.current = chart.addSeries(CandlestickSeries, {
+        mainSeriesRef.current = chart.addCandlestickSeries({
           upColor: '#10b981',
           downColor: '#ef4444',
           borderVisible: false,
@@ -276,14 +282,14 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
           wickDownColor: '#ef4444',
         });
       } else if (chartType === 'area') {
-        mainSeriesRef.current = chart.addSeries(AreaSeries, {
+        mainSeriesRef.current = chart.addAreaSeries({
           lineColor: '#6366f1',
           topColor: 'rgba(99, 102, 241, 0.4)',
           bottomColor: 'rgba(99, 102, 241, 0)',
           lineWidth: 3,
         });
       } else {
-        mainSeriesRef.current = chart.addSeries(LineSeries, {
+        mainSeriesRef.current = chart.addLineSeries({
           color: '#6366f1',
           lineWidth: 3,
         });
@@ -328,27 +334,38 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
       // 3. Intelligently handle view
       if (!isInitializedRef.current) {
-        // Show only the last 100 bars by default for "Professional" look - much thicker bars
+        // Show only the last 50-80 bars by default for "Professional" look - much thicker bars
         const barCount = uniqueData.length;
-        if (barCount > 100) {
+        if (barCount > 60) {
           chart.timeScale().setVisibleLogicalRange({
-            from: barCount - 100,
-            to: barCount,
+            from: barCount - 60,
+            to: barCount + 5, // Small buffer at the right
           });
         } else {
           chart.timeScale().fitContent();
         }
         isInitializedRef.current = true;
       } else if (logicalRangeRef.current) {
-        // Restore user's previous zoom
-        chart.timeScale().setVisibleLogicalRange(logicalRangeRef.current);
+        // Restore user's previous zoom, but ensure it's not sticking too far in the future
+        const barCount = uniqueData.length;
+        const currentRange = logicalRangeRef.current;
+        
+        // If the 'to' range is very far beyond our current data, clamp it
+        if (currentRange.to > barCount + 50) {
+           chart.timeScale().setVisibleLogicalRange({
+             from: Math.max(0, barCount - (currentRange.to - currentRange.from)),
+             to: barCount + 5,
+           });
+        } else {
+           chart.timeScale().setVisibleLogicalRange(currentRange);
+        }
       }
       
       dataRef.current = uniqueData;
     } catch (err) {
       console.warn("Failed to update chart series or data", err);
     }
-  }, [processedData, chartType, showSMA, showVolume, isDark]);
+  }, [processedData, chartType, showSMA, showVolume, isDark, symbol]);
 
   return (
     <div className={safeCn(
@@ -406,6 +423,18 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         </div>
 
         <div className="flex items-center gap-1">
+          <button 
+            onClick={() => {
+              if (chartRef.current) {
+                chartRef.current.timeScale().fitContent();
+                logicalRangeRef.current = chartRef.current.timeScale().getVisibleLogicalRange();
+              }
+            }}
+            className="p-1.5 text-zinc-500 hover:text-indigo-500 hover:bg-white/5 rounded-md transition-all" 
+            title="縮放至完整數據"
+          >
+            <Maximize2 size={16} />
+          </button>
           <button className="p-1.5 text-zinc-500 hover:text-indigo-500 hover:bg-white/5 rounded-md transition-all" title="圖表設定">
             <Settings2 size={14} />
           </button>
