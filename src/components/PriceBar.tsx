@@ -27,7 +27,7 @@ interface PriceBarProps {
 export const PriceBar: React.FC<PriceBarProps> = React.memo(({
   symbol, twse, loading, price, isUp, change, pct, high, low, vol, focusMode, setFocusMode, onSetAlert, loadData, isLandscape, recommendation
 }) => {
-  const { settings } = useSettings();
+  const { settings, format } = useSettings();
   const compact = settings.compactMode;
 
   return (
@@ -80,7 +80,7 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
             {vol != null && !isNaN(Number(vol)) && (
               <div className="flex flex-col">
                 <span className="opacity-30 font-black">VOL</span>
-                <span className="text-white font-bold tabular-nums">{Number(vol) >= 1e6 ? `${(Number(vol) / 1e6).toFixed(1)}M` : Number(vol).toLocaleString()}</span>
+                <span className="text-white font-bold tabular-nums">{format.volume(Number(vol))}</span>
               </div>
             )}
           </div>
@@ -104,7 +104,7 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
           </div>
           <div className="flex flex-col shrink-0">
             <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">VOL. 成交量</span>
-            <span className="text-[12px] font-black text-zinc-300 tabular-nums">{Number(vol) >= 1e6 ? `${(Number(vol) / 1e6).toFixed(1)}M` : Number(vol).toLocaleString()}</span>
+            <span className="text-[12px] font-black text-zinc-300 tabular-nums">{format.volume(Number(vol))}</span>
           </div>
           <div className="flex flex-col shrink-0">
             <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-0.5">AVG. 平均</span>

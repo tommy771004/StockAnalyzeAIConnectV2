@@ -334,14 +334,14 @@ export default function StockScreener({ onSelectSymbol }: Props) {
                     {format.number(r.price, 2)}
                   </td>
                   <td className="px-3 sm:px-4 py-3 font-mono font-black text-xs sm:text-sm whitespace-nowrap" style={{ color: r.changePct >= 0 ? 'var(--color-up)' : 'var(--color-down)', fontFamily: 'var(--font-data)' }}>
-                    {r.changePct >= 0 ? '+' : ''}{r.changePct.toFixed(2)}%
+                    {format.percent(r.changePct)}
                   </td>
                   <td className={cn("px-3 sm:px-4 py-3 font-mono font-bold text-xs sm:text-sm", rsiColor(r.rsi))}>
-                    {r.rsi.toFixed(1)}
+                    {format.number(r.rsi, 1)}
                   </td>
                   <td className="px-3 sm:px-4 py-3 font-mono text-xs sm:text-sm">
                     <span className="font-bold" style={{ color: r.volumeRatio >= 2 ? 'var(--md-tertiary)' : 'var(--md-outline)' }}>
-                      {r.volumeRatio.toFixed(1)}x
+                      {format.number(r.volumeRatio, 1)}x
                     </span>
                   </td>
                   <td className="px-3 sm:px-4 py-3 min-w-[120px]">

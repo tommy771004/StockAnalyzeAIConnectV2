@@ -515,11 +515,11 @@ export default function TradeJournal() {
                               {(t.action || '').includes('Buy') || (t.action || '').includes('做多') ? '📈 多' : '📉 空'}
                             </span>
                           </td>
-                          <td className="py-2.5 text-[var(--text-color)] opacity-70 font-mono text-right text-sm">{Number(t.entry).toFixed(2)}</td>
-                          <td className="py-2.5 text-[var(--text-color)] opacity-70 font-mono text-right text-sm">{Number(t.exit).toFixed(2)}</td>
-                          <td className="py-2.5 text-[var(--text-color)] opacity-70 text-right text-sm">{Number(t.qty).toLocaleString()}</td>
+                          <td className="py-2.5 text-[var(--text-color)] opacity-70 font-mono text-right text-sm">{format.number(Number(t.entry), 2)}</td>
+                          <td className="py-2.5 text-[var(--text-color)] opacity-70 font-mono text-right text-sm">{format.number(Number(t.exit), 2)}</td>
+                          <td className="py-2.5 text-[var(--text-color)] opacity-70 text-right text-sm">{format.number(Number(t.qty), 0)}</td>
                           <td className={cn('py-2.5 font-mono font-bold text-right text-sm', t.pnl>=0?'text-emerald-400':'text-rose-400')}>
-                            {t.pnl>=0?'+':''}{Number(t.pnl).toLocaleString(undefined,{maximumFractionDigits:0})}
+                            {format.number(t.pnl ?? 0, 0)}
                           </td>
                           <td className="py-2.5">
                             <span className={cn('px-2 py-0.5 rounded text-sm font-bold flex items-center gap-1 w-fit',

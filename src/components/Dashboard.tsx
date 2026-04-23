@@ -61,7 +61,7 @@ export default function Dashboard({
   model: string;
   symbol: string;
 }) {
-  const { settings } = useSettings();
+  const { settings, format } = useSettings();
   const compact = settings.compactMode;
   const [quote, setQuote] = useState<Quote | null>(null);
   const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
@@ -276,7 +276,7 @@ export default function Dashboard({
       score >= 1 ? "text-emerald-400" : score <= -1 ? "text-rose-400" : "text-amber-400";
 
     return {
-      rsi: rsi !== undefined ? rsi.toFixed(1) : "-",
+      rsi: rsi !== undefined ? format.number(rsi, 1) : "-",
       rsiStatus: (rsi !== undefined
         ? rsi > 70
           ? "bearish"
@@ -293,7 +293,7 @@ export default function Dashboard({
               : "中性區間 (Neutral)"
           : "-",
 
-      macd: macd?.MACD !== undefined ? macd.MACD.toFixed(2) : "-",
+      macd: macd?.MACD !== undefined ? format.number(macd.MACD, 2) : "-",
       macdStatus: (macd?.histogram !== undefined
         ? macd.histogram > 0
           ? "bullish"
@@ -306,7 +306,7 @@ export default function Dashboard({
             : "空頭排列 (Bearish)"
           : "-",
 
-      sma20: sma20 ? sma20.toFixed(2) : "-",
+      sma20: sma20 ? format.number(sma20, 2) : "-",
       sma20Status: (sma20 && currentPrice > sma20 ? "bullish" : "bearish") as
         | "bullish"
         | "bearish"
@@ -314,7 +314,7 @@ export default function Dashboard({
       sma20Label:
         sma20 && currentPrice > sma20 ? "價格 > SMA20" : "價格 < SMA20",
 
-      sma50: sma50 ? sma50.toFixed(2) : "-",
+      sma50: sma50 ? format.number(sma50, 2) : "-",
       sma50Status: (sma50 && currentPrice > sma50 ? "bullish" : "bearish") as
         | "bullish"
         | "bearish"
@@ -325,7 +325,7 @@ export default function Dashboard({
       suggestion,
       suggestionColor,
     };
-  }, [historicalData, quote]);
+  }, [historicalData, quote, format]);
 
   const isUp = (quote?.regularMarketChange ?? 0) >= 0;
 
@@ -480,7 +480,7 @@ export default function Dashboard({
                       compact ? "text-3xl" : "text-4xl md:text-6xl",
                     )}
                   >
-                    {quote ? quote.regularMarketPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 }) : "---"}
+                    {quote ? format.price(quote.regularMarketPrice ?? 0) : "---"}
                   </div>
                   {quote && (
                     <div
@@ -499,12 +499,11 @@ export default function Dashboard({
                           <TrendingDown className="w-5 h-5 mr-1" />
                         )}
                         <span>
-                          {(quote.regularMarketChange ?? 0) > 0 ? "+" : ""}
-                          {(quote.regularMarketChange ?? 0).toFixed(2)}
+                          {format.number(quote.regularMarketChange ?? 0, 2)}
                         </span>
                       </div>
                       <span className="opacity-80">
-                        ({quote.regularMarketChangePercent?.toFixed(2)}%)
+                        ({format.percent(quote.regularMarketChangePercent ?? 0)})
                       </span>
                     </div>
                   )}
@@ -682,13 +681,13 @@ export default function Dashboard({
                   <div className="flex items-center gap-1 text-slate-500">
                     <span>目標:</span>
                     <span className="text-emerald-400 font-mono">
-                      {aiAnalysis.targetPrice?.toFixed(2) ?? "0.00"}
+                      {aiAnalysis.targetPrice != null ? format.price(aiAnalysis.targetPrice) : "---"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-slate-500">
                     <span>停損:</span>
                     <span className="text-rose-400 font-mono">
-                      {aiAnalysis.stopLoss?.toFixed(2) ?? "0.00"}
+                      {aiAnalysis.stopLoss != null ? format.price(aiAnalysis.stopLoss) : "---"}
                     </span>
                   </div>
                 </div>
@@ -872,10 +871,10 @@ const TradeRow: React.FC<{
         </span>
       </td>
       <td className="px-4 py-3.5 text-white/70 text-sm">
-        {entry?.toFixed(2) ?? "-"}
+        {entry != null ? entry.toFixed(2) : "-"}
       </td>
       <td className="px-4 py-3.5 text-white/70 text-sm">
-        {exit?.toFixed(2) ?? "-"}
+        {exit != null ? exit.toFixed(2) : "-"}
       </td>
       <td
         className={cn(
@@ -883,8 +882,7 @@ const TradeRow: React.FC<{
           pnl > 0 ? "text-emerald-400" : "text-rose-400",
         )}
       >
-        {pnl > 0 ? "+" : ""}
-        {pnl?.toFixed(2) ?? "-"}
+        {pnl > 0 ? "+" : ""}{pnl != null ? pnl.toFixed(2) : "-"}
       </td>
       <td className="px-4 py-3.5">
         {status === "Win" ? (

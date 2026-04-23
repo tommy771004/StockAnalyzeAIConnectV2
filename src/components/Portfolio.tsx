@@ -89,7 +89,9 @@ const EquityTip=(props: TooltipProps<number, string>)=>{
 
 // ── Memoized chart sub-components ──────────────────────────────────────────
 
-const AllocationPieChart = memo(({ alloc, totalMV, compact }: { alloc: { name: string; value: number; color: string }[]; totalMV: number; compact: boolean }) => (
+const AllocationPieChart = memo(({ alloc, totalMV, compact }: { alloc: { name: string; value: number; color: string }[]; totalMV: number; compact: boolean }) => {
+  const { format } = useSettings();
+  return (
   <div className={cn("glass-card rounded-2xl flex flex-col min-h-[260px]", compact ? "p-2" : "p-4")}>
     <h3 className={cn("font-bold mb-1", compact ? "text-xs" : "text-xs")} style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>資產配置圓餅圖</h3>
     <div className={cn("mb-2", compact ? "label-meta" : "text-xs")} style={{ color: 'var(--md-outline)' }}>各持倉占總市値比例</div>
@@ -114,13 +116,14 @@ const AllocationPieChart = memo(({ alloc, totalMV, compact }: { alloc: { name: s
         {alloc.map((d,i)=>(
           <div key={i} className="flex items-center justify-between">
             <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full shrink-0" style={{backgroundColor:d.color}}/><span className={cn("text-[var(--text-color)] opacity-70 truncate w-16", compact ? "label-meta" : "text-xs")}>{d.name}</span></div>
-            <span className={cn("text-[var(--text-color)] opacity-50 font-mono", compact ? "label-meta" : "text-xs")}>{totalMV>0?((d.value/totalMV)*100).toFixed(1):'0.0'}%</span>
+            <span className={cn("text-[var(--text-color)] opacity-50 font-mono", compact ? "label-meta" : "text-xs")}>{totalMV>0?format.number((d.value/totalMV)*100, 1):'0.0'}%</span>
           </div>
         ))}
       </div>
     </div>
   </div>
-));
+  );
+});
 AllocationPieChart.displayName = 'AllocationPieChart';
 
 const PnLBarChartPanel = memo(({ pnlData, compact }: { pnlData: { name: string; pnl: number; color: string }[]; compact: boolean }) => (
@@ -500,14 +503,14 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
                           <span className="text-sm" style={{ color: 'var(--md-outline)' }}>{p.shortName ?? p.name}</span>
                         </div>
                         <span className="text-sm px-3 py-1.5 rounded-full font-bold" style={{ background: (p.pnlPercent ?? 0) >= 0 ? 'rgba(82,196,26,0.12)' : 'rgba(255,77,79,0.12)', color: (p.pnlPercent ?? 0) >= 0 ? 'var(--color-down)' : 'var(--color-up)' }}>
-                          {(p.pnlPercent ?? 0) >= 0 ? '+' : ''}{(p.pnlPercent ?? 0).toFixed(2)}%
+                          {format.percent(p.pnlPercent ?? 0)}
                         </span>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 text-base">
                         <div className="flex flex-col">
                           <span className="text-xs mb-1" style={{ color: 'var(--md-outline)' }}>現價</span>
-                          <span className="font-bold" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-on-surface)' }}>{p.currentPrice?.toFixed(2) ?? '---'}</span>
+                          <span className="font-bold" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-on-surface)' }}>{p.currentPrice != null ? format.number(p.currentPrice, 2) : '---'}</span>
                         </div>
                         <div className="flex flex-col items-end">
                           <span className="text-xs mb-1" style={{ color: 'var(--md-outline)' }}>損益</span>
@@ -521,7 +524,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
                         </div>
                         <div className="flex flex-col items-end">
                           <span className="text-xs mb-1" style={{ color: 'var(--md-outline)' }}>均價</span>
-                          <span className="font-bold" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-on-surface)' }}>{p.avgCost.toFixed(2)}</span>
+                          <span className="font-bold" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-on-surface)' }}>{format.number(p.avgCost, 2)}</span>
                         </div>
                       </div>
                     </div>
@@ -571,13 +574,13 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
                     </div>
                   </td>
                   <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface-variant)', fontFamily: 'var(--font-data)' }}>
-                    {editIdx===idx?<input aria-label="持股數量" type="number" className="rounded px-1.5 py-0.5 text-xs w-16 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.shares??p.shares} onChange={e=>setEditBuf(b=>({...b,shares:Number(e.target.value)}))}/>:p.shares.toLocaleString()}
+                    {editIdx===idx?<input aria-label="持股數量" type="number" className="rounded px-1.5 py-0.5 text-xs w-16 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.shares??p.shares} onChange={e=>setEditBuf(b=>({...b,shares:Number(e.target.value)}))}/>:format.number(p.shares, 0)}
                   </td>
                   <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface-variant)', fontFamily: 'var(--font-data)' }}>
-                    {editIdx===idx?<input aria-label="平均成本" type="number" step="0.01" className="rounded px-1.5 py-0.5 text-xs w-20 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.avgCost??p.avgCost} onChange={e=>setEditBuf(b=>({...b,avgCost:Number(e.target.value)}))}/>:p.avgCost.toFixed(2)}
+                    {editIdx===idx?<input aria-label="平均成本" type="number" step="0.01" className="rounded px-1.5 py-0.5 text-xs w-20 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.avgCost??p.avgCost} onChange={e=>setEditBuf(b=>({...b,avgCost:Number(e.target.value)}))}/>:format.number(p.avgCost, 2)}
                   </td>
-                  <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>{p.currentPrice!=null?p.currentPrice.toFixed(2):<Loader2 className="w-3 h-3 animate-spin inline" style={{ color: 'var(--md-outline-variant)' }}/>}</td>
-                  <td className="py-3 font-mono text-right" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>${Math.round(p.marketValueTWD??p.marketValue??0).toLocaleString()}</td>
+                  <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>{p.currentPrice!=null?format.number(p.currentPrice, 2):<Loader2 className="w-3 h-3 animate-spin inline" style={{ color: 'var(--md-outline-variant)'}}/>}</td>
+                  <td className="py-3 font-mono text-right" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>{format.currency(Math.round(p.marketValueTWD??p.marketValue??0), 'TWD')}</td>
                   <td className="py-3 text-right">
                     <span className="px-1.5 py-0.5 rounded text-[0.55rem] font-bold" style={{ background: p.currency==='TWD' ? 'rgba(82,196,26,0.1)' : 'rgba(173,198,255,0.1)', color: p.currency==='TWD' ? 'var(--color-down)' : 'var(--md-secondary)' }}>{p.currency}</span>
                   </td>
