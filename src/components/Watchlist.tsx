@@ -86,7 +86,7 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
         aria-selected={isActive}
         className={safeCn(
           'stock-card flex flex-col rounded-2xl cursor-pointer transition active:scale-[0.98] bg-[#0a0a0c]/40 z-10 relative overflow-hidden',
-          compact ? 'p-3' : 'p-4',
+          compact ? 'p-2' : 'p-3',
           isActive
             ? 'bg-indigo-500/10 border-2 border-indigo-500/30 ring-4 ring-indigo-500/5'
             : 'border border-white/5 hover:border-white/10'
@@ -150,8 +150,8 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
   }, [watchlist, filter]);
 
   return (
-    <div className={safeCn("flex-1 flex flex-col min-h-0 bg-transparent", compact ? "p-3" : "p-4")}>
-      <div className="flex items-center justify-between shrink-0 mb-4 px-1">
+    <div className={safeCn("flex-1 flex flex-col min-h-0 bg-transparent", compact ? "p-2" : "p-3")}>
+      <div className="flex items-center justify-between shrink-0 mb-3 px-1">
         <div className="flex flex-col">
           <span className="text-heading-xs text-zinc-500" style={{ fontFamily: 'var(--font-heading)' }}>{compact ? '追蹤 WATCH' : '追蹤清單 WATCHLIST'}</span>
           <span className="text-data-xs font-bold text-zinc-700 tracking-widest uppercase">REAL-TIME MONITOR</span>
@@ -239,7 +239,7 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
         )}
       </AnimatePresence>
 
-      <div className={safeCn("flex-1 overflow-y-auto grid grid-cols-2 gap-3 min-h-0 content-start p-1 custom-scrollbar", compact ? "gap-2" : "gap-3")} role="listbox" aria-label="追蹤清單">
+      <div className={safeCn("flex-1 overflow-y-auto grid grid-cols-2 gap-2 min-h-0 content-start p-1 custom-scrollbar", compact ? "gap-1.5" : "gap-2")} role="listbox" aria-label="追蹤清單">
         <AnimatePresence mode="popLayout">
           {filteredWatchlist.length === 0
             ? <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="col-span-2 flex flex-col items-center justify-center gap-4 py-20 opacity-30">

@@ -21,6 +21,7 @@ import { getTrades, addTrade, updateTrade, deleteTrade } from '../services/api';
 import { motion } from 'motion/react';
 import { Trade } from '../types';
 import Decimal from 'decimal.js';
+import { useSettings } from '../contexts/SettingsContext';
 
 const BLANK = {
   date: new Date().toISOString().split('T')[0],

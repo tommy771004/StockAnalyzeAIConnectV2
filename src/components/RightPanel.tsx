@@ -7,10 +7,10 @@ import { useSettings } from '../contexts/SettingsContext';
 import { NewsItem, Order, SentimentData } from '../types';
 import Decimal from 'decimal.js';
 
-const SwipeToConfirm = ({ onConfirm, loading, side }: { onConfirm: () => void, loading: boolean, side: 'buy'|'sell' }) => {
+const SwipeToConfirm = ({ onConfirm, loading, side }: { onConfirm: () => void, loading: boolean, side: 'buy' | 'sell' }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const controls = useAnimation();
-  
+
   return (
     <div ref={containerRef} className={safeCn(
       "relative h-14 w-full rounded-2xl overflow-hidden border transition touch-none select-none",
@@ -21,14 +21,14 @@ const SwipeToConfirm = ({ onConfirm, loading, side }: { onConfirm: () => void, l
           "text-[10px] font-black uppercase tracking-[0.3em] opacity-40",
           side === 'buy' ? 'text-emerald-400' : 'text-rose-400'
         )} style={{ fontFamily: 'var(--font-heading)' }}>
-          SLIDE TO {side==='buy'?'BUY':'SELL'} &gt;&gt;
+          SLIDE TO {side === 'buy' ? 'BUY' : 'SELL'} &gt;&gt;
         </span>
       </div>
-      
+
       {loading && (
-         <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20 backdrop-blur-sm">
-            <Loader2 className="animate-spin text-white" size={24} strokeWidth={3} />
-         </div>
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20 backdrop-blur-sm">
+          <Loader2 className="animate-spin text-white" size={24} strokeWidth={3} />
+        </div>
       )}
 
       <motion.div
@@ -38,17 +38,17 @@ const SwipeToConfirm = ({ onConfirm, loading, side }: { onConfirm: () => void, l
         animate={controls}
         onDragStart={() => vibrate(20)}
         onDragEnd={(e, i) => {
-           if (!containerRef.current) return;
-           const width = containerRef.current.offsetWidth;
-           if (i.offset.x > width * 0.55) {
-              vibrate([50, 50, 100]);
-              onConfirm();
-              controls.start({ x: width - 64 });
-              setTimeout(() => { controls.start({ x: 0 }); }, 1500);
-           } else {
-              vibrate(30);
-              controls.start({ x: 0 });
-           }
+          if (!containerRef.current) return;
+          const width = containerRef.current.offsetWidth;
+          if (i.offset.x > width * 0.55) {
+            vibrate([50, 50, 100]);
+            onConfirm();
+            controls.start({ x: width - 64 });
+            setTimeout(() => { controls.start({ x: 0 }); }, 1500);
+          } else {
+            vibrate(30);
+            controls.start({ x: 0 });
+          }
         }}
         className={safeCn(
           "absolute top-1 bottom-1 left-1 w-14 rounded-xl shadow-xl flex items-center justify-center cursor-grab active:cursor-grabbing z-10 transition-shadow",
@@ -90,6 +90,8 @@ interface RightPanelProps {
 }
 
 const PortfolioSummary = React.memo(({ portfolio, compact, sentiment }: { portfolio: Order[], compact: boolean, sentiment: SentimentData | null }) => {
+  const { format } = useSettings();
+
   const totalValue = React.useMemo(() => portfolio.reduce((acc, order) => {
     const price = Number(order?.price) || 0;
     const qty = Number(order?.qty) || 0;
@@ -112,19 +114,19 @@ const PortfolioSummary = React.memo(({ portfolio, compact, sentiment }: { portfo
           const sStr = (typeof sentiment === 'object' ? sentiment.overall : String(sentiment)).toLowerCase();
           const isBull = sStr.includes('bullish') || sStr.includes('樂觀');
           const isBear = sStr.includes('bearish') || sStr.includes('悲觀');
-          
+
           return (
             <div className={safeCn(
               "px-3 py-1.5 rounded-xl border flex flex-col items-end",
-              isBull 
-                ? "bg-emerald-500/10 border-emerald-500/20" 
+              isBull
+                ? "bg-emerald-500/10 border-emerald-500/20"
                 : isBear
                   ? "bg-rose-500/10 border-rose-500/20"
                   : "bg-zinc-500/10 border-zinc-500/20"
             )}>
-            <div className="text-data-xs font-black tracking-widest opacity-40 uppercase leading-none mb-1">AI SENTIMENT</div>
+              <div className="text-data-xs font-black tracking-widest opacity-40 uppercase leading-none mb-1">AI SENTIMENT</div>
               <div className={safeCn(
-                "font-black leading-none uppercase tracking-tighter", 
+                "font-black leading-none uppercase tracking-tighter",
                 compact ? "text-xs" : "text-sm",
                 isBull ? "text-emerald-400" : isBear ? "text-rose-400" : "text-zinc-400"
               )} style={{ fontFamily: 'var(--font-heading)' }}>
@@ -143,9 +145,9 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
     <div className={safeCn("glass-card border border-white/5 rounded-3xl flex-1 flex flex-col min-h-0 relative", compact ? "p-0.5" : "p-1")}>
       <div className="flex p-1.5 gap-1 bg-black/40 rounded-[1.25rem] m-2 mb-1 border border-white/5 shadow-inner">
         {(['news', 'calendar', 'mtf'] as const).map(t => (
-          <button type="button" key={t} onClick={(e) => { setTab(t); vibrate(15); }} 
-            role="tab" 
-            aria-selected={tab === t} 
+          <button type="button" key={t} onClick={(e) => { setTab(t); vibrate(15); }}
+            role="tab"
+            aria-selected={tab === t}
             className={safeCn(
               'flex-1 py-2 text-data-xs font-black uppercase tracking-[0.2em] transition rounded-xl',
               tab === t ? 'bg-indigo-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-200'
@@ -156,14 +158,14 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
           </button>
         ))}
       </div>
-      
+
       <div className="flex-1 overflow-y-auto px-3 py-2 custom-scrollbar min-h-0">
         <AnimatePresence mode="wait">
           {tab === 'news' ? (
-            <motion.div 
-              key="news" 
-              initial={{ opacity: 0, x: -10 }} 
-              animate={{ opacity: 1, x: 0 }} 
+            <motion.div
+              key="news"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               className="space-y-1.5"
             >
@@ -175,11 +177,11 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
               ) : newsStatus === 'error' ? (
                 <div className="text-rose-400 text-[10px] font-black tracking-widest uppercase text-center py-10 opacity-60">SYNC ERROR</div>
               ) : news.length > 0 ? news.map((n: NewsItem, i: number) => (
-                <motion.a 
+                <motion.a
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer" 
+                  key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer"
                   className="block p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition group overflow-hidden relative"
                 >
                   <div className="absolute inset-y-0 left-0 w-1 bg-white/20 scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
@@ -188,10 +190,10 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
               )) : <div className="text-zinc-500 text-[10px] font-black tracking-widest uppercase text-center mt-10 opacity-40">NO DATA FOUND</div>}
             </motion.div>
           ) : tab === 'mtf' ? (
-            <motion.div 
-              key="mtf" 
-              initial={{ opacity: 0, x: -10 }} 
-              animate={{ opacity: 1, x: 0 }} 
+            <motion.div
+              key="mtf"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               className="space-y-2"
             >
@@ -203,7 +205,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
               ) : mtfStatus === 'error' ? (
                 <div className="text-rose-400 text-[10px] font-black tracking-widest uppercase text-center py-10 opacity-60">QUANT ERROR</div>
               ) : mtfData ? Object.entries(mtfData).map(([tf, signal], idx) => (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
@@ -213,7 +215,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
                   <div className={safeCn(
                     'px-3 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase shadow-sm',
                     signal === 'bullish' ? 'bg-emerald-500 text-black' :
-                    signal === 'bearish' ? 'bg-rose-500 text-black' : 'bg-zinc-500/20 text-zinc-400'
+                      signal === 'bearish' ? 'bg-rose-500 text-black' : 'bg-zinc-500/20 text-zinc-400'
                   )}>
                     {signal === 'bullish' ? 'BULL' : signal === 'bearish' ? 'BEAR' : 'NEUT'}
                   </div>
@@ -221,10 +223,10 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
               )) : <div className="text-zinc-500 text-[10px] font-black tracking-widest uppercase text-center mt-10 opacity-40">NO QUANT DATA</div>}
             </motion.div>
           ) : (
-            <motion.div 
-              key="cal" 
-              initial={{ opacity: 0, x: -10 }} 
-              animate={{ opacity: 1, x: 0 }} 
+            <motion.div
+              key="cal"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
             >
               {eDateFmt ? (
@@ -249,7 +251,7 @@ const AIChat = React.memo(({ chat, setChat, chatRep, chatStatus, handleChat, com
     <div className={safeCn("shrink-0 relative overflow-hidden", compact ? "mt-1 space-y-1" : "mt-2 space-y-2")}>
       <AnimatePresence>
         {(chatRep || chatStatus === 'busy') && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0, y: 10 }}
             animate={{ opacity: 1, height: 'auto', y: 0 }}
             exit={{ opacity: 0, height: 0, y: 10 }}
@@ -267,18 +269,18 @@ const AIChat = React.memo(({ chat, setChat, chatRep, chatStatus, handleChat, com
         )}
       </AnimatePresence>
       <div className="relative group">
-        <input 
-          value={chat} 
+        <input
+          value={chat}
           onChange={e => setChat(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleChat()}
           placeholder="詢問策略分析 COMMAND..."
           className={safeCn(
             "w-full bg-black/40 border border-white/5 hover:border-indigo-500/30 rounded-2xl pl-5 pr-14 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition",
             compact ? "py-3 text-xs" : "py-4 text-sm"
-          )} 
+          )}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          <button type="button" onClick={(e) => { handleChat(); vibrate(20); }} 
+          <button type="button" onClick={(e) => { handleChat(); vibrate(20); }}
             disabled={chatStatus === 'busy'}
             className={safeCn(
               "rounded-xl bg-indigo-500 text-black flex items-center justify-center disabled:opacity-50 transition shadow-lg active:scale-90",
@@ -296,6 +298,8 @@ const AIChat = React.memo(({ chat, setChat, chatRep, chatStatus, handleChat, com
 });
 
 const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOrderQty, isUp, onGoBacktest, executeOrder, orderStatus, compact }: any) => {
+  const { format } = useSettings();
+
   return (
     <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative", compact ? "p-3" : "p-4")}>
       <div className="flex items-center justify-between mb-4 relative z-10">
@@ -305,8 +309,8 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
             <button type="button" key={s} onClick={(e) => { setOSide(s); vibrate(15); }}
               className={safeCn(
                 'px-4 py-1.5 font-black rounded-lg transition text-[10px] uppercase tracking-widest active:scale-95',
-                oSide === s 
-                  ? (s === 'buy' ? 'bg-emerald-500 text-black shadow-lg' : 'bg-rose-500 text-white shadow-lg') 
+                oSide === s
+                  ? (s === 'buy' ? 'bg-emerald-500 text-black shadow-lg' : 'bg-rose-500 text-white shadow-lg')
                   : 'text-zinc-500 hover:text-zinc-200'
               )}
             >
@@ -315,7 +319,7 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
           ))}
         </div>
       </div>
-      
+
       <div className="space-y-4 relative z-10">
         <div className="flex justify-between items-baseline bg-white/5 p-2.5 rounded-xl border border-white/5">
           <span className="text-data-xs font-black text-zinc-500 uppercase tracking-widest">市場報價</span>
@@ -337,7 +341,7 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
             </button>
             <input id="order-qty-right" type="number" value={orderQty} min={1} step={100}
               onChange={e => setOrderQty(Math.max(1, Number(e.target.value)))}
-              className="flex-1 w-0 h-full bg-transparent text-center text-white font-black tabular-nums tracking-wider text-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" 
+              className="flex-1 w-0 h-full bg-transparent text-center text-white font-black tabular-nums tracking-wider text-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20"
               style={{ fontFamily: 'var(--font-data)' }}
             />
             <button type="button" onClick={(e) => { setOrderQty(orderQty + 100); vibrate(20); }}
@@ -354,13 +358,13 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
             {price && isFinite(Number(price)) && isFinite(orderQty) ? format.number(Number(price) * orderQty, 0) : '—'}
           </span>
         </div>
-        
+
         <SwipeToConfirm
           onConfirm={() => price && executeOrder(symbol, oSide, orderQty, price)}
           loading={orderStatus === 'busy'}
           side={oSide}
         />
-        
+
         {onGoBacktest && (
           <button type="button" onClick={(e) => { onGoBacktest(symbol); vibrate(20); }}
             className="w-full h-12 rounded-2xl font-black text-[10px] uppercase tracking-[0.25em] flex items-center justify-center gap-2 transition bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 group"
@@ -378,9 +382,9 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(({
 }) => {
   const { settings, format } = useSettings();
   const compact = !!settings.compactMode;
-  
+
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
@@ -388,38 +392,38 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(({
     >
       <PortfolioSummary portfolio={portfolio} compact={compact} sentiment={sentiment} />
 
-      <InfoTabs 
-        news={news} 
-        newsStatus={newsStatus} 
-        tab={tab} 
-        setTab={setTab} 
-        mtfData={mtfData} 
-        mtfStatus={mtfStatus} 
-        eDateFmt={eDateFmt} 
-        compact={compact} 
+      <InfoTabs
+        news={news}
+        newsStatus={newsStatus}
+        tab={tab}
+        setTab={setTab}
+        mtfData={mtfData}
+        mtfStatus={mtfStatus}
+        eDateFmt={eDateFmt}
+        compact={compact}
       />
 
-      <AIChat 
-        chat={chat} 
-        setChat={setChat} 
-        chatRep={chatRep} 
-        chatStatus={chatStatus} 
-        handleChat={handleChat} 
-        compact={compact} 
+      <AIChat
+        chat={chat}
+        setChat={setChat}
+        chatRep={chatRep}
+        chatStatus={chatStatus}
+        handleChat={handleChat}
+        compact={compact}
       />
 
-      <OrderPanel 
-        price={price} 
-        symbol={symbol} 
-        oSide={oSide} 
-        setOSide={setOSide} 
-        orderQty={orderQty} 
-        setOrderQty={setOrderQty} 
-        isUp={isUp} 
-        onGoBacktest={onGoBacktest} 
-        executeOrder={executeOrder} 
-        orderStatus={orderStatus} 
-        compact={compact} 
+      <OrderPanel
+        price={price}
+        symbol={symbol}
+        oSide={oSide}
+        setOSide={setOSide}
+        orderQty={orderQty}
+        setOrderQty={setOrderQty}
+        isUp={isUp}
+        onGoBacktest={onGoBacktest}
+        executeOrder={executeOrder}
+        orderStatus={orderStatus}
+        compact={compact}
       />
     </motion.div>
   );

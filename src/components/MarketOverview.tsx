@@ -788,7 +788,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   tabIndex={0}
                   onClick={() => onSelectSymbol(t.symbol)}
                   onKeyDown={e => e.key === 'Enter' && onSelectSymbol(t.symbol)}
-                  className="shrink-0 w-[72vw] sm:w-auto sm:min-w-0 flex items-center justify-between gap-3 p-3.5 rounded-xl cursor-pointer group transition-colors snap-start sm:snap-center"
+                  className="shrink-0 w-[72vw] sm:w-auto sm:min-w-0 flex items-center justify-between gap-3 p-2.5 rounded-xl cursor-pointer group transition-colors snap-start sm:snap-center"
                   style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(128,131,255,0.3)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--md-outline-variant)')}>
@@ -824,7 +824,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
           <div className="flex-1 overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 pr-1">
             {news.length > 0 ? news.map((n: NewsItem, i: number) => (
               <a key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer"
-                className="flex flex-col p-3 rounded-xl transition group"
+                className="flex flex-col p-2.5 rounded-xl transition group"
                 style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(173,198,255,0.3)')}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--md-outline-variant)')}>

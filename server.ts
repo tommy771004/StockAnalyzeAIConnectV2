@@ -415,12 +415,20 @@ app.use(express.json());
   app.post('/api/ai/call', authMiddleware, async (req: AuthRequest, res) => {
     const { prompt, model, jsonMode } = req.body;
     if (!prompt) { res.status(400).json({ error: 'prompt required' }); return; }
+    
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn('[API] GEMINI_API_KEY is missing in environment variables.');
+      res.status(500).json({ error: 'AI service configuration error: Missing API Key. Please contact the administrator.' });
+      return;
+    }
+
     try {
       const { GoogleGenAI } = await import('@google/genai');
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+      const ai = new GoogleGenAI({ apiKey });
       
       const response = await ai.models.generateContent({
-        model: model?.includes('gemini') ? model : 'gemini-3-flash-preview',
+        model: model?.includes('gemini') ? model : 'gemini-1.5-flash',
         contents: [{ parts: [{ text: prompt }] }],
         config: {
           temperature: 0.2,
@@ -429,11 +437,15 @@ app.use(express.json());
       });
       
       const text = response.text;
-      if (!text) throw new Error('Gemini response missing');
+      if (!text) throw new Error('AI response was empty');
       res.json({ text });
     } catch (e: any) {
       console.error('[API] AI Analyze error:', e);
-      res.status(500).json({ error: e.message });
+      if (e.message?.includes('credentials')) {
+        res.status(500).json({ error: 'AI Error: Could not load the default credentials. Please ensure GENAI_API_KEY is properly set for the Gemini API SDK.' });
+      } else {
+        res.status(500).json({ error: e.message });
+      }
     }
   });
 
