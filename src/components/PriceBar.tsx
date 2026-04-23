@@ -38,7 +38,7 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
         transition={{ duration: 0.5 }}
         className={safeCn(
           "shrink-0 flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 bg-[#0a0a0c]/80 backdrop-blur-xl relative z-40 overflow-hidden",
-          isLandscape ? "p-3 px-4 gap-3" : compact ? "p-2.5 px-4 gap-2" : "p-4 px-6 gap-3 sm:gap-6",
+          isLandscape ? "p-3 px-4 gap-3" : "p-[var(--ui-padding)] gap-[var(--ui-gap)]",
           !isLandscape && "rounded-t-3xl sm:rounded-3xl border border-white/5 shadow-2xl"
         )}
       >
@@ -46,7 +46,7 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <span className={safeCn("font-black tracking-tighter text-white uppercase leading-none", compact ? "text-xl" : "text-2xl sm:text-3xl")} style={{ fontFamily: 'var(--font-heading)' }}>{symbol}</span>
-              {twse && <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 uppercase tracking-widest opacity-60">TWSE</span>}
+              {twse && <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 uppercase tracking-widest opacity-60 data-num">TWSE</span>}
             </div>
             <span className="text-[10px] font-medium text-zinc-500 truncate mt-1 uppercase tracking-wider">{twse?.Name || 'Market Asset'}</span>
           </div>
@@ -60,13 +60,13 @@ export const PriceBar: React.FC<PriceBarProps> = React.memo(({
             </div>
           ) : price != null && (
             <div className="flex flex-col items-end sm:items-start gap-1">
-              <span className={safeCn('font-black tabular-nums tracking-tighter leading-none', compact ? 'text-2xl' : 'text-3xl sm:text-4xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
+              <span className={safeCn('font-black tabular-nums tracking-tighter leading-none data-num', compact ? 'text-2xl' : 'text-3xl sm:text-4xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
                 {safeN(price)}
               </span>
-              <div className={safeCn('font-black tabular-nums flex items-center gap-2 leading-none', compact ? 'text-[11px]' : 'text-[13px]', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
+              <div className={safeCn('font-black tabular-nums flex items-center gap-2 leading-none data-num', compact ? 'text-[11px]' : 'text-[13px]', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
                 <span className="opacity-80">{isUp ? '+' : ''}{safeN(change)}</span>
                 <span className="opacity-40">({isUp ? '+' : ''}{safeN(pct)}%)</span>
-                {isUp ? <TrendingUp size={12} strokeWidth={3} className="opacity-60" /> : <TrendingDown size={12} strokeWidth={3} className="opacity-60" />}
+                {isUp ? <TrendingUp className="w-[var(--icon-size)] h-[var(--icon-size)] opacity-60" strokeWidth={3} /> : <TrendingDown className="w-[var(--icon-size)] h-[var(--icon-size)] opacity-60" strokeWidth={3} />}
               </div>
             </div>
           )}

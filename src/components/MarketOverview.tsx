@@ -71,7 +71,7 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
       onKeyDown={e => e.key === 'Enter' && onSelect(idx.symbol)}
       className={safeCn(
         "relative flex flex-col glass-card cursor-pointer transition group overflow-hidden border border-white/5 hover:border-indigo-500/30 active:scale-[0.98] rounded-[1.5rem] sm:rounded-[2rem]",
-        compact ? "p-3" : "p-4 sm:p-5"
+        "p-[var(--ui-padding)]"
       )}
     >
       <div className="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none group-hover:bg-indigo-500/[0.04] transition-colors" />
@@ -82,7 +82,7 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
             "shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center transition group-hover:scale-110 shadow-lg border",
             isUp ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           )}>
-            <idx.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
+            <idx.icon className="w-[var(--icon-size)] h-[var(--icon-size)]" strokeWidth={2.5} />
           </div>
           <div className="min-w-0">
             <div className="text-[9px] min-[400px]:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.25em] text-zinc-500 mb-0.5" style={{ fontFamily: 'var(--font-heading)' }}>{idx.name}</div>
@@ -108,7 +108,7 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
 
       <div className="flex items-end justify-between relative z-10">
         <div className="flex flex-col">
-          <div className="text-lg sm:text-xl md:text-2xl font-black tabular-nums tracking-tighter text-white" style={{ fontFamily: 'var(--font-data)' }}>
+          <div className="text-lg sm:text-xl md:text-2xl font-black tabular-nums tracking-tighter text-white data-num" style={{ fontFamily: 'var(--font-data)' }}>
             {idx.price ? idx.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '---'}
           </div>
           <div className={safeCn(
@@ -139,7 +139,7 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
       onClick={() => onSelect(s)}
       onKeyDown={e => e.key === 'Enter' && onSelect(s)}
       className={safeCn(
-        "relative glass-card rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-5 cursor-pointer transition group overflow-hidden border border-white/5 active:scale-[0.99]",
+        "relative glass-card rounded-[1.5rem] sm:rounded-[2rem] p-[var(--ui-padding)] cursor-pointer transition group overflow-hidden border border-white/5 active:scale-[0.99]",
         isSelected ? 'bg-indigo-500/10 border-indigo-500/40 ring-4 ring-indigo-500/5' : 'hover:border-white/10'
       )}
     >
@@ -163,7 +163,7 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
         </div>
       </div>
 
-      <div className="text-2xl md:text-3xl font-black tabular-nums tracking-tighter relative z-10 mb-4 sm:mb-6"
+      <div className="text-2xl md:text-3xl font-black data-num tracking-tighter relative z-10 mb-4 sm:mb-6"
         style={{ color: isUp ? '#fb7185' : '#34d399', fontFamily: 'var(--font-data)' }}>
         {s.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
       </div>
@@ -528,7 +528,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={cn("h-full flex flex-col overflow-auto pb-10 pr-4 relative", compact ? "gap-2" : "gap-4 sm:gap-6")}
+      className={cn("h-full flex flex-col overflow-auto pb-10 pr-4 relative", "gap-[var(--ui-gap)]")}
     >
       <PullToRefreshIndicator state={pullState} />
 
@@ -561,7 +561,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                     "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center border backdrop-blur-xl shadow-inner",
                     isMorning ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
                   )}>
-                    {isMorning ? <Sun size={20} strokeWidth={2.5} /> : <Moon size={20} strokeWidth={2.5} />}
+                    {isMorning ? <Sun className="w-[var(--icon-size)] h-[var(--icon-size)]" strokeWidth={2.5} /> : <Moon className="w-[var(--icon-size)] h-[var(--icon-size)]" strokeWidth={2.5} />}
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-black tracking-tight uppercase" style={{ fontFamily: 'var(--font-heading)' }}>

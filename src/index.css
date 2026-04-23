@@ -10,17 +10,44 @@
 
 /* Desktop base */
 /* Vercel web-design-guidelines: color-scheme on <html> fixes scrollbar & native inputs in dark mode */
-html { font-size: 18px; color-scheme: dark; }
-html.font-size-small { font-size: 16px; }
-html.font-size-normal { font-size: 18px; }
-html.font-size-large { font-size: 20px; }
+html {
+  font-size: 18px;
+  color-scheme: dark;
+  /* ── Pro Design Tokens ── */
+  --ui-gap: 1rem;       /* Standard Gap */
+  --ui-padding: 1rem;   /* Standard Padding */
+  --ui-card-p: 0.75rem; /* Inner Card Padding */
+  --icon-size: 1.125rem; /* 18px */
+}
+
+/* Base RWD Font Scaling */
+@media (max-width: 767px) {
+  html { font-size: 16px; }
+}
+
+/* ── Compact Mode (Pro Grid) ── */
+.compact-mode {
+  --ui-gap: 0.6rem;
+  --ui-padding: 0.6rem;
+  --ui-card-p: 0.45rem;
+  --icon-size: 1rem;    /* 16px */
+}
 
 /* Mobile base — smaller font size for mobile helps prevent card overflow */
 @media (max-width: 767px) {
-  html { font-size: 14px; }
+  html { 
+    font-size: 14px; 
+    --ui-gap: 1rem;
+    --ui-padding: 1rem;
+  }
   html.font-size-small { font-size: 12px; }
   html.font-size-normal { font-size: 14px; }
   html.font-size-large { font-size: 16px; }
+  
+  html.compact-mode {
+    --ui-gap: 0.5rem;
+    --ui-padding: 0.75rem;
+  }
 }
 
 /* ── Material Design 3 Deep Space Color Palette ─────────────────── */

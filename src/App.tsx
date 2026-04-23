@@ -234,6 +234,14 @@ function MainApp() {
   }, [settings.fontSize]);
 
   useEffect(() => {
+    if (settings.compactMode) {
+      document.documentElement.classList.add('compact-mode');
+    } else {
+      document.documentElement.classList.remove('compact-mode');
+    }
+  }, [settings.compactMode]);
+
+  useEffect(() => {
     if (settings.commuteMode) {
       document.body.classList.add('commute-mode');
     } else {

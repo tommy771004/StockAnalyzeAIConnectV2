@@ -359,7 +359,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="h-full flex flex-col gap-4 pb-10 overflow-auto"
+      className="h-full flex flex-col gap-[var(--ui-gap)] pb-10 overflow-auto"
     >
       <PullToRefreshIndicator state={pullState} />
       {saveErr&&<div className="flex items-center gap-2 text-sm rounded-xl p-3 shrink-0" style={{ background: 'rgba(255,77,79,0.08)', border: '1px solid rgba(255,77,79,0.3)', color: 'var(--color-up)' }}><AlertCircle size={13}/>{saveErr}<button type="button" onClick={(e) => {}} className="ml-auto"><X size={11}/></button></div>}
@@ -374,16 +374,16 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
       </div>
 
       {/* KPI */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--ui-gap)] shrink-0">
         {[
           {label:'總持倉市值 (TWD)',value:`NT$${(totalMV/10000).toFixed(1)}萬`,sub:`匯率 ${usdtwd.toFixed(1)}`,up:true,tip:'所有持倉的當前市場總值（台幣）'},
           {label:'未實現損益',value:`${totalPnL>=0?'+':''}NT$${Math.abs(totalPnL/10000).toFixed(1)}萬`,sub:`${totalPct>=0?'+':''}${totalPct.toFixed(2)}%`,up:totalPnL>=0,tip:'現值 − 成本，正數=帳面獲利'},
           {label:'今日已實現損益',value:`${todayPnL>=0?'+':''}$${todayPnL.toLocaleString(undefined,{maximumFractionDigits:0})}`,sub:today,up:todayPnL>=0,tip:'今天在交易日誌中記錄的損益合計'},
           {label:'最大回撤 (MDD)',value:`${(maxDD*100).toFixed(1)}%`,sub:`歷史最大帳面虧損`,up:maxDD<0.2,tip:'歷史淨值從高點回落的最大幅度'},
         ].map(c=>(
-          <div key={c.label} className={cn("glass-card rounded-3xl shadow-xl", compact ? "p-3" : "p-6")}>
+          <div key={c.label} className={cn("glass-card rounded-3xl shadow-xl", "p-[var(--ui-padding)]")}>
             <div className={cn("font-black uppercase tracking-[0.16em] mb-3", compact ? "text-[9px]" : "text-[10px]")} style={{ color: 'var(--md-outline)', fontFamily: 'var(--font-data)' }}>{c.label}</div>
-            <div className={cn('font-black mb-1.5', compact ? "text-lg" : "text-2xl", c.up?'':'text-price-up')} style={{ fontFamily: 'var(--font-data)', color: c.up ? 'var(--md-on-surface)' : undefined }}>{c.value}</div>
+            <div className={cn('font-black mb-1.5 data-num', compact ? "text-lg" : "text-2xl", c.up?'':'text-price-up')} style={{ fontFamily: 'var(--font-data)', color: c.up ? 'var(--md-on-surface)' : undefined }}>{c.value}</div>
             <div className={cn("flex items-center gap-1.5 font-bold", compact ? "text-[9px]" : "text-[11px]")}>
               {c.up?<TrendingUp size={compact ? 10 : 12} style={{ color: 'var(--color-down)' }}/>:<TrendingDown size={compact ? 10 : 12} style={{ color: 'var(--color-up)' }}/>}
               <span style={{ color: 'var(--md-on-surface-variant)' }}>{c.sub}</span>
@@ -394,11 +394,11 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 shrink-0" style={{minHeight:260}}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-[var(--ui-gap)] shrink-0" style={{minHeight:260}}>
         <AllocationPieChart alloc={alloc} totalMV={totalMV} compact={compact} />
         <PnLBarChartPanel pnlData={pnlData} compact={compact} />
 
-        <div className={cn("glass-card rounded-2xl flex flex-col min-h-[260px]", compact ? "p-2" : "p-4")}>
+        <div className={cn("glass-card rounded-2xl flex flex-col min-h-[260px]", "p-[var(--ui-padding)]")}>
           <div className="flex items-center justify-between mb-1">
             <div>
               <h3 className={cn("font-bold", compact ? "text-xs" : "text-xs")} style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>損益曲線</h3>
@@ -447,7 +447,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
       </div>
 
       {/* Positions table */}
-<div className="glass-card rounded-2xl p-4 flex flex-col flex-1">
+<div className="glass-card rounded-2xl p-[var(--ui-padding)] flex flex-col flex-1">
         <div className="flex items-center justify-between mb-3 shrink-0">
           <div>
             <h3 className={cn("font-bold", compact ? "text-sm" : "text-base")} style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>持倉明細</h3>
@@ -492,7 +492,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
               <CardStack
                 items={positions.map((p, i) => ({ ...p, id: p.symbol + i }))}
                 renderCard={(p: Position & { id: string }) => (
-                  <div className="w-full h-full rounded-xl p-5 shadow-lg space-y-3 flex flex-col justify-between" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}>
+                  <div className="w-full h-full rounded-xl p-[var(--ui-padding)] shadow-lg space-y-3 flex flex-col justify-between" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}>
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <div>
@@ -577,7 +577,7 @@ export default function Portfolio({onGoBacktest,onGoJournal}:Props) {
                     {editIdx===idx?<input aria-label="平均成本" type="number" step="0.01" className="rounded px-1.5 py-0.5 text-xs w-20 focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20" style={{ background: 'var(--md-background)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }} value={editBuf.avgCost??p.avgCost} onChange={e=>setEditBuf(b=>({...b,avgCost:Number(e.target.value)}))}/>:p.avgCost.toFixed(2)}
                   </td>
                   <td className="py-3 font-mono" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>{p.currentPrice!=null?p.currentPrice.toFixed(2):<Loader2 className="w-3 h-3 animate-spin inline" style={{ color: 'var(--md-outline-variant)' }}/>}</td>
-                  <td className="py-3 font-mono text-right" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>${Math.round(p.marketValueTWD??p.marketValue??0).toLocaleString()}</td>
+                  <td className="py-3 font-mono text-right data-num" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>${Math.round(p.marketValueTWD??p.marketValue??0).toLocaleString()}</td>
                   <td className="py-3 text-right">
                     <span className="px-1.5 py-0.5 rounded text-[0.55rem] font-bold" style={{ background: p.currency==='TWD' ? 'rgba(82,196,26,0.1)' : 'rgba(173,198,255,0.1)', color: p.currency==='TWD' ? 'var(--color-down)' : 'var(--md-secondary)' }}>{p.currency}</span>
                   </td>

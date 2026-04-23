@@ -86,7 +86,7 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
         aria-selected={isActive}
         className={safeCn(
           'stock-card flex flex-col rounded-2xl cursor-pointer transition active:scale-[0.98] bg-[#0a0a0c]/40 z-10 relative overflow-hidden',
-          compact ? 'p-3' : 'p-4',
+          'p-[var(--ui-card-p)]',
           isActive
             ? 'bg-indigo-500/10 border-2 border-indigo-500/30 ring-4 ring-indigo-500/5'
             : 'border border-white/5 hover:border-white/10'
@@ -119,7 +119,7 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
               compact ? 'text-[9px]' : 'text-[10px]', 
               wUp ? 'text-emerald-400' : 'text-rose-400'
             )} style={{ fontFamily: 'var(--font-data)' }}>
-              <span className="opacity-40">{wUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}</span>
+              <span className="opacity-40">{wUp ? <TrendingUp className="w-[var(--icon-size)] h-[var(--icon-size)]" /> : <TrendingDown className="w-[var(--icon-size)] h-[var(--icon-size)]" />}</span>
               {wUp ? '+' : ''}{safeN(w.changePct)}%
             </div>
           </div>
@@ -151,7 +151,7 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
   }, [watchlist, filter]);
 
   return (
-    <div className={safeCn("flex-1 flex flex-col min-h-0 bg-transparent", compact ? "p-3" : "p-4")}>
+    <div className={safeCn("flex-1 flex flex-col min-h-0 bg-transparent", "p-[var(--ui-padding)]")}>
       <div className="flex items-center justify-between shrink-0 mb-4 px-1">
         <div className="flex flex-col">
           <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>追蹤清單 WATCHLIST</span>
@@ -174,7 +174,7 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
               wlAdding ? "bg-indigo-500 text-black border-indigo-400 rotate-45 shadow-lg" : "bg-white/5 text-zinc-400 border-white/10 hover:text-white"
             )}
           >
-            <Plus size={16} strokeWidth={2.5} />
+            <Plus className="w-[var(--icon-size)] h-[var(--icon-size)]" strokeWidth={2.5} />
           </button>
         </div>
       </div>
@@ -240,7 +240,7 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
         )}
       </AnimatePresence>
 
-      <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-3 min-h-0 content-start p-1 custom-scrollbar" role="listbox" aria-label="追蹤清單">
+      <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-[var(--ui-gap)] min-h-0 content-start p-1 custom-scrollbar" role="listbox" aria-label="追蹤清單">
         <AnimatePresence mode="popLayout">
           {filteredWatchlist.length === 0
             ? <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="col-span-2 flex flex-col items-center justify-center gap-4 py-20 opacity-30">

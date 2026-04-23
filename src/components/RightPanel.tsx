@@ -98,12 +98,12 @@ const PortfolioSummary = React.memo(({ portfolio, compact, sentiment }: { portfo
   }, 0), [portfolio]);
 
   return (
-    <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative group", compact ? "p-4" : "p-6")}>
+    <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative group", "p-[var(--ui-padding)]")}>
       <div className="absolute inset-0 bg-indigo-500/[0.03] pointer-events-none group-hover:bg-indigo-500/[0.05] transition-colors" />
       <div className="flex justify-between items-start relative z-10">
         <div>
           <div className={safeCn("font-black tracking-[0.15em] md:tracking-[0.2em] opacity-30 uppercase mb-1.5", compact ? "text-[8px] md:text-[9px]" : "text-[9px] md:text-[10px]")}>資產總值 PORTFOLIO VALUE</div>
-          <div className={safeCn("font-black text-white tabular-nums tracking-tighter leading-none flex items-baseline gap-1.5", compact ? "text-xl md:text-2xl" : "text-2xl md:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
+          <div className={safeCn("font-black text-white tabular-nums tracking-tighter leading-none flex items-baseline gap-1.5 data-num", compact ? "text-xl md:text-2xl" : "text-2xl md:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
             <span className="text-xs md:text-sm opacity-40 font-medium">NT$</span>
             {totalValue.toLocaleString()}
           </div>
@@ -140,7 +140,7 @@ const PortfolioSummary = React.memo(({ portfolio, compact, sentiment }: { portfo
 
 const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus, eDateFmt, compact }: any) => {
   return (
-    <div className={safeCn("glass-card border border-white/5 rounded-3xl flex-1 flex flex-col min-h-0 relative", compact ? "p-0.5" : "p-1")}>
+    <div className={safeCn("glass-card border border-white/5 rounded-3xl flex-1 flex flex-col min-h-0 relative", "p-[var(--ui-padding)]")}>
       <div className="flex p-1.5 gap-1 bg-black/40 rounded-[1.25rem] m-2 mb-1 border border-white/5 shadow-inner">
         {(['news', 'calendar', 'mtf'] as const).map(t => (
           <button type="button" key={t} onClick={(e) => { setTab(t); vibrate(15); }} 
@@ -180,7 +180,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer" 
-                  className="block p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition group overflow-hidden relative"
+                  className="block p-[var(--ui-card-p)] rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition group overflow-hidden relative"
                 >
                   <div className="absolute inset-y-0 left-0 w-1 bg-white/20 scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
                   <div className="text-xs font-medium text-zinc-200 leading-snug line-clamp-2 tracking-tight group-hover:text-white transition-colors">{n.title}</div>
@@ -232,7 +232,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
                   <div className="text-[10px] font-black tracking-widest text-amber-500/60 uppercase mb-3 leading-none">EARNINGS WINDOW</div>
                   <div className="flex justify-between items-baseline">
                     <span className="text-xs text-zinc-500 tracking-tight">DATE SEQUENCE</span>
-                    <span className="text-lg text-white font-black tracking-tighter tabular-nums" style={{ fontFamily: 'var(--font-data)' }}>{eDateFmt}</span>
+                    <span className="text-lg text-white font-black tracking-tighter tabular-nums data-num" style={{ fontFamily: 'var(--font-data)' }}>{eDateFmt}</span>
                   </div>
                 </div>
               ) : <div className="text-zinc-500 text-[10px] font-black tracking-widest uppercase text-center mt-10 opacity-40">NO EVENTS REGISTERED</div>}
@@ -259,7 +259,7 @@ const AIChat = React.memo(({ chat, setChat, chatRep, chatStatus, handleChat, com
             <div className={safeCn("font-medium relative z-10 leading-relaxed", compact ? "text-[11px]" : "text-xs")}>
               {chatStatus === 'busy' ? (
                 <span className="flex items-center gap-3 text-indigo-400 font-black tracking-widest uppercase italic text-[10px]">
-                  <Loader2 size={16} className="animate-spin" /> PROXYING ANALYTICS...
+                  <Loader2 className="w-[var(--icon-size)] h-[var(--icon-size)] animate-spin" /> PROXYING ANALYTICS...
                 </span>
               ) : chatRep}
             </div>
@@ -297,7 +297,7 @@ const AIChat = React.memo(({ chat, setChat, chatRep, chatStatus, handleChat, com
 
 const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOrderQty, isUp, onGoBacktest, executeOrder, orderStatus, compact }: any) => {
   return (
-    <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative", compact ? "p-4" : "p-6")}>
+    <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative", "p-[var(--ui-padding)]")}>
       <div className="flex items-center justify-between mb-5 relative z-10">
         <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>終端交易 TERMINAL</span>
         <div className="flex gap-1 bg-black/40 rounded-xl p-1 border border-white/5 overflow-hidden">
@@ -319,7 +319,7 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
       <div className="space-y-5 relative z-10">
         <div className="flex justify-between items-baseline bg-white/5 p-3 rounded-2xl border border-white/5">
           <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">市場報價</span>
-          <span className={safeCn('font-black tracking-tighter tabular-nums', compact ? 'text-base md:text-lg' : 'text-lg md:text-xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
+          <span className={safeCn('font-black tracking-tighter tabular-nums data-num', compact ? 'text-base md:text-lg' : 'text-lg md:text-xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
             <span className="text-[9px] md:text-[10px] opacity-40 mr-1 font-medium italic">LAST</span>
             {safeN(price)}
           </span>
@@ -349,7 +349,7 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
 
         <div className="flex justify-between items-baseline px-1 border-t border-white/5 pt-4">
           <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">估算成交量 ESTIMATED</span>
-          <span className="text-white font-black tracking-tighter tabular-nums flex items-baseline gap-1" style={{ fontFamily: 'var(--font-data)' }}>
+          <span className="text-white font-black tracking-tighter tabular-nums flex items-baseline gap-1 data-num" style={{ fontFamily: 'var(--font-data)' }}>
             <span className="text-[10px] opacity-30 font-medium">NT$</span>
             {price && isFinite(Number(price)) && isFinite(orderQty) ? (Number(price) * orderQty).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}
           </span>
@@ -384,7 +384,7 @@ export const RightPanel: React.FC<RightPanelProps> = React.memo(({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className={safeCn("w-full flex flex-col", compact ? "gap-1" : "gap-3")}
+      className={safeCn("w-full flex flex-col", "gap-[var(--ui-gap)]")}
     >
       <PortfolioSummary portfolio={portfolio} compact={compact} sentiment={sentiment} />
 
