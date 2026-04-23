@@ -18,13 +18,7 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
   const [hist, setHist] = useState<HistoricalData[]>([]);
   const [aiAns, setAiAns] = useState<AIAnalysisResult | null>(null);
   const [aiStatus, setAiStatus] = useState<'idle' | 'analyzing' | 'error'>('idle');
-  const [indic, setIndic] = useState<{ 
-    rsi: number, 
-    macd: { MACD: number; signal: number; histogram: number; } | null, 
-    sma20: number | null,
-    sma50: number | null,
-    recommendation: string
-  } | null>(null);
+  
   const [news, setNews] = useState<NewsItem[]>([]);
   const [cal, setCal] = useState<CalendarData>({});
   const [twse, setTwse] = useState<TWSEData | null>(null);
@@ -48,23 +42,56 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
 
   const norm = useMemo(() => isTW(symbol) && !symbol.includes('.') ? `${symbol}.TW` : symbol, [symbol]);
 
-  // ── Load quote + history ──────────────────────────────────────────────────
-  const loadData = useCallback(async () => {
+  const [timeframe, setTimeframe] = useState('1Y');
+
+  const loadData = useCallback(async (selectedTimeframe = timeframe) => {
     setDataState({ status: 'loading' });
     safeSet(setQuote)(null);
     safeSet(setHist)([]);
-    safeSet(setIndic)(null);
     safeSet(setAiAns)(null);
     safeSet(setTwse)(null);
     safeSet(setMtfData)(null);
     try {
-      const threeYearsAgo = new Date();
-      threeYearsAgo.setDate(threeYearsAgo.getDate() - 365 * 3);
-      const period1 = threeYearsAgo.toISOString().split('T')[0];
+      let period1 = "";
+      let interval = "1d";
+      const now = new Date();
+
+      switch (selectedTimeframe) {
+        case '1D':
+          now.setDate(now.getDate() - 1);
+          period1 = now.toISOString().split('T')[0];
+          interval = '1m';
+          break;
+        case '5D':
+          now.setDate(now.getDate() - 5);
+          period1 = now.toISOString().split('T')[0];
+          interval = '5m';
+          break;
+        case '1M':
+          now.setMonth(now.getMonth() - 1);
+          period1 = now.toISOString().split('T')[0];
+          interval = '1h';
+          break;
+        case '6M':
+          now.setMonth(now.getMonth() - 6);
+          period1 = now.toISOString().split('T')[0];
+          interval = '1d';
+          break;
+        case 'YTD':
+          period1 = `${now.getFullYear()}-01-01`;
+          interval = '1d';
+          break;
+        case '1Y':
+        default:
+          now.setFullYear(now.getFullYear() - 3); // Fetch 3 years for 1Y to have enough for indicators
+          period1 = now.toISOString().split('T')[0];
+          interval = '1d';
+          break;
+      }
 
       const [q, h] = await Promise.allSettled([
         api.getQuote(norm),
-        api.getHistory(norm, { period1 }),
+        api.getHistory(norm, { period1, interval }),
       ]);
 
       if (!mountedRef.current) return;
@@ -107,16 +134,15 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
       const msg = e instanceof Error ? e.message : '資料載入失敗';
       if (mountedRef.current) setDataState({ status: 'error', error: msg });
     }
-  }, [norm, symbol, safeSet]);
+  }, [norm, symbol, safeSet, timeframe]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // ── Indicators ────────────────────────────────────────────────────────────
   const closes = useMemo(() => hist.map(d => d.close).filter(isFinite), [hist]);
 
-  const computedIndic = useMemo(() => {
+  const indic = useMemo(() => {
     if (closes.length < 50) return null;
     try {
       const rsiVal = _rsi(closes);
@@ -146,17 +172,15 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
         macd: macdVal, 
         sma20: sma20Val, 
         sma50: sma50Val,
-        recommendation: rec
+        recommendation: rec,
+        trend: score > 0 ? 'bullish' : score < 0 ? 'bearish' : 'neutral' as 'bullish' | 'bearish' | 'neutral',
+        action: rec
       };
     } catch (e) {
       console.warn('[indicators]', e);
       return null;
     }
   }, [closes]);
-
-  useEffect(() => {
-    setIndic(computedIndic);
-  }, [computedIndic]);
 
   // ── AI Analysis ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -239,7 +263,7 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
     return () => { cancelled = true; };
   }, [activeTab, norm, mtfData, safeSet]);
 
-  return {
+  const result = useMemo(() => ({
     quote,
     hist,
     aiAns,
@@ -254,6 +278,12 @@ export function useStockAnalysis({ symbol, model, systemInstruction = '', active
     newsStatus,
     dataState,
     loadData,
-    norm
-  };
+    norm,
+    setTimeframe
+  }), [
+    quote, hist, aiAns, aiStatus, indic, news, cal, twse, sentiment, 
+    mtfData, mtfStatus, newsStatus, dataState, loadData, norm, setTimeframe
+  ]);
+
+  return result;
 }

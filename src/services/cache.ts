@@ -4,26 +4,51 @@
 interface CacheEntry { data: unknown; timestamp: number; lastAccessed: number }
 
 const cache = new Map<string, CacheEntry>();
-const CACHE_DURATION = 60 * 1000; // 1 minute
+const DEFAULT_CACHE_DURATION = 60 * 1000; // 1 minute
 const MAX_CACHE_SIZE = 200;
 
 /**
- * Retrieve cached data. Optionally pass a type guard `validator` to verify the
- * cached data still matches the expected shape before returning it.
- * Returns null on miss, expiry, or validator failure.
+ * Checks if current time is within Taiwan or US market hours (Taiwan Time UTC+8).
+ * TW Market: 09:00 - 13:30 (Mon-Fri)
+ * US Market: 21:30 - 05:00 (Mon-Sat morning in TW time)
  */
-export function getCachedData<T>(key: string, validator?: (d: unknown) => d is T): T | null {
+export function isMarketHours(): boolean {
+  // Get Taiwan Time (UTC+8)
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const twTime = new Date(utc + 3600000 * 8);
+  const day = twTime.getDay(); // 0=Sun, 6=Sat
+  const hour = twTime.getHours();
+  const min = twTime.getMinutes();
+  const totalMin = hour * 60 + min;
+
+  const isWeekday = day >= 1 && day <= 5;
+  const isSaturdayMorning = day === 6 && hour < 5; // US Market usually closes Sat morning TW time
+
+  // TW Market: 09:00 - 13:30
+  const isTWOpen = isWeekday && totalMin >= 9 * 60 && totalMin <= 13 * 60 + 30;
+  // US Market: 21:30 - 05:00 (approximate covers most cases)
+  const isUSOpen = (isWeekday && totalMin >= 21 * 60 + 30) || isSaturdayMorning || (isWeekday && hour < 5);
+
+  return isTWOpen || isUSOpen;
+}
+
+/**
+ * Retrieve cached data. Returns null on miss or expiry.
+ * If isMarketHours is true, we might want to ignore or shorten cache in the caller.
+ */
+export function getCachedData<T>(key: string, validator?: (d: unknown) => d is T, customTTL?: number): T | null {
   const cached = cache.get(key);
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    // LRU: update access time so this entry survives the next eviction round
+  const ttl = customTTL ?? DEFAULT_CACHE_DURATION;
+  
+  if (cached && Date.now() - cached.timestamp < ttl) {
     cached.lastAccessed = Date.now();
     if (validator) {
-      return validator(cached.data) ? cached.data as T : null;
+      return validator(cached.data) ? (cached.data as T) : null;
     }
-    // No validator: caller accepts responsibility for type correctness
     return cached.data as T;
   }
-  if (cached) cache.delete(key); // clean expired
+  if (cached) cache.delete(key);
   return null;
 }
 

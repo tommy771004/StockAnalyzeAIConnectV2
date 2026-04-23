@@ -35,6 +35,8 @@ interface Props {
   focusMode?: boolean; // 新增 focusMode prop
 }
 
+const EMPTY_WATCHLIST: WatchlistItem[] = [];
+
 export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktest, isLandscape, focusMode: propFocusMode }: Props) {
   const { settings } = useSettings();
   const compact = Boolean(settings.compactMode);
@@ -64,7 +66,8 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
     dataState,
     loadData,
     norm,
-    indic
+    indic,
+    setTimeframe
   } = useStockAnalysis({
     symbol,
     model,
@@ -72,8 +75,13 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
     activeTab: tab
   });
 
+  const onTimeframeChange = useCallback((t: string) => {
+    setTimeframe(t);
+    loadData(t);
+  }, [setTimeframe, loadData]);
+
   const [portfolio, setPortfolio] = useState<Order[]>(() => loadFromStorage(STORAGE_KEYS.PORTFOLIO, []));
-  const { data: rawWatchlist = [] } = useWatchlist();
+  const { data: rawWatchlist = EMPTY_WATCHLIST } = useWatchlist();
   // Enrich watchlist items with live quote prices
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
 
@@ -145,6 +153,16 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
   const [chatStatus, setChatStatus] = useState<'idle' | 'busy'>('idle');
 
   useEffect(() => { setMobilePanel('chart'); }, [symbol]);
+
+  const technicalSummary = useMemo(() => {
+    if (!indic) return null;
+    return [
+      { label: 'RSI (14)', value: indic.rsi?.toFixed(1) || '—', status: (indic.rsi??50) > 70 ? 'bearish' : (indic.rsi??50) < 30 ? 'bullish' : 'neutral' },
+      { label: 'Trend 趨勢', value: indic.trend?.toUpperCase() || '—', status: indic.trend === 'bullish' ? 'bullish' : indic.trend === 'bearish' ? 'bearish' : 'neutral' },
+      { label: 'MACD (12,26,9)', value: indic.macd?.MACD?.toFixed(2) || '—', status: (indic.macd?.MACD??0) > 0 ? 'bullish' : 'bearish' },
+      { label: 'SIGNAL 訊號', value: indic.action || '—', status: indic.action?.includes('BUY') ? 'bullish' : indic.action?.includes('SELL') ? 'bearish' : 'neutral' },
+    ];
+  }, [indic]);
 
   const handleChat = useCallback(async () => {
     if(!chat.trim()||chatStatus === 'busy') return;
@@ -222,20 +240,20 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
           {/* Portfolio Summary Group */}
           <div className="flex flex-col gap-3">
              <div className="px-4">
-                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>資產概覽 ASSET OVERVIEW</span>
+                <span className="text-[9px] md:text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] md:tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>資產概覽 ASSET OVERVIEW</span>
              </div>
              <div className={safeCn("glass-card border border-white/5 rounded-3xl shadow-2xl relative overflow-hidden group", compact ? "p-4" : "p-6")}>
                 <div className="absolute inset-0 bg-indigo-500/[0.03] pointer-events-none group-hover:bg-indigo-500/[0.05] transition-colors" />
                 <div className="relative z-10 flex flex-col">
-                  <div className="label-meta font-black text-zinc-600 uppercase tracking-widest mb-2">當前權益 EQUITY</div>
-                  <div className={safeCn("font-black text-white tracking-tighter tabular-nums flex items-baseline gap-2", compact ? "text-2xl" : "text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
-                    <span className="text-sm opacity-30 font-medium">NT$</span>
+                  <div className="label-meta font-black text-zinc-600 uppercase tracking-widest mb-2 text-[9px] md:text-[10px]">當前權益 EQUITY</div>
+                  <div className={safeCn("font-black text-white tracking-tighter tabular-nums flex items-baseline gap-2", compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
+                    <span className="text-xs sm:text-sm opacity-30 font-medium">NT$</span>
                     {portfolio.length > 0 ? portfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
                   </div>
                   {portfolio.length > 0 && (
                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{portfolio.length} 筆活動委託 ACTIVE ORDERS</span>
+                      <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-indigo-500 animate-pulse" />
+                      <span className="text-[8px] md:text-[10px] font-black text-zinc-500 uppercase tracking-widest">{portfolio.length} 筆活動委託 ACTIVE ORDERS</span>
                     </div>
                   )}
                 </div>
@@ -303,14 +321,39 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
           {/* Core Chart Field */}
           <div className="flex-1 min-h-0 relative flex flex-col">
             <div className="absolute inset-0 z-0 bg-[#0a0a0c] pointer-events-none" />
-            <ChartSection symbol={symbol} model={model} focusMode={isFocusActive || Boolean(isLandscape)} data={hist} />
+            <ChartSection 
+              symbol={symbol} 
+              model={model} 
+              focusMode={isFocusActive || Boolean(isLandscape)} 
+              data={hist} 
+              onTimeframeChange={onTimeframeChange}
+            />
           </div>
         </div>
         
         {/* Sub-Data Grid */}
         {!isLandscape && (
-          <div className={safeCn("flex flex-col gap-4", isFocusActive && "px-4 animate-in fade-in slide-in-from-bottom-4 duration-700")}>
+          <div className={safeCn("flex flex-col gap-4 pb-32", isFocusActive && "px-4 animate-in fade-in slide-in-from-bottom-4 duration-700")}>
+             
+             {/* Mobile-Only Pro Metrics Grid */}
+             {mobilePanel === 'chart' && (
+               <div className="lg:hidden grid grid-cols-2 gap-2 px-1">
+                 {technicalSummary?.map((s) => (
+                   <div key={s.label} className="glass-card p-4 border border-white/5 bg-white/[0.02] rounded-2xl flex flex-col gap-1">
+                     <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">{s.label}</span>
+                     <span className={safeCn(
+                       "text-base font-black tabular-nums tracking-tighter",
+                       s.status === 'bullish' ? 'text-emerald-400' : s.status === 'bearish' ? 'text-rose-400' : 'text-zinc-300'
+                     )}>
+                       {s.value}
+                     </span>
+                   </div>
+                 ))}
+               </div>
+             )}
+
              <NewsSentimentBelowChart news={news} sentiment={sentiment} newsStatus={newsStatus} />
+             
              {/* ── STAGE 5: Trade Logger Console ── */}
              <div className="h-40 shrink-0">
                <TradeLogger />
@@ -360,23 +403,49 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
 
       {/* ── Mobile Panel Switcher (Bottom Bar) ── */}
       {!isFocusActive && (
-        <div className="lg:hidden sticky bottom-0 left-0 right-0 z-40 flex gap-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl p-1.5 shrink-0 mt-auto safe-area-bottom shadow-[0_-10px_20px_rgba(0,0,0,0.2)]">
-          {([
-            { id: 'list'  as const, label: '自選股' },
-            { id: 'chart' as const, label: '圖表' },
-            { id: 'panel' as const, label: '面板' },
-          ]).map(p => (
-            <button key={p.id} type="button" onClick={(e) => { setMobilePanel(p.id); }}
-              className={safeCn(
-                'flex-1 py-3 min-h-[48px] rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase transition press-feedback',
-                mobilePanel === p.id
-                  ? 'bg-emerald-500 text-black shadow-[0_0_12px_rgba(52,211,153,0.3)]'
-                  : 'text-zinc-500 hover:text-[var(--text-color)] hover:bg-white/5'
-              )}
+        <div className="lg:hidden sticky bottom-0 left-0 right-0 z-50 flex flex-col gap-2 p-1.5 safe-area-bottom">
+          {/* Quick Action Bar (Only shown on Chart tab) */}
+          {mobilePanel === 'chart' && (
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="flex gap-2 p-1"
             >
-              {p.label}
-            </button>
-          ))}
+              <button 
+                onClick={() => { setOSide('sell'); setMobilePanel('panel'); vibrate(30); }}
+                className="flex-1 py-3.5 sm:py-4 bg-rose-500 text-white font-black text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.2em] rounded-2xl shadow-lg shadow-rose-500/20 active:scale-95 transition"
+              >
+                快速賣出 SELL
+              </button>
+              <button 
+                onClick={() => { setOSide('buy'); setMobilePanel('panel'); vibrate(30); }}
+                className="flex-1 py-3.5 sm:py-4 bg-emerald-500 text-black font-black text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.2em] rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-95 transition"
+              >
+                快速買進 BUY
+              </button>
+            </motion.div>
+          )}
+
+          {/* Navigation Bar */}
+          <div className="flex gap-1 bg-black/80 backdrop-blur-3xl border border-white/5 rounded-[2rem] p-1.5 shadow-2xl">
+            {([
+              { id: 'list'  as const, label: '自選 WATCH', icon: '📋' },
+              { id: 'chart' as const, label: '圖表 CHART', icon: '📈' },
+              { id: 'panel' as const, label: '面板 TRADE', icon: '⚡' },
+            ]).map(p => (
+              <button key={p.id} type="button" onClick={(e) => { setMobilePanel(p.id); vibrate(20); }}
+                className={safeCn(
+                  'flex-1 py-3 px-2 rounded-[1.5rem] text-[10px] font-black tracking-widest uppercase transition flex flex-col items-center gap-1',
+                  mobilePanel === p.id
+                    ? 'bg-white/10 text-white shadow-inner ring-1 ring-white/10'
+                    : 'text-zinc-500 hover:text-white'
+                )}
+              >
+                <span className="text-base">{p.icon}</span>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </motion.div>

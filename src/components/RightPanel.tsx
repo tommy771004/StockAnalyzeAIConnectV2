@@ -102,9 +102,9 @@ const PortfolioSummary = React.memo(({ portfolio, compact, sentiment }: { portfo
       <div className="absolute inset-0 bg-indigo-500/[0.03] pointer-events-none group-hover:bg-indigo-500/[0.05] transition-colors" />
       <div className="flex justify-between items-start relative z-10">
         <div>
-          <div className={safeCn("font-black tracking-[0.2em] opacity-30 uppercase mb-1.5", compact ? "text-[9px]" : "text-[10px]")}>資產總值 PORTFOLIO VALUE</div>
-          <div className={safeCn("font-black text-white tabular-nums tracking-tighter leading-none flex items-baseline gap-1.5", compact ? "text-2xl" : "text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
-            <span className="text-sm opacity-40 font-medium">NT$</span>
+          <div className={safeCn("font-black tracking-[0.15em] md:tracking-[0.2em] opacity-30 uppercase mb-1.5", compact ? "text-[8px] md:text-[9px]" : "text-[9px] md:text-[10px]")}>資產總值 PORTFOLIO VALUE</div>
+          <div className={safeCn("font-black text-white tabular-nums tracking-tighter leading-none flex items-baseline gap-1.5", compact ? "text-xl md:text-2xl" : "text-2xl md:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
+            <span className="text-xs md:text-sm opacity-40 font-medium">NT$</span>
             {totalValue.toLocaleString()}
           </div>
         </div>
@@ -179,7 +179,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  key={i} href={n.link} target="_blank" rel="noopener noreferrer" 
+                  key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer" 
                   className="block p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition group overflow-hidden relative"
                 >
                   <div className="absolute inset-y-0 left-0 w-1 bg-white/20 scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
@@ -319,8 +319,8 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
       <div className="space-y-5 relative z-10">
         <div className="flex justify-between items-baseline bg-white/5 p-3 rounded-2xl border border-white/5">
           <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">市場報價</span>
-          <span className={safeCn('font-black tracking-tighter tabular-nums', compact ? 'text-lg' : 'text-xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
-            <span className="text-[10px] opacity-40 mr-1 font-medium italic">LAST</span>
+          <span className={safeCn('font-black tracking-tighter tabular-nums', compact ? 'text-base md:text-lg' : 'text-lg md:text-xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
+            <span className="text-[9px] md:text-[10px] opacity-40 mr-1 font-medium italic">LAST</span>
             {safeN(price)}
           </span>
         </div>

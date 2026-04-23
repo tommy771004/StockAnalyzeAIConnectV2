@@ -1,0 +1,1 @@
+              <MemoizedChartWidget data={historicalData} symbol={symbol} />

@@ -42,7 +42,7 @@ declare global {
   }
 }
 
-import { getCachedData, setCachedData } from './cache';
+import { getCachedData, setCachedData, isMarketHours } from './cache';
 import { fetchJ } from '../utils/api';
 
 /** Log API fallbacks so failures are visible during development. */
@@ -58,7 +58,8 @@ const E = () => {
 
 // ── Stock ─────────────────────────────────────────────────────────────────────
 export const getQuote = async (sym: string): Promise<Quote> => {
-  const cached = getCachedData<Quote>(`quote:${sym}`);
+  const dynamicTTL = isMarketHours() ? 5000 : 60000; // 5s during market, 1m outside
+  const cached = getCachedData<Quote>(`quote:${sym}`, undefined, dynamicTTL);
   if (cached) return cached;
   const data = IS_ELECTRON ? await E().getQuote(sym) : await fetchJ<Quote>(`/api/stock/${sym}`);
   setCachedData(`quote:${sym}`, data);
@@ -66,8 +67,19 @@ export const getQuote = async (sym: string): Promise<Quote> => {
 };
 
 export const getHistory = (sym: string, opts?: Record<string, string | number>): Promise<HistoricalData[]> => {
-  if (IS_ELECTRON) return E().getHistory(sym, opts);
-  const p = new URLSearchParams(opts as Record<string, string> ?? {}); return fetchJ<HistoricalData[]>(`/api/stock/${sym}/history?${p}`);
+  const dynamicTTL = isMarketHours() ? 30000 : 300000; // 30s during market, 5m outside
+  const cached = getCachedData<HistoricalData[]>(`history:${sym}:${JSON.stringify(opts)}`, undefined, dynamicTTL);
+  if (cached) return Promise.resolve(cached);
+  
+  const fetcher = async () => {
+    const data = IS_ELECTRON 
+      ? await E().getHistory(sym, opts) 
+      : await fetchJ<HistoricalData[]>(`/api/stock/${sym}/history?${new URLSearchParams(opts as Record<string, string> ?? {})}`);
+    setCachedData(`history:${sym}:${JSON.stringify(opts)}`, data);
+    return data;
+  };
+
+  return fetcher();
 };
 
 export const getBatchQuotes = (syms: string[]): Promise<Quote[]> =>

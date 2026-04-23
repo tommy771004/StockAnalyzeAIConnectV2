@@ -135,25 +135,25 @@ export default function StockScreener({ onSelectSymbol }: Props) {
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--md-outline)' }}>XQ-Style Technical Screener — 多條件批量揁描</p>
         </div>
-        <button type="button" onClick={(e) => {}}
+        <button type="button" onClick={() => runScan()}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition active:scale-95 disabled:opacity-50 uppercase tracking-widest shadow-lg shadow-indigo-500/20"
           style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-          {loading ? '掃描中…' : '開始掃描'}
+          {loading ? '掃描中 SCANNING...' : '開始掃描 RUN SCAN'}
         </button>
       </div>
 
       {/* Template Chips */}
       <div className="flex flex-wrap gap-2 shrink-0">
         {TEMPLATES.map(t => (
-          <button type="button" onClick={(e) => {}}
+          <button type="button" key={t.id} onClick={() => handleTemplate(t)}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-bold border transition active:scale-95",
+              "px-3 py-1.5 rounded-xl text-[10px] md:text-xs font-black border transition active:scale-95 uppercase tracking-wider md:tracking-widest",
               activeTemplate === t.id
-                ? { background: 'rgba(128,131,255,0.12)', borderColor: 'rgba(128,131,255,0.4)', color: 'var(--md-primary)' }
-                : { background: 'var(--md-surface-container)', borderColor: 'var(--md-outline-variant)', color: 'var(--md-outline)' }
+                ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-400"
+                : "bg-white/5 border-white/10 text-zinc-500 hover:text-white"
             )}
             title={t.desc}
           >
@@ -164,11 +164,11 @@ export default function StockScreener({ onSelectSymbol }: Props) {
 
       {/* Custom Filters Panel */}
       <div className="shrink-0">
-        <button type="button" onClick={(e) => {}}
-          className="flex items-center gap-2 text-xs font-bold transition-colors" style={{ color: 'var(--md-outline)' }}
+        <button type="button" onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-2 text-[10px] md:text-xs font-black uppercase tracking-widest transition-colors hover:text-white active:scale-95" style={{ color: 'var(--md-outline)' }}
         >
           <Filter size={13} />
-          自訂篩選條件
+          自訂篩選條件 FILTERS
           <ChevronDown size={12} className={cn("transition-transform", showFilters && "rotate-180")} />
         </button>
         <AnimatePresence>

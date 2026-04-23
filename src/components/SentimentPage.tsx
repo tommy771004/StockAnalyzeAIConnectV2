@@ -40,10 +40,10 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
           </RadialBarChart>
         </ResponsiveContainer>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center">
-          <div className="text-2xl font-black font-mono" style={{color}}>{score}</div>
+          <div className="text-xl md:text-2xl font-black font-mono leading-none" style={{color}}>{score}</div>
         </div>
       </div>
-      <div className="text-xs text-zinc-400 mt-1 text-center">{label}</div>
+      <div className="text-[9px] md:text-xs text-zinc-500 mt-1 text-center font-black uppercase tracking-widest leading-tight">{label}</div>
     </div>
   );
 }
@@ -176,8 +176,11 @@ export default function SentimentPage({ model, symbol: initSym }: Props) {
             {lastUpdated && <span className="ml-2 text-zinc-600">更新於 {lastUpdated}</span>}
           </p>
         </div>
-        <button type="button">
-          <RefreshCw size={13} className={loading?'animate-spin':''}/> 重新分析
+        <button type="button" onClick={() => loadSentiment()} disabled={loading}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition active:scale-95 disabled:opacity-50"
+        >
+          <RefreshCw size={12} className={loading?'animate-spin':''}/>
+          <span className="hidden sm:inline">重新分析 REFRESH</span>
         </button>
       </div>
 
@@ -271,9 +274,11 @@ export default function SentimentPage({ model, symbol: initSym }: Props) {
           <div className="flex items-center gap-2">
             <input value={mtfInput} onChange={e=>setMtfInput(e.target.value.toUpperCase())}
               onKeyDown={e=>e.key==='Enter'&&handleSearch()}
-              placeholder="輸入代碼…"
-              className="bg-black/30 border border-[var(--border-color)] rounded-xl px-3 py-1.5 text-sm text-white font-bold focus:outline-none focus:border-emerald-500/40 w-32 uppercase placeholder:text-zinc-600 placeholder:normal-case"/>
-            <button type="button"> {mtfLoading ? <Loader2 size={14} className="animate-spin"/> : <Search size={14}/>}
+              placeholder="輸入代碼 SYMBOL..."
+              className="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-sm text-white font-black focus:outline-none focus:border-indigo-500/40 w-32 uppercase placeholder:text-zinc-600 placeholder:normal-case shadow-inner"/>
+            <button type="button" onClick={handleSearch} disabled={mtfLoading}
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-indigo-500 text-black active:scale-90 transition disabled:opacity-50">
+               {mtfLoading ? <Loader2 size={16} className="animate-spin"/> : <Search size={16} strokeWidth={3}/>}
             </button>
           </div>
         </div>

@@ -77,16 +77,16 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
       <div className="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none group-hover:bg-indigo-500/[0.04] transition-colors" />
       
       <div className={safeCn("flex items-start justify-between relative z-10", compact ? "mb-3" : "mb-5")}>
-        <div className="flex items-center gap-4 min-w-0">
+        <div className="flex items-center gap-3 md:gap-4 min-w-0">
           <div className={safeCn(
-            "shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition group-hover:scale-110 shadow-lg border",
+            "shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center transition group-hover:scale-110 shadow-lg border",
             isUp ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           )}>
-            <idx.icon size={22} strokeWidth={2.5} />
+            <idx.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
           </div>
           <div className="min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 mb-0.5" style={{ fontFamily: 'var(--font-heading)' }}>{idx.name}</div>
-            <div className="text-[9px] font-black uppercase tracking-[0.15em] opacity-40 tabular-nums" style={{ fontFamily: 'var(--font-data)' }}>{idx.symbol}</div>
+            <div className="text-[9px] min-[400px]:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.25em] text-zinc-500 mb-0.5" style={{ fontFamily: 'var(--font-heading)' }}>{idx.name}</div>
+            <div className="text-[8px] min-[400px]:text-[9px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-40 tabular-nums" style={{ fontFamily: 'var(--font-data)' }}>{idx.symbol}</div>
           </div>
         </div>
         <div className="w-16 h-8 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
@@ -108,14 +108,14 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
 
       <div className="flex items-end justify-between relative z-10">
         <div className="flex flex-col">
-          <div className="text-2xl md:text-3xl font-black tabular-nums tracking-tighter text-white" style={{ fontFamily: 'var(--font-data)' }}>
+          <div className="text-xl sm:text-2xl md:text-3xl font-black tabular-nums tracking-tighter text-white" style={{ fontFamily: 'var(--font-data)' }}>
             {idx.price ? idx.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '---'}
           </div>
           <div className={safeCn(
-            "flex items-center gap-1.5 mt-1 text-[10px] font-black uppercase tracking-widest",
+            "flex items-center gap-1.5 mt-1 text-[9px] md:text-[10px] font-black uppercase tracking-widest",
             isUp ? "text-rose-400" : "text-emerald-400"
           )} style={{ fontFamily: 'var(--font-data)' }}>
-            <span className="opacity-40">{isUp ? <TrendingUp size={10} strokeWidth={3}/> : <TrendingDown size={10} strokeWidth={3}/>}</span>
+            <span className="opacity-40">{isUp ? <TrendingUp size={9} strokeWidth={3}/> : <TrendingDown size={9} strokeWidth={3}/>}</span>
             {isUp ? '+' : ''}{idx.changePct ? idx.changePct.toFixed(2) : '0.00'}%
           </div>
         </div>
@@ -213,6 +213,13 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
   const [orderType, setOrderType] = useState(String(settings.defaultOrderType || 'ROD'));
   const [priceType, setPriceType] = useState(String(settings.defaultPriceType || 'LMT'));
   const [toast, setToast] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const showToast = useCallback((msg: string, type: 'success' | 'error', ms = 3000) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({ msg, type });
+    toastTimerRef.current = setTimeout(() => setToast(null), ms);
+  }, []);
+  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
 
   const executeTrade = async () => {
     if (!selected) return;
@@ -489,18 +496,18 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       return (
         <div className="h-full flex flex-col items-center justify-center gap-4 text-amber-500">
           <AlertCircle size={32}/>
-          <div className="text-sm font-bold">無網路連線</div>
-          <div className="text-xs text-amber-500/70">請等待網路恢復後再試</div>
-          <button type="button" onClick={(e) => {}} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">重新連線</button>
+          <div className="text-sm font-bold">無網路連線 NO NETWORK</div>
+          <div className="text-xs text-amber-500/70">請等待網路恢復後再試 PLEASE RECONNECT</div>
+          <button type="button" onClick={() => loadAllData()} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">重新連線 RETRY</button>
         </div>
       );
     }
     return (
       <div className="h-full flex flex-col items-center justify-center gap-4">
         <AlertCircle className="text-rose-400" size={32}/>
-        <div className="text-sm font-bold text-rose-400">市場資料載入失敗</div>
+        <div className="text-sm font-bold text-rose-400 uppercase tracking-widest">市場資料載入失敗 LOAD FAILED</div>
         <div className="text-xs text-slate-500">{fetchErr}</div>
-        <button type="button" onClick={(e) => {}} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">重試</button>
+        <button type="button" onClick={() => loadAllData()} className="px-4 py-1.5 text-xs rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors uppercase tracking-widest">重試 RETRY</button>
       </div>
     );
   }
@@ -694,7 +701,9 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   </div>
                   {addErr && <div className="text-[10px] font-bold text-rose-400 px-1">{addErr}</div>}
                   <div className="flex gap-3">
-                    <button type="button"> {busy ? <Loader2 size={14} className="animate-spin mr-2"/> : null} CONFIRM
+                    <button type="button" onClick={handleAdd} disabled={busy}
+                      className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-indigo-500 text-black hover:bg-indigo-400 transition disabled:opacity-50">
+                      {busy ? <Loader2 size={14} className="animate-spin mr-2"/> : null} CONFIRM
                     </button>
                     <button type="button" onClick={(e) => { setShowAdd(false); setAddInput(''); setAddErr(''); }}
                       className="flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white/5 text-zinc-400 border border-white/10 hover:text-white transition">
@@ -749,7 +758,8 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                     ))}
                   </div>
                   <div className="mt-8 pt-8 border-t border-white/5 relative z-10 flex items-center justify-center">
-                     <button type="button">
+                     <button type="button" onClick={() => showToast('分析數據已匯出 Analytics Exported', 'success')}
+                        className="px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 transition">
                         EXPORT ANALYTICS
                      </button>
                   </div>

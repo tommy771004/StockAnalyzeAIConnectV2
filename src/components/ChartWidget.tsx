@@ -1,601 +1,416 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Settings, Check, ChevronDown } from 'lucide-react';
-import {
-  createChart, ColorType, CrosshairMode,
-  IChartApi, ISeriesApi, Time, LineWidth, LogicalRange, MouseEventParams,
-  CandlestickSeries, HistogramSeries, LineSeries
-} from 'lightweight-charts';
+import { createChart, IChartApi, ISeriesApi, ColorType, Time, CandlestickSeries, HistogramSeries, LineSeries, AreaSeries } from 'lightweight-charts';
 import { useSettings } from '../contexts/SettingsContext';
 import { HistoricalData } from '../types';
-import { calcEMA, calcRSISeries as calcRSI, calcMACDSeries as calcMACD, calcBBSeries as calcBB } from '../utils/math';
-import { vibrate } from '../utils/helpers';
-
-// 內建 safeCn，防止 import { cn } 失敗導致黑屏
-function safeCn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ');
-}
+import { safeCn } from '../utils/helpers';
+import { Loader2, Settings2, BarChart3, TrendingUp, Activity, Plus, Maximize2, Layers } from 'lucide-react';
+import { calcSMA, calcRSI, calcMACD } from '../lib/indicators';
 
 interface Props { 
-  data: HistoricalData[]; 
+  symbol?: string;
+  data?: HistoricalData[]; 
   focusMode?: boolean;
+  onTimeframeChange?: (timeframe: string) => void;
 }
-type Indicator = 'EMA1' | 'EMA2' | 'BB' | 'Volume';
-type SubPanel  = 'none' | 'RSI' | 'MACD';
 
-const SUB_H = 120;
-const VALID_SUBPANELS: SubPanel[] = ['none', 'RSI', 'MACD'];
+type ChartType = 'candle' | 'line' | 'area';
 
-const ChartWidget: React.FC<Props> = ({ data: history, focusMode = false }) => {
-  const mainRef  = React.useRef<HTMLDivElement>(null);
-  const volRef   = React.useRef<HTMLDivElement>(null);
-  const subRef   = React.useRef<HTMLDivElement>(null);
-  const chartRef = React.useRef<IChartApi | null>(null);
-  const volChartRef = React.useRef<IChartApi | null>(null);
-  const subChartRef = React.useRef<IChartApi | null>(null);
-  const tooltipRef  = React.useRef<HTMLDivElement>(null);
-
-  const [showSettings, setShowSettings] = React.useState(false);
-  const settingsRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-        setShowSettings(false);
-      }
-    };
-    if (showSettings) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showSettings]);
-
-  const [ema1Period, setEma1Period] = useState(() => {
-    try { return Number(localStorage.getItem('chart_ema1')) || 20; } catch { return 20; }
-  });
-  const [ema2Period, setEma2Period] = useState(() => {
-    try { return Number(localStorage.getItem('chart_ema2')) || 50; } catch { return 50; }
-  });
-
-  const [indics,  setIndics]  = useState<Set<Indicator>>(() => {
-    try { 
-      const s = localStorage.getItem('chart_indicators'); 
-      if (s) {
-        const parsed = JSON.parse(s);
-        const mapped = parsed.map((i: string) => i === 'EMA20' ? 'EMA1' : i === 'EMA50' ? 'EMA2' : i);
-        return new Set<Indicator>(mapped);
-      }
-      return new Set(['EMA1', 'Volume']); 
-    }
-    catch { return new Set(['EMA1', 'Volume']); }
-  });
-  const [subPanel, setSubPanel] = useState<SubPanel>(() => {
-    try {
-      const v = localStorage.getItem('chart_subpanel');
-      return VALID_SUBPANELS.includes(v as SubPanel) ? (v as SubPanel) : 'RSI';
-    }
-    catch { return 'RSI'; }
-  });
-
-  const closes = useMemo(() => history?.map(r => Number(r.close)) ?? [], [history]);
-  const ema1Data = useMemo(() => calcEMA(closes, ema1Period), [closes, ema1Period]);
-  const ema2Data = useMemo(() => calcEMA(closes, ema2Period), [closes, ema2Period]);
-  const rsiIndicatorData = useMemo(() => calcRSI(closes), [closes]);
-  const macdData = useMemo(() => calcMACD(closes), [closes]);
-  const bbData = useMemo(() => calcBB(closes), [closes]);
-
-  const toggleIndic = (i: Indicator) => setIndics(prev => {
-    const n = new Set(prev);
-    if (n.has(i)) n.delete(i);
-    else n.add(i);
-    try { localStorage.setItem('chart_indicators', JSON.stringify([...n])); } catch (e) { console.error(e); }
-    return n;
-  });
-  const setEmaPersist = (which: 1 | 2, val: number) => {
-    const v = Math.max(1, Math.min(200, val));
-    if (which === 1) {
-      setEma1Period(v);
-      try { localStorage.setItem('chart_ema1', v.toString()); } catch (e) { console.error(e); }
-    } else {
-      setEma2Period(v);
-      try { localStorage.setItem('chart_ema2', v.toString()); } catch (e) { console.error(e); }
-    }
-  };
-
-  const setSubPanelPersist = (p: SubPanel) => {
-    setSubPanel(p);
-    try { localStorage.setItem('chart_subpanel', p); } catch (e) { console.error(e); }
-  };
-
+const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = false, onTimeframeChange }) => {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const mainSeriesRef = useRef<ISeriesApi<any> | null>(null);
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+  const smaSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  
   const { settings } = useSettings();
-  const isLight = settings.theme === 'light';
+  const [chartType, setChartType] = useState<ChartType>('candle');
+  const [showSMA, setShowSMA] = useState(true);
+  const [showVolume, setShowVolume] = useState(true);
+  const [timeframe, setTimeframe] = useState('1D');
+  const [hoverData, setHoverData] = useState<any>(null);
 
+  const isDark = settings.theme !== 'light';
+
+  // Memoized data processing for performance
+  const processedData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    return [...data]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map(d => {
+        const timestamp = new Date(d.date).getTime();
+        return {
+          time: (timestamp / 1000) as Time,
+          open: Number(d.open),
+          high: Number(d.high),
+          low: Number(d.low),
+          close: Number(d.close),
+          value: Number(d.volume || 0),
+          color: Number(d.close) >= Number(d.open) ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+        };
+      });
+  }, [data]);
+
+  // Unified chart initialization and update
   useEffect(() => {
-    if (!mainRef.current || !history?.length) return;
+    if (!chartContainerRef.current) return;
 
-    chartRef.current?.remove();
-    subChartRef.current?.remove();
-    volChartRef.current?.remove();
+    const bgColor = isDark ? (focusMode ? '#131722' : 'transparent') : '#ffffff';
+    const textColor = isDark ? '#9ca3af' : '#4b5563';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
-    const textColor = isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)';
-    const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)';
-    const crosshairColor = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.12)';
-    const borderColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.07)';
-
-    const baseOpts = {
-      layout:     { background: { type: ColorType.Solid, color: 'transparent' }, textColor, fontSize: focusMode ? 14 : 12 },
-      grid:       { vertLines: { color: gridColor }, horzLines: { color: gridColor } },
-      crosshair:  { mode: CrosshairMode.Normal, vertLine: { width: 1 as LineWidth, color: crosshairColor, style: 1 }, horzLine: { width: 1 as LineWidth, color: crosshairColor, style: 1 } },
-      rightPriceScale: { 
-        borderColor: borderColor, 
-        scaleMargins: { top: 0.1, bottom: 0.1 } 
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: bgColor },
+        textColor,
+        fontSize: 11,
+        fontFamily: 'var(--font-heading), sans-serif',
       },
-      timeScale:       { borderColor: borderColor, timeVisible: true },
-    };
-
-    const chart = createChart(mainRef.current, { 
-      ...baseOpts, 
-      width: mainRef.current.clientWidth, 
-      height: mainRef.current.clientHeight 
+      grid: {
+        vertLines: { color: gridColor },
+        horzLines: { color: gridColor },
+      },
+      crosshair: {
+        mode: 1,
+        vertLine: { labelBackgroundColor: '#6366f1' },
+        horzLine: { labelBackgroundColor: '#6366f1' },
+      },
+      timeScale: {
+        borderColor: gridColor,
+        timeVisible: true,
+        fixLeftEdge: true,
+        barSpacing: 8,
+      },
+      rightPriceScale: {
+        borderColor: gridColor,
+        autoScale: true,
+      },
+      localization: {
+        locale: 'zh-Hant-CN',
+        dateFormat: 'yyyy/MM/dd',
+      },
+      width: chartContainerRef.current.clientWidth,
+      height: chartContainerRef.current.clientHeight,
     });
+    
     chartRef.current = chart;
 
-    // 🚨 終極修復：絕對嚴謹的時間排序與去重，使用 Unix Seconds 徹底防止 Lightweight charts 崩潰！
-    const uniqueMap = new Map<number, { time: Time, open: number, high: number, low: number, close: number, volume: number }>();
-    history.forEach((d: HistoricalData) => {
-      try {
-        if (!d || !d.date) return;
-        const t = new Date(d.date).getTime();
-        if (isNaN(t)) return;
-        
-        const timeVal = Math.floor(t / 1000) as Time; 
-        const close = Number(d.close);
-        if (isNaN(close) || close <= 0) return;
-
-        uniqueMap.set(timeVal as number, { 
-          time: timeVal, 
-          open: Number(d.open ?? close) || close, 
-          high: Number(d.high ?? close) || close, 
-          low: Number(d.low ?? close) || close, 
-          close: close, 
-          volume: Number(d.volume) || 0 
-        });
-      } catch (e) { console.error(e); }
-    });
-
-    const rows = Array.from(uniqueMap.values()).sort((a, b) => (a.time as number) - (b.time as number));
-    if (!rows.length) return;
-
-    const times  = rows.map(r => r.time);
-
-    // 修正：使用 addCandlestickSeries
-    const candles = chart.addSeries(CandlestickSeries, {
-      upColor: '#34d399', downColor: '#fb7185', borderVisible: false,
-      wickUpColor: '#34d399', wickDownColor: '#fb7185',
-    });
-    candles.setData(rows);
-    chart.timeScale().fitContent();
-
-    let volSeries: ISeriesApi<'Histogram'> | null = null;
-    if (indics.has('Volume') && volRef.current) {
-      const volChart = createChart(volRef.current, {
-        ...baseOpts,
-        timeScale: { ...baseOpts.timeScale, visible: false },
-        rightPriceScale: { borderColor: borderColor, scaleMargins: { top: 0.1, bottom: 0 } },
+    // Add Main Series
+    let series: ISeriesApi<any>;
+    if (chartType === 'candle') {
+      series = chart.addSeries(CandlestickSeries, {
+        upColor: '#10b981',
+        downColor: '#ef4444',
+        borderVisible: false,
+        wickUpColor: '#10b981',
+        wickDownColor: '#ef4444',
       });
-      volChartRef.current = volChart;
-      
-      volSeries = volChart.addSeries(HistogramSeries, { color: '#26a69a', priceFormat: { type: 'volume' }, priceScaleId: 'right' });
-      volSeries.setData(rows.map(r => ({ time: r.time, value: r.volume, color: r.close >= r.open ? 'rgba(52,211,153,0.5)' : 'rgba(251,113,133,0.5)' })));
-    }
-
-    if (indics.has('EMA1')) {
-      const ema1Series = chart.addSeries(LineSeries, { color: '#f59e0b', lineWidth: 1 as LineWidth, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
-      ema1Series.setData(times.map((t, i) => ({ time: t, value: ema1Data[i] })));
-    }
-
-    if (indics.has('EMA2')) {
-      const ema2Series = chart.addSeries(LineSeries, { color: '#a78bfa', lineWidth: 1 as LineWidth, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
-      ema2Series.setData(times.map((t, i) => ({ time: t, value: ema2Data[i] })));
-    }
-
-    if (indics.has('BB')) {
-      const bbOpts = { lineWidth: 1 as LineWidth, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false };
-      const upper = chart.addSeries(LineSeries, { ...bbOpts, color: 'rgba(99,102,241,0.6)' });
-      const lower = chart.addSeries(LineSeries, { ...bbOpts, color: 'rgba(99,102,241,0.6)' });
-      const mid   = chart.addSeries(LineSeries, { ...bbOpts, color: 'rgba(99,102,241,0.3)', lineStyle: 2 });
-      const valid = bbData.map((b: { upper: number, mid: number, lower: number } | null, i: number) => b ? { time: times[i], upper: b.upper, mid: b.mid, lower: b.lower } : null).filter(Boolean) as { time: Time, upper: number, mid: number, lower: number }[];
-      upper.setData(valid.map(d => ({ time: d.time, value: d.upper })));
-      lower.setData(valid.map(d => ({ time: d.time, value: d.lower })));
-      mid.setData(valid.map(d => ({ time: d.time, value: d.mid })));
-    }
-
-    let primarySubSeries: ISeriesApi<'Line'> | null = null;
-
-    if (subPanel !== 'none' && subRef.current) {
-      const sub = createChart(subRef.current, {
-        ...baseOpts,
-        timeScale: { ...baseOpts.timeScale, visible: false },
-        rightPriceScale: { borderColor: borderColor, scaleMargins: { top: 0.1, bottom: 0.1 } },
+    } else if (chartType === 'area') {
+      series = chart.addSeries(AreaSeries, {
+        lineColor: '#6366f1',
+        topColor: 'rgba(99, 102, 241, 0.4)',
+        bottomColor: 'rgba(99, 102, 241, 0)',
+        lineWidth: 2,
       });
-      subChartRef.current = sub;
-
-      if (subPanel === 'RSI') {
-        const rsiLine = sub.addSeries(LineSeries, { color: '#38bdf8', lineWidth: 1 as LineWidth, crosshairMarkerVisible: false, lastValueVisible: true, priceLineVisible: false });
-        rsiLine.setData(times.map((t, i) => ({ time: t, value: rsiIndicatorData[i] })));
-        const ob = sub.addSeries(LineSeries, { color: 'rgba(251,113,133,0.4)', lineWidth: 1 as LineWidth, lineStyle: 1, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
-        const os = sub.addSeries(LineSeries, { color: 'rgba(52,211,153,0.4)',  lineWidth: 1 as LineWidth, lineStyle: 1, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
-        ob.setData(times.map(t => ({ time: t, value: 70 })));
-        os.setData(times.map(t => ({ time: t, value: 30 })));
-        primarySubSeries = rsiLine;
-      } else if (subPanel === 'MACD') {
-        const macdLine = sub.addSeries(LineSeries, { color: '#34d399', lineWidth: 1 as LineWidth, crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
-        const sigLine  = sub.addSeries(LineSeries, { color: '#fb923c', lineWidth: 1 as LineWidth,   crosshairMarkerVisible: false, lastValueVisible: false, priceLineVisible: false });
-        const histBar  = sub.addSeries(HistogramSeries, { color: '#6366f1', priceScaleId: 'right' });
-        macdLine.setData(times.map((t, i) => ({ time: t, value: macdData[i].macd })));
-        sigLine.setData( times.map((t, i) => ({ time: t, value: macdData[i].signal })));
-        histBar.setData( times.map((t, i) => ({ time: t, value: macdData[i].hist, color: macdData[i].hist >= 0 ? 'rgba(52,211,153,0.5)' : 'rgba(251,113,133,0.5)' })));
-        primarySubSeries = macdLine;
-      }
+    } else {
+      series = chart.addSeries(LineSeries, {
+        color: '#6366f1',
+        lineWidth: 2,
+      });
     }
+    mainSeriesRef.current = series;
 
-    const syncTimeScale = (range: LogicalRange | null, source: IChartApi) => {
-      if (!range) return;
-      if (source !== chartRef.current && chartRef.current) chartRef.current.timeScale().setVisibleLogicalRange(range);
-      if (source !== volChartRef.current && volChartRef.current) volChartRef.current.timeScale().setVisibleLogicalRange(range);
-      if (source !== subChartRef.current && subChartRef.current) subChartRef.current.timeScale().setVisibleLogicalRange(range);
-    };
+    // Add Volume
+    const volumeSeries = chart.addSeries(HistogramSeries, {
+      priceFormat: { type: 'volume' },
+      priceScaleId: '',
+    });
+    chart.priceScale('').applyOptions({
+      scaleMargins: { top: 0.8, bottom: 0 },
+    });
+    volumeSeriesRef.current = volumeSeries;
 
-    const updateTooltip = (p: MouseEventParams, r: any, idx: number) => {
-      if (!tooltipRef.current || !mainRef.current) return;
-      if (!r || p.time === undefined || !p.point) {
-        tooltipRef.current.style.display = 'none';
-        return;
-      }
+    // Add SMA
+    const smaSeries = chart.addSeries(LineSeries, {
+      color: '#f59e0b',
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    smaSeriesRef.current = smaSeries;
 
-      tooltipRef.current.style.display = 'block';
-      const d = new Date((p.time as number) * 1000);
-      const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
-      let html = `<div class="font-bold border-b border-[var(--border-color)] pb-1 mb-1">${dateStr}</div>`;
-      html += `<div class="grid grid-cols-2 gap-x-4 gap-y-0.5">`;
-      html += `<span class="opacity-60">Open:</span> <span class="text-right">${r.open.toFixed(2)}</span>`;
-      html += `<span class="opacity-60">High:</span> <span class="text-right">${r.high.toFixed(2)}</span>`;
-      html += `<span class="opacity-60">Low:</span> <span class="text-right">${r.low.toFixed(2)}</span>`;
-      const cClass = r.close >= r.open ? 'text-emerald-400' : 'text-rose-400';
-      html += `<span class="opacity-60">Close:</span> <span class="text-right font-bold ${cClass}">${r.close.toFixed(2)}</span>`;
-      
-      if (indics.has('Volume')) {
-        html += `<span class="opacity-60 text-indigo-400">Vol:</span> <span class="text-right">${Math.round(r.volume).toLocaleString()}</span>`;
-      }
-      if (indics.has('EMA1')) {
-        html += `<span class="opacity-60 text-amber-400">EMA${ema1Period}:</span> <span class="text-right">${ema1Data[idx]?.toFixed(2) ?? '-'}</span>`;
-      }
-      if (indics.has('EMA2')) {
-        html += `<span class="opacity-60 text-violet-400">EMA${ema2Period}:</span> <span class="text-right">${ema2Data[idx]?.toFixed(2) ?? '-'}</span>`;
-      }
-      
-      // Always show RSI/MACD in tooltip even if panel hidden? 
-      // User said "comprehensive information including RSI and MACD values"
-      const rsiVal = rsiIndicatorData[idx];
-      html += `<span class="opacity-60 text-sky-400">RSI:</span> <span class="text-right">${!isNaN(rsiVal) ? rsiVal.toFixed(1) : '-'}</span>`;
-      
-      const m = macdData[idx];
-      if (m) {
-        html += `<span class="opacity-60 text-sky-400">MACD:</span> <span class="text-right">${m.macd.toFixed(2)}</span>`;
-        html += `<span class="opacity-60 text-amber-400">Signal:</span> <span class="text-right">${m.signal.toFixed(2)}</span>`;
-        html += `<span class="opacity-60 text-[var(--text-color)]">Hist:</span> <span class="text-right">${m.hist.toFixed(2)}</span>`;
-      }
-      
-      html += `</div>`;
-      tooltipRef.current.innerHTML = html;
-
-      // Position tooltip safely
-      const containerRect = mainRef.current.getBoundingClientRect();
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      let left = p.point.x + 15;
-      let top = p.point.y + 15;
-      
-      if (left + tooltipRect.width > containerRect.width) {
-        left = p.point.x - tooltipRect.width - 15;
-      }
-      if (top + tooltipRect.height > containerRect.height) {
-        top = p.point.y - tooltipRect.height - 15;
-      }
-      
-      tooltipRef.current.style.left = `${left}px`;
-      tooltipRef.current.style.top = `${top}px`;
-    };
-
-    const syncCrosshair = (p: MouseEventParams, sourceChart: IChartApi) => {
-      if (p.time !== undefined) {
-        updateLegendFromTime(p.time);
-        const idx = timeToIndex.get(p.time as Time);
-        const r = idx !== undefined ? rows[idx] : null;
-        
-        if (sourceChart === chartRef.current) {
-          updateTooltip(p, r, idx ?? -1);
-        }
-
-        // Sync to main chart
-        if (sourceChart !== chartRef.current && chartRef.current && candles) {
-          const price = idx !== undefined ? rows[idx].close : 0;
-          chartRef.current.setCrosshairPosition(price, p.time as Time, candles);
-        }
-        
-        // Sync to volume chart
-        if (sourceChart !== volChartRef.current && volChartRef.current && volSeries) {
-          const price = idx !== undefined ? rows[idx].volume : 0;
-          volChartRef.current.setCrosshairPosition(price, p.time as Time, volSeries);
-        }
-        
-        // Sync to sub chart
-        if (sourceChart !== subChartRef.current && subChartRef.current && primarySubSeries) {
-          let price = 0;
-          if (idx !== undefined) {
-            if (subPanel === 'RSI') price = rsiIndicatorData[idx];
-            else if (subPanel === 'MACD') price = macdData[idx].macd;
-          }
-          subChartRef.current.setCrosshairPosition(price, p.time as Time, primarySubSeries);
-        }
+    // Crosshair move handler
+    chart.subscribeCrosshairMove(param => {
+      if (
+        param.point === undefined ||
+        !param.time ||
+        param.point.x < 0 ||
+        param.point.y < 0
+      ) {
+        setHoverData(null);
       } else {
-        setLeg(last);
-        if (tooltipRef.current) tooltipRef.current.style.display = 'none';
-        if (sourceChart !== chartRef.current && chartRef.current) chartRef.current.clearCrosshairPosition();
-        if (sourceChart !== volChartRef.current && volChartRef.current) volChartRef.current.clearCrosshairPosition();
-        if (sourceChart !== subChartRef.current && subChartRef.current) subChartRef.current.clearCrosshairPosition();
+        const timestamp = typeof param.time === 'number' ? param.time * 1000 : new Date(param.time as string).getTime();
+        const fullDate = new Date(timestamp).toLocaleDateString('zh-TW', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        const mainData = param.seriesData.get(mainSeriesRef.current!) as any;
+        const volData = param.seriesData.get(volumeSeriesRef.current!) as any;
+        const smaVal = param.seriesData.get(smaSeriesRef.current!) as any;
+
+        // Calculate MACD/RSI for full context
+        const closes = processedData.map(d => d.close);
+        const rsiValues = calcRSI(closes, 14);
+        const macdData = calcMACD(closes);
+        
+        // Find index for the current time to get RSI/MACD
+        const dataIndex = processedData.findIndex(d => d.time === param.time);
+        
+        setHoverData({
+          time: fullDate,
+          open: mainData?.open || mainData?.value || 0,
+          high: mainData?.high || mainData?.value || 0,
+          low: mainData?.low || mainData?.value || 0,
+          close: mainData?.close || mainData?.value || 0,
+          volume: volData?.value || 0,
+          sma: smaVal?.value || null,
+          rsi: dataIndex !== -1 ? rsiValues[dataIndex] : null,
+          macd: dataIndex !== -1 ? macdData.histogram[dataIndex] : null,
+        });
       }
-    };
-
-    chart.timeScale().subscribeVisibleLogicalRangeChange(range => syncTimeScale(range, chart));
-    if (volChartRef.current) volChartRef.current.timeScale().subscribeVisibleLogicalRangeChange(range => syncTimeScale(range, volChartRef.current!));
-    if (subChartRef.current) subChartRef.current.timeScale().subscribeVisibleLogicalRangeChange(range => syncTimeScale(range, subChartRef.current!));
-
-    const last = rows[rows.length - 1];
-    const timeToIndex = new Map(rows.map((r, i) => [r.time, i]));
-
-    const setLeg = (r: typeof last) => {
-      if (!r) return;
-      const o = document.getElementById('legend-open');
-      const h = document.getElementById('legend-high');
-      const l = document.getElementById('legend-low');
-      const c = document.getElementById('legend-close');
-      const v = document.getElementById('legend-vol');
-      const e20 = document.getElementById('legend-ema20');
-      const e50 = document.getElementById('legend-ema50');
-      const rsi = document.getElementById('legend-rsi');
-      const macd = document.getElementById('legend-macd');
-      const macdSig = document.getElementById('legend-macd-sig');
-      const macdHist = document.getElementById('legend-macd-hist');
-
-      if (o) o.textContent = r.open.toFixed(2);
-      if (h) h.textContent = r.high.toFixed(2);
-      if (l) l.textContent = r.low.toFixed(2);
-      if (c) {
-        c.textContent = r.close.toFixed(2);
-        c.className = r.close >= r.open ? 'font-bold text-emerald-400' : 'font-bold text-rose-400';
-      }
-      if (v) v.textContent = Math.round(r.volume).toLocaleString();
-      
-      const idx = rows.indexOf(r);
-      if (e20) e20.textContent = idx >= 0 && !isNaN(ema1Data[idx]) ? ema1Data[idx].toFixed(2) : '-';
-      if (e50) e50.textContent = idx >= 0 && !isNaN(ema2Data[idx]) ? ema2Data[idx].toFixed(2) : '-';
-      if (rsi) rsi.textContent = idx >= 0 && !isNaN(rsiIndicatorData[idx]) ? rsiIndicatorData[idx].toFixed(1) : '-';
-      if (macd && macdData[idx]) macd.textContent = !isNaN(macdData[idx].macd) ? macdData[idx].macd.toFixed(2) : '-';
-      if (macdSig && macdData[idx]) macdSig.textContent = !isNaN(macdData[idx].signal) ? macdData[idx].signal.toFixed(2) : '-';
-      if (macdHist && macdData[idx]) macdHist.textContent = !isNaN(macdData[idx].hist) ? macdData[idx].hist.toFixed(2) : '-';
-    };
-
-    // Initial legend update
-    setTimeout(() => setLeg(last), 0);
-
-    const updateLegendFromTime = (time: Time) => {
-      const idx = timeToIndex.get(time);
-      if (idx !== undefined) {
-        setLeg(rows[idx]);
-      }
-    };
-
-    chart.subscribeCrosshairMove(p => syncCrosshair(p, chart));
-    if (volChartRef.current) volChartRef.current.subscribeCrosshairMove(p => syncCrosshair(p, volChartRef.current!));
-    if (subChartRef.current) subChartRef.current.subscribeCrosshairMove(p => syncCrosshair(p, subChartRef.current!));
-
-    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
-    const resize = () => {
-      // Direct update for better performance
-      if (mainRef.current && chartRef.current) {
-        chartRef.current.applyOptions({ width: mainRef.current.clientWidth, height: mainRef.current.clientHeight });
-      }
-      if (subRef.current && subChartRef.current) {
-        subChartRef.current.applyOptions({ width: subRef.current.clientWidth, height: subRef.current.clientHeight });
-      }
-      if (volRef.current && volChartRef.current) {
-        volChartRef.current.applyOptions({ width: volRef.current.clientWidth, height: volRef.current.clientHeight });
-      }
-    };
-
-    const ro = new ResizeObserver(() => {
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(resize, 100);
     });
-    if (mainRef.current) ro.observe(mainRef.current);
-    if (subRef.current) ro.observe(subRef.current);
-    if (volRef.current) ro.observe(volRef.current);
 
-    resize();
+    // Resize handler using ResizeObserver
+    const resizeObserver = new ResizeObserver(entries => {
+      if (entries.length > 0 && chartRef.current && chartContainerRef.current) {
+        chartRef.current.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+          height: chartContainerRef.current.clientHeight,
+        });
+      }
+    });
+
+    if (chartContainerRef.current) {
+      resizeObserver.observe(chartContainerRef.current);
+    }
 
     return () => {
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      ro.disconnect();
+      resizeObserver.disconnect();
       chart.remove();
-      subChartRef.current?.remove();
-      volChartRef.current?.remove();
-      chartRef.current = null; subChartRef.current = null; volChartRef.current = null;
+      chartRef.current = null;
     };
-  }, [history, indics, subPanel, ema1Period, ema2Period, isLight, ema1Data, ema2Data, rsiIndicatorData, macdData, bbData, focusMode]);
+  }, [isDark, focusMode, chartType]);
+
+  // Data update effect
+  useEffect(() => {
+    if (!mainSeriesRef.current || !volumeSeriesRef.current || !processedData.length) return;
+
+    try {
+      const uniqueData = Array.from(new Map(processedData.map(item => [item.time, item])).values());
+      
+      // Main series
+      if (chartType === 'candle') {
+        const candleData = uniqueData.map(d => ({
+          time: d.time, open: d.open, high: d.high, low: d.low, close: d.close
+        }));
+        mainSeriesRef.current.setData(candleData);
+      } else {
+        const lineData = uniqueData.map(d => ({
+          time: d.time, value: d.close
+        }));
+        mainSeriesRef.current.setData(lineData);
+      }
+
+      // Volume
+      if (showVolume) {
+        volumeSeriesRef.current.setData(uniqueData.map(d => ({
+          time: d.time, value: d.value, color: d.color
+        })));
+      } else {
+        volumeSeriesRef.current.setData([]);
+      }
+
+      // SMA (20)
+      if (showSMA) {
+        const closes = uniqueData.map(d => d.close);
+        const smaValues = calcSMA(closes, 20);
+        const smaData = uniqueData
+          .map((d, i) => ({ time: d.time, value: smaValues[i] }))
+          .filter(v => v.value !== null) as { time: Time, value: number }[];
+        smaSeriesRef.current?.setData(smaData);
+      } else {
+        smaSeriesRef.current?.setData([]);
+      }
+
+      chartRef.current?.timeScale().fitContent();
+    } catch (err) {
+      console.warn("Failed to set chart data", err);
+    }
+  }, [processedData, chartType, showSMA, showVolume]);
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden relative">
-      {/* Indicator Settings Floating Button */}
-      <div className="absolute top-3 right-3 z-30" ref={settingsRef}>
-        <button type="button" onClick={(e) => { setShowSettings(!showSettings); vibrate(20); }}
-          className={safeCn(
-            "flex items-center justify-center w-10 h-10 rounded-2xl shadow-xl transition backdrop-blur-xl border border-white/10",
-            showSettings 
-              ? "bg-indigo-500 text-white border-indigo-400 rotate-90" 
-              : "bg-black/60 text-zinc-400 hover:bg-black/80 hover:text-white"
-          )}
-          aria-label="指標設定"
-        >
-          <Settings size={20} strokeWidth={2.5} />
-        </button>
-
-        {/* Dropdown Menu */}
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: -10, x: 10, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, y: 0, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.95, y: -10, x: 10, filter: 'blur(10px)' }}
-              className="absolute top-full right-0 mt-3 w-72 glass-card border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-6 z-[60] flex flex-col gap-6 backdrop-blur-3xl overflow-hidden"
+    <div className={safeCn(
+      "w-full h-full flex flex-col overflow-hidden relative",
+      focusMode && "bg-[#131722]"
+    )}>
+      {/* Top Toolbar - Stock Analysis Style */}
+      <div className="flex flex-nowrap items-center justify-between px-2 py-1 border-b border-zinc-200/30 dark:border-zinc-800/30 bg-zinc-50/20 dark:bg-zinc-900/20 z-20 overflow-x-auto no-scrollbar gap-2 backdrop-blur-md">
+        <div className="flex items-center gap-1.5 min-w-max">
+          {/* Chart Types */}
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => setChartType('candle')}
+              className={safeCn("p-1.5 rounded-md transition-all active:scale-90", chartType === 'candle' ? "bg-indigo-500/10 text-indigo-500" : "text-zinc-500 hover:bg-white/10")}
+              title="K線圖"
             >
-              <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none" />
-              
-              {/* Main Overlays */}
-              <div className="flex flex-col gap-3 relative z-10">
-                <div className="text-[10px] font-black opacity-30 uppercase tracking-[0.25em] px-1" style={{ fontFamily: 'var(--font-data)' }}>分析疊加 OVERLAYS</div>
-                
-                <div className="space-y-1">
-                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
-                    <div className={safeCn(
-                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
-                      indics.has('EMA1') ? "bg-amber-500 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]" : "border-white/10 group-hover:border-white/30"
-                    )}>
-                      {indics.has('EMA1') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
-                    </div>
-                    <input type="checkbox" className="hidden" checked={indics.has('EMA1')} onChange={() => { toggleIndic('EMA1'); vibrate(15); }} />
-                    <span className="text-sm font-black text-zinc-200 flex-1" style={{ fontFamily: 'var(--font-heading)' }}>EMA 1</span>
-                    <input 
-                      type="number" 
-                      value={ema1Period}
-                      onChange={(e) => setEmaPersist(1, parseInt(e.target.value) || 20)}
-                      className="w-14 bg-black/40 border border-white/10 rounded-xl py-1.5 text-[11px] font-black text-center text-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
-                      onClick={(e) => {}}
-                    />
-                  </label>
+              <BarChart3 size={15} />
+            </button>
+            <button 
+              onClick={() => setChartType('area')}
+              className={safeCn("p-1.5 rounded-md transition-all active:scale-90", chartType === 'area' ? "bg-indigo-500/10 text-indigo-500" : "text-zinc-500 hover:bg-white/10")}
+              title="面積圖"
+            >
+              <TrendingUp size={15} />
+            </button>
+          </div>
 
-                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
-                    <div className={safeCn(
-                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
-                      indics.has('EMA2') ? "bg-violet-500 border-violet-400 shadow-[0_0_15px_rgba(167,139,250,0.3)]" : "border-white/10 group-hover:border-white/30"
-                    )}>
-                      {indics.has('EMA2') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
-                    </div>
-                    <input type="checkbox" className="hidden" checked={indics.has('EMA2')} onChange={() => { toggleIndic('EMA2'); vibrate(15); }} />
-                    <span className="text-sm font-black text-zinc-200 flex-1" style={{ fontFamily: 'var(--font-heading)' }}>EMA 2</span>
-                    <input 
-                      type="number" 
-                      value={ema2Period}
-                      onChange={(e) => setEmaPersist(2, parseInt(e.target.value) || 50)}
-                      className="w-14 bg-black/40 border border-white/10 rounded-xl py-1.5 text-[11px] font-black text-center text-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
-                      onClick={(e) => {}}
-                    />
-                  </label>
+          <div className="h-4 w-px bg-zinc-300/30 dark:bg-zinc-700/30 mx-1" />
 
-                  <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
-                    <div className={safeCn(
-                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
-                      indics.has('BB') ? "bg-indigo-500 border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]" : "border-white/10 group-hover:border-white/30"
-                    )}>
-                      {indics.has('BB') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
-                    </div>
-                    <input type="checkbox" className="hidden" checked={indics.has('BB')} onChange={() => { toggleIndic('BB'); vibrate(15); }} />
-                    <span className="text-sm font-black text-zinc-200" style={{ fontFamily: 'var(--font-heading)' }}>布林通道 BOLLINGER</span>
-                  </label>
-                </div>
-              </div>
+          {/* Indicators */}
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => setShowSMA(!showSMA)}
+              className={safeCn(
+                "px-2 py-1 text-[9px] font-black rounded-md transition-all border shrink-0",
+                showSMA 
+                  ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.1)]" 
+                  : "border-zinc-200/30 dark:border-zinc-800/30 text-zinc-500 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+              )}
+            >
+              SMA(20)
+            </button>
+            <button 
+              onClick={() => setShowVolume(!showVolume)}
+              className={safeCn(
+                "px-2 py-1 text-[9px] font-black rounded-md transition-all border shrink-0",
+                showVolume 
+                  ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.1)]" 
+                  : "border-zinc-200/30 dark:border-zinc-800/30 text-zinc-500 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+              )}
+            >
+              VOL
+            </button>
+          </div>
+        </div>
 
-              <div className="h-px bg-white/10 relative z-10" />
-
-              {/* Sub Panels */}
-              <div className="flex flex-col gap-3 relative z-10">
-                <div className="text-[10px] font-black opacity-30 uppercase tracking-[0.25em] px-1" style={{ fontFamily: 'var(--font-data)' }}>震盪指標 OSCILLATORS</div>
-                
-                <label className="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 cursor-pointer group transition">
-                  <div className={safeCn(
-                    "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition",
-                    indics.has('Volume') ? "bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "border-white/10 group-hover:border-white/30"
-                  )}>
-                    {indics.has('Volume') && <Check className="w-4 h-4 text-black stroke-[3px]" />}
-                  </div>
-                  <input type="checkbox" className="hidden" checked={indics.has('Volume')} onChange={() => { toggleIndic('Volume'); vibrate(15); }} />
-                  <span className="text-sm font-black text-zinc-200" style={{ fontFamily: 'var(--font-heading)' }}>成交量 VOLUME</span>
-                </label>
-
-                <div className="flex items-center gap-1.5 mt-2 bg-black/40 p-1.5 rounded-2xl border border-white/5">
-                  {(['none','RSI','MACD'] as SubPanel[]).map(p => (
-                    <button type="button" key={p} onClick={(e) => { setSubPanelPersist(p); vibrate(15); }}
-                      className={safeCn('flex-1 py-2.5 rounded-xl text-[10px] font-black transition uppercase tracking-widest',
-                        subPanel===p ? 'bg-indigo-500 text-white shadow-lg' : 'text-zinc-500 hover:text-white hover:bg-white/5')}>
-                      {p==='none'?'OFF':p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Top Legend Bar (Minimized) */}
-      <div className="flex items-center gap-4 px-4 py-2.5 shrink-0 z-20 bg-black/40 border-b border-white/5 relative overflow-x-auto no-scrollbar pointer-events-none backdrop-blur-md">
-        <div className="flex items-center gap-4 pr-12 min-w-max">
-          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">O</span><span id="legend-open" className="font-bold opacity-80">-</span></div>
-          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">H</span><span id="legend-high" className="font-bold opacity-80">-</span></div>
-          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">L</span><span id="legend-low" className="font-bold opacity-80">-</span></div>
-          <div className="flex items-center gap-1.5 text-[11px] font-mono tabular-nums"><span className="opacity-30 font-black">C</span><span id="legend-close" className="font-bold">-</span></div>
-          
-          <div className="w-px h-3 bg-white/10 mx-1" />
-
-          {indics.has('Volume') && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-indigo-400/80 uppercase tracking-tighter"><span>VOL</span><span id="legend-vol" className="font-bold opacity-100">-</span></div>}
-          {indics.has('EMA1') && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-amber-400/80 uppercase tracking-tighter"><span>EMA1</span><span id="legend-ema20" className="font-bold opacity-100">-</span></div>}
-          {indics.has('EMA2') && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-violet-400/80 uppercase tracking-tighter"><span>EMA2</span><span id="legend-ema50" className="font-bold opacity-100">-</span></div>}
-          {subPanel==='RSI' && <div className="flex items-center gap-1.5 text-[10px] font-mono font-black text-sky-400/80 uppercase tracking-tighter"><span>RSI</span><span id="legend-rsi" className="font-bold opacity-100">-</span></div>}
-          {subPanel==='MACD' && (
-            <div className="flex items-center gap-3 text-[10px] font-mono font-black uppercase tracking-tighter">
-              <span className="text-sky-400/80">MACD <span id="legend-macd" className="font-bold opacity-100">-</span></span>
-              <span className="text-amber-400/80">SIG <span id="legend-macd-sig" className="font-bold opacity-100">-</span></span>
-            </div>
-          )}
+        <div className="flex items-center gap-1">
+          <button className="p-1.5 text-zinc-500 hover:text-indigo-500 hover:bg-white/5 rounded-md transition-all" title="圖表設定">
+            <Settings2 size={14} />
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 relative min-h-0 bg-[#0a0a0c]">
-        <div ref={mainRef} className="absolute inset-0" />
+      <div className="flex-1 relative bg-white/5 dark:bg-black/10">
+        {/* Floating Timeframe Group - Integrated into Chart with Zero-Clutter Transparency */}
+        <div className="absolute top-1.5 right-1.5 z-30 flex items-center gap-0.5 p-0 overflow-hidden pointer-events-auto">
+          {['1D', '5D', '1M', '6M', 'YTD', '1Y'].map((t) => (
+            <button
+              key={t}
+              onClick={() => {
+                setTimeframe(t);
+                onTimeframeChange?.(t);
+              }}
+              className={safeCn(
+                "px-1 py-0 text-[10px] sm:text-[11px] font-black transition-all text-center leading-none h-4 min-w-[20px] flex items-center justify-center rounded-sm",
+                timeframe === t 
+                  ? "bg-indigo-500/80 text-white" 
+                  : "text-zinc-500/60 hover:text-white hover:bg-white/10"
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {(!data || data.length === 0) && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/5 dark:bg-white/5 backdrop-blur-sm">
+            <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-2" />
+            <span className="text-[10px] font-black text-zinc-500 max-w-[200px] text-center uppercase tracking-[0.2em]">
+              正在獲取市場行情...
+            </span>
+          </div>
+        )}
         <div 
-          ref={tooltipRef} 
-          className="absolute hidden z-30 pointer-events-none p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] text-[10px] sm:text-[11px] font-mono min-w-[220px] glass-card border border-white/10 backdrop-blur-2xl" 
-          style={{ 
-            color: 'var(--md-on-surface)'
-          }}
+          ref={chartContainerRef}
+          className="w-full h-full absolute inset-0"
         />
+        
+        {/* Floating Tooltip - High Interaction */}
+        {hoverData && (
+          <div className="absolute top-2 left-2 z-40 bg-zinc-950/80 backdrop-blur-md p-2 rounded-lg border border-white/10 shadow-2xl pointer-events-none flex flex-col gap-1 min-w-[140px]">
+             <div className="text-[10px] text-zinc-400 font-mono mb-1 border-b border-white/5 pb-1 uppercase tracking-tighter">
+               {hoverData.time}
+             </div>
+             <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+               <div className="flex justify-between items-center">
+                 <span className="text-[9px] text-zinc-500 uppercase">O:</span>
+                 <span className="text-[10px] font-mono text-zinc-100">{hoverData.open.toFixed(2)}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                 <span className="text-[9px] text-zinc-500 uppercase">H:</span>
+                 <span className="text-[10px] font-mono text-emerald-400">{hoverData.high.toFixed(2)}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                 <span className="text-[9px] text-zinc-500 uppercase">L:</span>
+                 <span className="text-[10px] font-mono text-red-400">{hoverData.low.toFixed(2)}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                 <span className="text-[9px] text-zinc-500 uppercase">C:</span>
+                 <span className="text-[10px] font-mono text-zinc-100">{hoverData.close.toFixed(2)}</span>
+               </div>
+             </div>
+             <div className="flex justify-between items-center mt-1 border-t border-white/5 pt-1">
+               <span className="text-[9px] text-zinc-500 uppercase">VOL:</span>
+               <span className="text-[10px] font-mono text-zinc-300">{(hoverData.volume / 1000).toFixed(1)}K</span>
+             </div>
+             {hoverData.sma && (
+               <div className="flex justify-between items-center">
+                 <span className="text-[9px] text-amber-500/80 uppercase">SMA:</span>
+                 <span className="text-[10px] font-mono text-amber-400">{hoverData.sma.toFixed(2)}</span>
+               </div>
+             )}
+             {hoverData.rsi && (
+               <div className="flex justify-between items-center">
+                 <span className="text-[9px] text-indigo-400/80 uppercase">RSI:</span>
+                 <span className="text-[10px] font-mono text-indigo-300">{hoverData.rsi.toFixed(2)}</span>
+               </div>
+             )}
+             {hoverData.macd !== null && (
+                <div className="flex justify-between items-center">
+                  <span className="text-[9px] text-emerald-400/80 uppercase">MACD:</span>
+                  <span className={safeCn("text-[10px] font-mono", hoverData.macd >= 0 ? "text-emerald-400" : "text-red-400")}>
+                    {hoverData.macd.toFixed(2)}
+                  </span>
+                </div>
+             )}
+          </div>
+        )}
+
+        {/* Floating Timeframe Badge (Minimalized) */}
+        {!focusMode && data.length > 0 && (
+          <div className="absolute top-3 left-3 z-10 pointer-events-none select-none flex items-center gap-2">
+            <span className="px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 text-[9px] font-black rounded border border-indigo-500/30 uppercase tracking-tighter backdrop-blur-md">
+              {timeframe}
+            </span>
+            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-800/30 px-2 py-0.5 rounded-full border border-zinc-700/50 backdrop-blur-md">
+              {data.length} PACKETS
+            </span>
+          </div>
+        )}
       </div>
-
-      {indics.has('Volume') && (
-        <div className="shrink-0 border-t border-[var(--border-color)] relative" style={{ height: SUB_H }}>
-          <span className="absolute top-1 left-1.5 text-xs text-[var(--text-color)] opacity-50 font-bold z-10 pointer-events-none">Volume</span>
-          <div ref={volRef} className="w-full h-full" />
-        </div>
-      )}
-
-      {subPanel !== 'none' && (
-        <div className="shrink-0 border-t border-[var(--border-color)] relative" style={{ height: SUB_H }}>
-          <span className="absolute top-1 left-1.5 text-xs text-[var(--text-color)] opacity-50 font-bold z-10 pointer-events-none">{subPanel}</span>
-          <div ref={subRef} className="w-full h-full" />
-        </div>
-      )}
     </div>
   );
 };

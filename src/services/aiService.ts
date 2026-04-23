@@ -148,13 +148,15 @@ async function callOpenRouter(
     const st = res.status;
     
     // Auto-retry without json_mode if model doesn't support it
-    if (st === 400 && jsonMode && body.includes('Json mode is not supported')) {
+    if (st === 400 && jsonMode && (
+      body.toLowerCase().includes('json mode') && (body.toLowerCase().includes('not supported') || body.toLowerCase().includes('not enabled'))
+    )) {
       console.warn(`[aiService] 模型 ${model} 不支援 JSON Mode，取消參數進行重試…`);
       return callOpenRouter(prompt, model, false, _tried);
     }
 
-    // On rate-limit / overload / removed-endpoint, rotate to next free model
-    if (st === 429 || st === 503 || st === 404 || st === 522) {
+    // On rate-limit / overload / removed-endpoint / internal error, rotate to next free model
+    if (st === 429 || st === 503 || st === 502 || st === 500 || st === 404 || st === 522) {
       // Invalidate cache on 404 so stale model list is refreshed
       if (st === 404) _freeModelsCache.ts = 0;
 
@@ -210,33 +212,62 @@ function classifyError(err: unknown) {
   const code = (err as { code?: string })?.code ?? '';
   const st   = Number((err as { status?: number | string })?.status ?? 0);
   const msg  = String((err as { message?: string })?.message ?? '');
+  const name = String((err as { name?: string })?.name ?? '');
+
   if (code === 'MISSING_API_KEY') return 'missing';
   if (st === 401 || msg.includes('401')) return 'unauth';
   if (st === 429 || st === 402 || /quota|credit|RESOURCE_EXHAUSTED/i.test(msg)) return 'quota';
+  if (msg.includes('Failed to fetch') || name === 'TypeError' || msg.includes('NetworkError')) return 'network';
   return 'unknown';
 }
 
 function parseJSON<T>(raw: string, schema: z.ZodSchema<T>): T {
-  // Strip possible markdown fences
-  const clean = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+  let content = raw.trim();
+
+  // Try to find a JSON block in markdown fences first
+  const match = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (match && match[1]) {
+    content = match[1].trim();
+  }
+
   let json: unknown;
   try {
-    json = JSON.parse(clean);
+    json = JSON.parse(content);
   } catch {
     // If strict parsing fails, try to extract first JSON object/array
-    const firstBrace = clean.indexOf('{');
-    const lastBrace = clean.lastIndexOf('}');
+    const firstBrace = content.indexOf('{');
+    const lastBrace = content.lastIndexOf('}');
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       try {
-        json = JSON.parse(clean.substring(firstBrace, lastBrace + 1));
+        json = JSON.parse(content.substring(firstBrace, lastBrace + 1));
       } catch {
-        throw new Error('AI 回傳內容無法還原成 JSON');
+        // Continue to array check if object extraction fails
       }
-    } else {
+    }
+
+    if (!json) {
+      const firstBracket = content.indexOf('[');
+      const lastBracket = content.lastIndexOf(']');
+      if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+        try {
+          json = JSON.parse(content.substring(firstBracket, lastBracket + 1));
+        } catch {
+          // Both failed
+        }
+      }
+    }
+
+    if (!json) {
       throw new Error('AI 回傳格式無效，無法解析 JSON');
     }
   }
-  return schema.parse(json);
+
+  try {
+    return schema.parse(json);
+  } catch (e) {
+    console.error('Zod Parsing Error:', e);
+    throw new Error('AI 回傳資料結構不符預期');
+  }
 }
 
 // ── Validators (Zod Schemas) ──────────────────────────────────────────────────
@@ -312,7 +343,8 @@ PE=${quoteData?.trailingPE ?? 'N/A'}, MarketCap=${quoteData?.marketCap ?? 'N/A'}
 
 Last 30 close prices: ${recent.map((d) => d.close?.toFixed(2) ?? 'N/A').join(', ')}
 
-Respond ONLY with JSON:
+Respond ONLY with a valid JSON object. No explanation, no conversational filler.
+JSON:
 {"action":"STRONG BUY|BUY|NEUTRAL|SELL|STRONG SELL","reasoning":"Traditional Chinese detailed analysis","targetPrice":number,"stopLoss":number,"trend":"bullish|bearish|neutral"}`;
 }
 
@@ -345,6 +377,7 @@ export async function analyzeStock(
     if (kind === 'missing') return errAnalysis(price, '⚠️ OpenRouter API Key 未設定。請至「系統設定」輸入 Key，或勾選 Ollama 本地模式。');
     if (kind === 'unauth') return errAnalysis(price, '⚠️ API Key 無效（401 Unauthorized）。');
     if (kind === 'quota') return errAnalysis(price, '⚠️ AI 服務達配額限制，請稍後再試。');
+    if (kind === 'network') return errAnalysis(price, '⚠️ 網路連線失敗或 AI 服務被阻擋。請檢查網路狀態或 API Proxy 設定。');
     console.error('analyzeStock:', err);
     return errAnalysis(price, 'AI 回傳格式不符，已套用預設值');
   }
@@ -433,8 +466,9 @@ function buildMTFPrompt(
 1D closes (last 10): ${fmt(data1d)}
 1W closes (last 10): ${fmt(data1wk)}
 
-JSON: {"indicators":[{"name":"Chinese+English","values":["1H","1D","1W"],"statuses":["bullish|bearish|neutral","…","…"]}],"synthesis":"Traditional Chinese","score":0-100,"overallTrend":"偏多|偏空|中性"}
-Provide exactly 5 indicators.`;
+Respond ONLY with a valid JSON object (exactly 5 indicators). No extra text.
+JSON:
+{"indicators":[{"name":"Chinese+English","values":["1H","1D","1W"],"statuses":["bullish|bearish|neutral","…","…"]}],"synthesis":"Traditional Chinese","score":0-100,"overallTrend":"偏多|偏空|中性"}`;
 }
 
 export async function analyzeMTF(
@@ -470,7 +504,8 @@ function buildTradingStrategyPrompt(
 AI Analysis: ${JSON.stringify(aiAnalysis)}
 MTF Analysis: ${JSON.stringify(mtfAnalysis)}
 
-Respond ONLY with JSON:
+Respond ONLY with a valid JSON object. No explanation.
+JSON:
 {"strategy":"Traditional Chinese detailed strategy","entry":"price range","exit":"price range","riskLevel":"low|medium|high","confidence":0-100}`;
 }
 
@@ -502,7 +537,9 @@ function buildSentimentPrompt(marketData: Partial<Quote>[], systemInstruction: s
   }));
 
   return `${systemInstruction ? systemInstruction + '\n\n' : ''}Macroeconomist sentiment analysis. Market: ${JSON.stringify(summary)}
-JSON: {"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"string","putCallRatio":"string","marketBreadth":"string","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
+Respond ONLY with a valid JSON object. No explanation.
+JSON:
+{"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"string","putCallRatio":"string","marketBreadth":"string","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
 }
 
 export async function analyzeSentiment(marketData: Partial<Quote>[], model = 'openai/gpt-4o-mini', systemInstruction = ''): Promise<SentimentData | null> {
@@ -531,7 +568,9 @@ function buildNewsSentimentPrompt(news: NewsItem[], systemInstruction: string): 
 News:
 ${summary}
 
-JSON: {"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"N/A","putCallRatio":"N/A","marketBreadth":"N/A","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
+Respond ONLY with a valid JSON object. No explanation.
+JSON:
+{"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"N/A","putCallRatio":"N/A","marketBreadth":"N/A","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
 }
 
 export async function analyzeNewsSentiment(news: NewsItem[], model = 'openai/gpt-4o-mini', systemInstruction = ''): Promise<SentimentData | null> {

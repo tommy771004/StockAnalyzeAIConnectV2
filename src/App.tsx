@@ -362,7 +362,7 @@ function MainApp() {
               </div>
               <div className="hidden sm:flex flex-col leading-tight">
                 <span className="text-lg font-black tracking-tighter text-gradient-primary uppercase"
-                      style={{ fontFamily: 'var(--font-heading)' }}>QUANTUM</span>
+                      style={{ fontFamily: 'var(--font-heading)' }}>ANA</span>
                 <span className="text-[10px] font-bold tracking-[0.25em] uppercase opacity-60" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-outline)' }}>CORE SYSTEM</span>
               </div>
             </div>
@@ -576,8 +576,6 @@ function MainApp() {
                     <span className="material-symbols-outlined text-[20px]" style={{ color: 'var(--md-primary)', fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
                   </div>
                   <div className="min-w-0">
-                    <div className="text-sm font-black tracking-wide truncate"
-                         style={{ fontFamily: 'var(--font-heading)', background: 'linear-gradient(120deg, var(--md-primary) 0%, #adc6ff 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Hermes AI</div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{ background: '#52c41a' }} />
                       <span className="text-[9px] font-bold tracking-[0.14em] uppercase" style={{ fontFamily: 'var(--font-data)', color: 'var(--md-outline)' }}>系統狀態: 正常</span>

@@ -216,7 +216,7 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
                   </div>
                 ) : searchResults.length > 0 ? (
                   searchResults.map((res, i) => (
-                    <button type="button" key={res.symbol} onClick={(e) => {
+                    <button type="button" key={`${res.symbol}-${i}`} onClick={(e) => {
                         addToWatchlist(res.symbol);
                         setWlSearch('');
                         setWlAdding(false);
@@ -257,7 +257,7 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
               const wUp = (Number(w.changePct) || 0) >= 0;
               return (
                 <motion.div
-                  key={w.symbol}
+                  key={`${w.symbol}-${idx}`}
                   layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}

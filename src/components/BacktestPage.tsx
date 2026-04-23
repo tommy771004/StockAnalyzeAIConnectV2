@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { runBacktest } from '../services/api';
+import { pushLog } from './TradeLogger';
 import { BacktestResult, BacktestMetrics } from '../types';
 import { motion } from 'motion/react';
 import { buildBacktestPdf } from '../utils/exportPdf';
@@ -92,8 +93,8 @@ const EquityTip = ({active,payload,label,color}: { active?: boolean; payload?: {
   return (
     <div className="rounded-xl p-3 text-sm shadow-xl min-w-[160px]" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', fontFamily: 'var(--font-data)' }}>
       <div className="mb-2 text-xs" style={{ color: 'var(--md-outline)' }}>{label}</div>
-      {payload.map((p) => (
-        <div key={p.dataKey} className="flex justify-between gap-4" style={{color:p.dataKey==='portfolio'?color:'#94a3b8'}}>
+      {payload.map((p, idx) => (
+        <div key={`${p.dataKey}-${idx}`} className="flex justify-between gap-4" style={{color:p.dataKey==='portfolio'?color:'#94a3b8'}}>
           <span>{p.dataKey==='portfolio'?'策略':'買進持有'}</span>
           <span className="font-bold">{(p.value>=0?'+':'')+Number(p.value).toFixed(2)}%</span>
         </div>
@@ -270,24 +271,28 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
               onChange={e => setStrategy(e.target.value as StratId)}
               className="relative w-full rounded-xl md:rounded-2xl px-3 md:px-5 py-2.5 md:py-3 text-base md:text-sm font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition appearance-none cursor-pointer" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}
             >
-              {STRATEGIES.map(s => <option key={s.id} value={s.id} style={{ background: 'var(--md-surface-container)' }}>{s.label}</option>)}
+              {STRATEGIES.map(s => <option key={`opt-${s.id}`} value={s.id} style={{ background: 'var(--md-surface-container)' }}>{s.label}</option>)}
             </select>
               <ChevronDown size={14} className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--md-outline)' }} />
           </div>
 
           <div className="flex items-center gap-2 md:gap-3 w-full lg:w-auto">
-            <button type="button"> {comparing ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
-              比較績效
+            <button type="button" onClick={() => setCompareMode(v => !v)}
+              className={cn("flex-1 lg:flex-none px-4 py-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 active:scale-95", compareMode ? "bg-indigo-500 text-black shadow-lg shadow-indigo-500/20" : "bg-white/5 text-zinc-400 border border-white/10")}>
+              {comparing ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
+              比較績效 COMPARE
             </button>
             {result && (
-              <button type="button" onClick={(e) => {}}
+              <button type="button" onClick={() => pushLog('info', 'SYSTEM', 'Exporting PDF report...')}
                 className="flex-1 lg:flex-none px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest active:scale-95 transition flex items-center justify-center gap-2" style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}
               >
                 <Download size={16} /> 匯出 PDF
               </button>
             )}
-            <button type="button"> {running ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
-              {running ? '執行中' : '開始回測'}
+            <button type="button" onClick={handleRun} disabled={running}
+              className="flex-1 lg:flex-none px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest bg-indigo-500 text-black shadow-lg shadow-indigo-500/20 active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-50">
+              {running ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} className="fill-current" />}
+              {running ? '執行中 COMPUTING...' : '開始回測 RUN'}
             </button>
           </div>
         </div>
@@ -521,13 +526,14 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
             </div>
 
               <div className="flex items-center gap-4 relative z-10 w-full sm:w-auto">
-              <div className="flex-1 sm:flex-none px-8 py-4 rounded-2xl flex flex-col items-center sm:items-end justify-center" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: 'var(--md-outline)' }}>Total Return</span>
-                <span className="text-3xl font-black tracking-tighter tabular-nums" style={{ color: metrics.roi >= 0 ? 'var(--color-down)' : 'var(--color-up)', fontFamily: 'var(--font-data)' }}>
+              <div className="flex-1 sm:flex-none px-6 md:px-8 py-3 md:py-4 rounded-2xl flex flex-col items-center sm:items-end justify-center" style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)' }}>
+                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: 'var(--md-outline)' }}>Total Return</span>
+                <span className="text-2xl md:text-3xl font-black tracking-tighter tabular-nums" style={{ color: metrics.roi >= 0 ? 'var(--color-down)' : 'var(--color-up)', fontFamily: 'var(--font-data)' }}>
                   {metrics.roi >= 0 ? '+' : ''}{metrics.roi}%
                 </span>
               </div>
-              <button type="button">
+              <button type="button" onClick={() => pushLog('info', 'SYSTEM', 'Downloading full report CSV...')}
+                className="p-3 md:p-4 rounded-2xl bg-white/5 border border-white/10 text-zinc-400 hover:text-white transition-colors active:scale-90 shadow-xl">
                 <Download size={24} />
               </button>
             </div>
@@ -550,8 +556,8 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                     <span className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: 'var(--md-outline)' }}>Buy &amp; Hold</span>
                   </div>
                 </div>
-                <button type="button" onClick={(e) => {}}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2.5 rounded-2xl transition active:scale-95"
+                <button type="button" onClick={() => setShowDd(v => !v)}
+                  className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] px-4 md:px-6 py-2 md:py-2.5 rounded-2xl transition active:scale-95 shadow-lg"
                   style={showDd ? { background: 'rgba(255,77,79,0.1)', color: 'var(--color-up)', border: '1px solid rgba(255,77,79,0.25)' } : { background: 'var(--md-surface-container-high)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
                   {showDd ? 'Hide Drawdown' : 'Show Drawdown'}
                 </button>
@@ -651,12 +657,12 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                   icon: <Target size={20} />,
                   color: metrics.winRate >= 50 ? 'emerald' : 'amber'
                 },
-              ].map(c=>{
+              ].map((c, idx)=>{
                 const metricColor = c.color === 'emerald' ? 'var(--color-down)' : c.color === 'rose' ? 'var(--color-up)' : 'var(--md-tertiary)';
                 const iconBg = c.color === 'emerald' ? 'rgba(82,196,26,0.1)' : c.color === 'rose' ? 'rgba(255,77,79,0.1)' : 'rgba(255,183,131,0.1)';
                 const iconBorder = c.color === 'emerald' ? 'rgba(82,196,26,0.25)' : c.color === 'rose' ? 'rgba(255,77,79,0.25)' : 'rgba(255,183,131,0.25)';
                 return (
-                <div key={c.label} className="glass-card rounded-[2rem] p-6 relative overflow-hidden transition duration-300 hover:-translate-y-1">
+                <div key={`stat-card-${idx}`} className="glass-card rounded-[2rem] p-6 relative overflow-hidden transition duration-300 hover:-translate-y-1">
                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] mb-3 relative z-10" style={{ color: 'var(--md-outline)' }}>
                     <div className="p-1.5 rounded-lg" style={{ background: iconBg, border: `1px solid ${iconBorder}`, color: metricColor }}>
                       {c.icon}
@@ -685,8 +691,8 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                     ['最長連勝',    `${maxWinStreak}筆`],
                     ['最長連敗',    `${maxLossStreak}筆`],
                     ['策略評級',    metrics.roi>50?'🏆 卓越':metrics.roi>20?'✅ 良好':'📊 普通'],
-                  ].map(([k,v])=>(
-                    <div key={k as string} className="space-y-1.5 group">
+                  ].map(([k,v], idx)=>(
+                    <div key={`metric-${idx}`} className="space-y-1.5 group">
                       <div className="text-[9px] font-black text-slate-600 uppercase tracking-[0.15em] group-hover:text-slate-400 transition-colors">{k}</div>
                       <div className="text-sm font-black text-white tracking-tight">{v}</div>
                     </div>
@@ -756,17 +762,17 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                   </div>
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/10 shadow-inner">
+                  <div className="flex-1 sm:flex-none flex bg-white/5 rounded-2xl p-1.5 border border-white/10 shadow-inner">
                     {(['date','pnl'] as const).map(s=>(
-                      <button key={s} type="button" onClick={(e) => { setTradeSort(s); }}
-                        className="text-[10px] font-black uppercase tracking-widest px-6 py-2 rounded-xl transition duration-300"
+                      <button key={s} type="button" onClick={() => setTradeSort(s)}
+                        className="flex-1 sm:flex-none text-[9px] md:text-[10px] font-black uppercase tracking-widest px-4 md:px-6 py-2 rounded-xl transition duration-300 active:scale-95"
                           style={tradeSort===s ? { background: 'var(--md-surface-container-high)', color: 'var(--md-on-surface)', border: '1px solid var(--md-outline-variant)' } : { color: 'var(--md-outline)' }}>
                         {s==='date'?'Time':'PnL'}
                       </button>
                     ))}
                   </div>
-                  <button type="button">
-                    <Download size={16}/> Export
+                  <button onClick={() => pushLog('info', 'SYSTEM', 'Exporting trade history...')} className="p-3 rounded-xl bg-white/5 border border-white/10 text-zinc-400 hover:text-white transition-colors active:scale-90">
+                    <Download size={16}/>
                   </button>
                 </div>
               </div>
@@ -775,7 +781,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                 {/* Mobile: Horizontal scrollable cards */}
                 <div className="flex md:hidden gap-3 pb-4 overflow-x-auto">
                   {trades.map((t, i) => (
-                    <div key={i} className="min-w-[200px] glass-card rounded-xl p-4 space-y-2">
+                    <div key={`mobile-trade-${t.entryTime}-${i}`} className="min-w-[200px] glass-card rounded-xl p-4 space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-bold" style={{ color: 'var(--md-on-surface)' }}>{t.entryTime}</span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded" style={(t.pnlPct ?? 0) >= 0 ? { background: 'rgba(82,196,26,0.15)', color: 'var(--color-down)' } : { background: 'rgba(255,77,79,0.15)', color: 'var(--color-up)' }}>
@@ -812,7 +818,7 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
                     </thead>
                     <tbody className="divide-y" style={{ borderColor: 'var(--md-outline-variant)' }}>
                       {trades.map((t,i) => (
-                        <tr key={i} className="group transition-colors">
+                        <tr key={`desktop-trade-${t.entryTime}-${i}`} className="group transition-colors">
                           <td className="py-4 font-mono text-xs" style={{ color: 'var(--md-on-surface-variant)', fontFamily: 'var(--font-data)' }}>{t.entryTime}</td>
                           <td className="py-4 font-mono text-xs" style={{ color: 'var(--md-on-surface-variant)', fontFamily: 'var(--font-data)' }}>{t.exitTime}</td>
                           <td className="py-4 font-mono text-xs text-right font-bold" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>{Number(t.entryPrice).toLocaleString(undefined,{maximumFractionDigits:2})}</td>
@@ -860,8 +866,8 @@ export default function BacktestPage({ initialSymbol }: { initialSymbol?: string
 
           {/* Strategy preview cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl px-6">
-            {STRATEGIES.map(s=>(
-              <button type="button" onClick={(e) => {}}
+            {STRATEGIES.map((s, idx)=>(
+              <button key={`strat-btn-${idx}`} type="button" onClick={(e) => {}}
                   className="p-6 rounded-[2rem] text-left transition hover:scale-[1.03] active:scale-95 relative overflow-hidden"
                 style={strategy===s.id
                   ? { background: 'rgba(128,131,255,0.12)', border: `1px solid ${s.color}40` }

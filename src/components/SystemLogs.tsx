@@ -13,6 +13,7 @@ import { RefreshCw,
 import { cn } from '../lib/utils';
 import * as api from '../services/api';
 import { Alert } from '../types';
+import { pushLog } from './TradeLogger';
 import { motion } from 'motion/react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -238,7 +239,7 @@ export default function SystemLogs() {
           {id:'alerts', label:'🔔 價格警報'},
           {id:'system', label:'💻 系統資源'},
         ].map(t => (
-          <button type="button" onClick={(e) => { const validTabs = ['broker','logs','alerts','system'] as const; if (validTabs.includes(t.id as typeof validTabs[number])) setTab(t.id as typeof validTabs[number]); }}
+          <button key={t.id} type="button" onClick={(e) => { const validTabs = ['broker','logs','alerts','system'] as const; if (validTabs.includes(t.id as typeof validTabs[number])) setTab(t.id as typeof validTabs[number]); }}
             className="px-4 py-2 rounded-xl text-base font-semibold transition whitespace-nowrap"
             style={tab===t.id
               ? { background: 'rgba(192,193,255,0.12)', color: 'var(--md-primary)', border: '1px solid rgba(192,193,255,0.4)' }
@@ -284,12 +285,12 @@ export default function SystemLogs() {
                       <span style={{ color: on ? 'var(--color-down)' : 'var(--md-outline)' }}>{on?`${b.latency}ms`:'—'}</span>
                     </div>
                   </div>
-                  <button type="button" onClick={(e) => {}}
-                    className="w-full py-2 rounded-xl text-base font-bold transition"
+                  <button type="button" onClick={() => toggleBroker(b.id)}
+                    className="w-full py-2 rounded-xl text-base font-bold transition active:scale-95"
                     style={on
                       ? { background: 'rgba(255,77,79,0.12)', color: 'var(--color-up)', border: '1px solid rgba(255,77,79,0.3)' }
                       : { background: 'rgba(82,196,26,0.12)', color: 'var(--color-down)', border: '1px solid rgba(82,196,26,0.3)' }}>
-                    {on?'🔴 中斷連接':'🟢 建立連接'}
+                    {on?'🔴 中斷連接 DISCONNECT':'🟢 建立連接 CONNECT'}
                   </button>
                 </div>
               );
@@ -307,7 +308,7 @@ export default function SystemLogs() {
           {/* Filter bar */}
           <div className="flex items-center gap-2 p-3 shrink-0 flex-wrap" style={{ borderBottom: '1px solid var(--md-outline-variant)' }}>
             {['ALL','SYSTEM','API','TRADE','AI','NET','WARN'].map(f => (
-              <button type="button" onClick={(e) => {}}
+              <button key={f} type="button" onClick={() => setLogFilter(f)}
                 className="px-2 py-1 rounded-lg text-sm font-bold transition"
                 style={{ fontFamily: 'var(--font-data)', color: logFilter===f ? 'var(--md-on-surface)' : 'var(--md-outline)', background: logFilter===f ? 'var(--md-surface-container-high)' : 'transparent' }}>
                 {f}
@@ -342,11 +343,11 @@ export default function SystemLogs() {
           {/* Add Alert */}
           <div className="glass-card rounded-2xl p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>新增價格警報</h3>
-              <button type="button" onClick={(e) => {}}
-                className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-xl transition-colors"
+              <h3 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-heading)' }}>新增價格警報 ADD ALERT</h3>
+              <button type="button" onClick={() => setAddingAlert(v => !v)}
+                className="text-[10px] md:text-xs flex items-center gap-1 px-3 py-1.5 rounded-xl transition-colors active:scale-95"
                 style={{ color: 'var(--md-primary)', border: '1px solid rgba(192,193,255,0.3)', background: 'rgba(192,193,255,0.08)' }}>
-                <Plus size={11}/> 新增警報
+                <Plus size={11}/> {addingAlert ? '關閉表單 CLOSE' : '新增警報 ADD NEW'}
               </button>
             </div>
             {addingAlert && (
@@ -378,13 +379,14 @@ export default function SystemLogs() {
                 </div>
                 {alertErr && <div className="text-xs" style={{ color: 'var(--color-up)' }}>{alertErr}</div>}
                 <div className="flex gap-2">
-                  <button type="button">
-                    ✓ 確認新增
+                  <button type="button" onClick={handleAddAlert}
+                    className="px-5 py-2 rounded-xl text-sm font-bold transition bg-indigo-500 text-black hover:bg-indigo-400 active:scale-95">
+                    ✓ 確認新增 CONFIRM
                   </button>
                   <button type="button" onClick={(e) => { setAddingAlert(false); setAlertErr(''); }}
-                    className="px-5 py-2 rounded-xl text-sm transition-colors"
+                    className="px-5 py-2 rounded-xl text-sm transition-colors active:scale-95"
                     style={{ background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
-                    取消
+                    取消 CANCEL
                   </button>
                 </div>
               </div>
@@ -434,8 +436,8 @@ export default function SystemLogs() {
                         : { background: 'var(--md-surface-container-high)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}>
                       {a.triggered ? '🔔 已觸發' : '⏳ 監控中'}
                     </span>
-                    <button type="button" onClick={(e) => {}}
-                      className="p-1.5 rounded-lg transition-colors shrink-0"
+                    <button type="button" onClick={() => handleDeleteAlert(a.id)}
+                      className="p-1.5 rounded-lg transition-colors shrink-0 active:scale-90"
                       style={{ background: 'rgba(255,77,79,0.10)', color: 'var(--color-up)' }}>
                       <Trash2 size={12}/>
                     </button>
@@ -526,8 +528,10 @@ export default function SystemLogs() {
                   <MetricBar key={r.label} {...r} max={100} unit="%" />
                 ))}
                 <div className="grid grid-cols-3 gap-2 mt-3">
-                  {['保守', '均衡', '積極'].map((m, i) => (
-                    <button type="button"> {m}
+                  {['保守', '均衡', '積極'].map((m) => (
+                    <button key={m} type="button" onClick={() => pushLog('info', 'SYSTEM', `Risk Profile changed to ${m}`)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/5 border border-white/10 hover:bg-white/10 transition-colors uppercase tracking-widest active:scale-95"> 
+                      {m}
                     </button>
                   ))}
                 </div>
