@@ -70,8 +70,8 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
       onClick={() => onSelect(idx.symbol)}
       onKeyDown={e => e.key === 'Enter' && onSelect(idx.symbol)}
       className={safeCn(
-        "relative flex flex-col glass-card cursor-pointer transition group overflow-hidden border border-white/5 hover:border-indigo-500/30 active:scale-[0.98] rounded-[2rem]",
-        compact ? "p-4" : "p-6"
+        "relative flex flex-col glass-card cursor-pointer transition group overflow-hidden border border-white/5 hover:border-indigo-500/30 active:scale-[0.98] rounded-[1.5rem] sm:rounded-[2rem]",
+        compact ? "p-3" : "p-4 sm:p-5"
       )}
     >
       <div className="absolute inset-0 bg-indigo-500/[0.02] pointer-events-none group-hover:bg-indigo-500/[0.04] transition-colors" />
@@ -108,7 +108,7 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
 
       <div className="flex items-end justify-between relative z-10">
         <div className="flex flex-col">
-          <div className="text-xl sm:text-2xl md:text-3xl font-black tabular-nums tracking-tighter text-white" style={{ fontFamily: 'var(--font-data)' }}>
+          <div className="text-lg sm:text-xl md:text-2xl font-black tabular-nums tracking-tighter text-white" style={{ fontFamily: 'var(--font-data)' }}>
             {idx.price ? idx.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '---'}
           </div>
           <div className={safeCn(
@@ -139,7 +139,7 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
       onClick={() => onSelect(s)}
       onKeyDown={e => e.key === 'Enter' && onSelect(s)}
       className={safeCn(
-        "relative glass-card rounded-[2rem] p-5 sm:p-6 cursor-pointer transition group overflow-hidden border border-white/5 active:scale-[0.99]",
+        "relative glass-card rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-5 cursor-pointer transition group overflow-hidden border border-white/5 active:scale-[0.99]",
         isSelected ? 'bg-indigo-500/10 border-indigo-500/40 ring-4 ring-indigo-500/5' : 'hover:border-white/10'
       )}
     >
@@ -163,7 +163,7 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
         </div>
       </div>
 
-      <div className="text-3xl md:text-4xl font-black tabular-nums tracking-tighter relative z-10 mb-6"
+      <div className="text-2xl md:text-3xl font-black tabular-nums tracking-tighter relative z-10 mb-4 sm:mb-6"
         style={{ color: isUp ? '#fb7185' : '#34d399', fontFamily: 'var(--font-data)' }}>
         {s.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
       </div>
@@ -528,7 +528,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={cn("h-full flex flex-col overflow-auto pb-10 pr-4 relative", compact ? "gap-2" : "gap-8")}
+      className={cn("h-full flex flex-col overflow-auto pb-10 pr-4 relative", compact ? "gap-2" : "gap-4 sm:gap-6")}
     >
       <PullToRefreshIndicator state={pullState} />
 
@@ -540,13 +540,13 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       )}
 
       {/* ── 1. Time Contextual Dashboard ── */}
-      <div className="flex flex-col gap-3 mb-4 shrink-0 stagger-item">
+      <div className="flex flex-col gap-3 shrink-0 stagger-item">
         {(() => {
           const hour = new Date().getHours();
           const isMorning = hour < 12;
           return (
             <div className={cn(
-              "px-6 py-5 rounded-3xl border flex flex-col gap-5 shadow-2xl overflow-hidden relative glass-card group",
+              "px-5 py-4 sm:px-6 sm:py-5 rounded-3xl border flex flex-col gap-4 shadow-2xl overflow-hidden relative glass-card group",
               isMorning ? "border-amber-500/20" : "border-indigo-500/20"
             )}>
               {/* Background gradient hint */}
@@ -556,18 +556,18 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
               )} />
 
               <div className="flex items-center justify-between z-10 relative">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div className={cn(
-                    "w-12 h-12 rounded-2xl flex items-center justify-center border backdrop-blur-xl shadow-inner",
+                    "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center border backdrop-blur-xl shadow-inner",
                     isMorning ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400"
                   )}>
-                    {isMorning ? <Sun size={24} strokeWidth={2.5} /> : <Moon size={24} strokeWidth={2.5} />}
+                    {isMorning ? <Sun size={20} strokeWidth={2.5} /> : <Moon size={20} strokeWidth={2.5} />}
                   </div>
                   <div>
-                    <h3 className="text-lg font-black tracking-tight uppercase" style={{ fontFamily: 'var(--font-heading)' }}>
+                    <h3 className="text-base sm:text-lg font-black tracking-tight uppercase" style={{ fontFamily: 'var(--font-heading)' }}>
                       {isMorning ? '早安！早盤預判報告' : '晚安！盤後數據結核'}
                     </h3>
-                    <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mt-0.5">
+                    <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.2em] opacity-40 mt-0.5">
                       {isMorning ? 'Market Pre-Opening Analysis' : 'Daily Market Liquidation Summary'}
                     </p>
                   </div>
@@ -578,13 +578,13 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 z-10 relative">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 z-10 relative">
                 {isMorning ? (
                   <>
                     {marketData.some(m => m.symbol === '^GSPC' || m.symbol === '^IXIC') && (
                       <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
                         <div className="text-[10px] font-black text-amber-400/50 uppercase tracking-widest mb-2">美股隔夜行情 OVERNIGHT</div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5 line-clamp-2 md:line-clamp-none">
                           {(() => {
                             const gspc = marketData.find(m => m.symbol === '^GSPC');
                             const ixic = marketData.find(m => m.symbol === '^IXIC');
@@ -601,7 +601,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                     {aiSummary && (
                       <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md md:col-span-2 hover:border-white/10 transition-colors">
                         <div className="text-[10px] font-black text-amber-400/50 uppercase tracking-widest mb-2">AI 戰略預警 STRATEGIC ADVISORY</div>
-                        <div className="text-xs font-medium leading-relaxed opacity-80 italic">"{aiSummary.aiAdvice}"</div>
+                        <div className="text-xs font-medium leading-relaxed opacity-80 italic line-clamp-2">"{aiSummary.aiAdvice}"</div>
                       </div>
                     )}
                   </>
@@ -640,24 +640,24 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       </div>
 
       {/* ── 大盤指數 ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 shrink-0 w-full mb-8 stagger-item">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 shrink-0 w-full stagger-item">
         {marketData.map((idx) => (
           <IndexCard key={idx.symbol} idx={idx} compact={compact} onSelect={onSelectSymbol} />
         ))}
       </div>
 
       {/* ── 2. Watchlist & Deep Analysis ── */}
-      <div className="flex flex-col gap-6 stagger-item mb-10 px-1">
-        <div className="flex items-center justify-between shrink-0 mb-4">
+      <div className="flex flex-col gap-4 stagger-item px-1">
+        <div className="flex items-center justify-between shrink-0 mb-1">
           <div className="flex flex-col">
-            <span className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>自選關注 WATCHLIST</span>
-            <div className="h-0.5 w-16 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] rounded-full" />
+            <span className="text-[10px] sm:text-[11px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>自選關注 WATCHLIST</span>
+            <div className="h-0.5 w-12 sm:w-16 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] rounded-full" />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {BROKERS.map((b, i) => (
               <button type="button" key={b} onClick={(e) => { setBroker(b); vibrate(20); }}
                 className={safeCn(
-                  "px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition border shadow-lg",
+                  "px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition border shadow-lg",
                   broker === b ? "bg-indigo-500 text-black border-indigo-400" : "bg-black/40 text-zinc-400 border-white/5 hover:text-white"
                 )}>
                 {b.split(' ')[0]}
@@ -666,9 +666,9 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
           </div>
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-6">
+        <div className="flex flex-col xl:flex-row gap-4">
           {/* 左側：自選股 Grid */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {stocks.map(s => (
               <WatchlistStockCard
                 key={s.symbol}
@@ -684,7 +684,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
               tabIndex={0}
               onClick={() => !showAdd && setShowAdd(true)}
               onKeyDown={e => e.key === 'Enter' && !showAdd && setShowAdd(true)}
-              className="glass-card rounded-[2rem] border-2 border-dashed border-white/10 p-8 cursor-pointer transition flex flex-col items-center justify-center min-h-[180px] hover:border-indigo-500/40 hover:bg-indigo-500/5 group active:scale-[0.98]">
+              className="glass-card rounded-[2rem] border-2 border-dashed border-white/10 p-6 sm:p-8 cursor-pointer transition flex flex-col items-center justify-center min-h-[160px] hover:border-indigo-500/40 hover:bg-indigo-500/5 group active:scale-[0.98]">
               {showAdd ? (
                 <div className="w-full space-y-4" onClick={e => e.stopPropagation()}>
                   <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">ADD NEW SYMBOL</div>
@@ -770,15 +770,15 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
       </div>
 
       {/* ── 3. 市場焦點與財經新聞 ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[250px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 flex-1 min-h-[250px] mb-8">
         {/* 左側：熱門交易標的 */}
-        <div className="lg:col-span-1 glass-card rounded-2xl p-5 flex flex-col shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--md-on-surface)' }}>
-              <Flame size={16} style={{ color: 'var(--md-tertiary)' }}/> 市場熱點 (Trending)
+        <div className="lg:col-span-1 glass-card rounded-[1.5rem] p-4 sm:p-5 flex flex-col shadow-lg border border-white/5">
+          <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+            <h2 className="text-xs sm:text-sm font-bold flex items-center gap-2" style={{ color: 'var(--md-on-surface)' }}>
+              <Flame size={14} style={{ color: 'var(--md-tertiary)' }}/> 市場熱點 (Trending)
             </h2>
           </div>
-          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-1 gap-3 overflow-x-auto pb-2 lg:pb-0 -mx-5 lg:mx-0 px-5 lg:px-0 snap-x snap-mandatory mobile-hide-scrollbar scroll-px-5 scroll-smooth">
+          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-1 gap-2 overflow-x-auto pb-2 lg:pb-0 -mx-4 lg:mx-0 px-4 lg:px-0 snap-x snap-mandatory mobile-hide-scrollbar scroll-px-4 scroll-smooth">
             {trending.length > 0 ? trending.map((t: Stock) => {
               const isUp = (t.changePct || 0) >= 0;
               return (
@@ -814,13 +814,13 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
         </div>
 
         {/* 右側：即時市場新聞 */}
-        <div className="lg:col-span-2 glass-card rounded-2xl p-5 flex flex-col shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--md-on-surface)' }}>
-              <Newspaper size={16} style={{ color: 'var(--md-secondary)' }}/> 國際財經快訊 (News)
+        <div className="lg:col-span-2 glass-card rounded-[1.5rem] p-4 sm:p-5 flex flex-col shadow-lg border border-white/5">
+          <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+            <h2 className="text-xs sm:text-sm font-bold flex items-center gap-2" style={{ color: 'var(--md-on-surface)' }}>
+              <Newspaper size={14} style={{ color: 'var(--md-secondary)' }}/> 國際財經快訊 (News)
             </h2>
           </div>
-          <div className="flex-1 overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 pr-1">
+          <div className="flex-1 overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3 pr-1">
             {news.length > 0 ? news.map((n: NewsItem, i: number) => (
               <a key={n.id || i} href={n.link} target="_blank" rel="noopener noreferrer"
                 className="flex flex-col p-3 rounded-xl transition group"
@@ -837,7 +837,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                 <div className="text-xs mt-auto flex items-center gap-1" style={{ color: 'var(--md-outline)' }}>
                   <span>{n.publisher || 'Yahoo Finance'}</span>
                   <span>·</span>
-                  <span>{new Date((n.providerPublishTime || Date.now() / 1000) * 1000).toLocaleString()}</span>
+                  <span>{new Date((n.providerPublishTime || Date.now() / 1000) * 1000).toLocaleDateString([], { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
               </a>
             )) : (

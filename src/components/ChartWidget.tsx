@@ -21,6 +21,9 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
   const mainSeriesRef = useRef<ISeriesApi<any> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const smaSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const dataRef = useRef<any[]>([]);
+  const indicRef = useRef<{rsi: number[], macd: any[]}>({rsi: [], macd: []});
+  const logicalRangeRef = useRef<any>(null);
   
   const { settings } = useSettings();
   const [chartType, setChartType] = useState<ChartType>('candle');
@@ -50,7 +53,17 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
       });
   }, [data]);
 
-  // Unified chart initialization and update
+  // Handle initial view and data state
+  const isInitializedRef = useRef(false);
+  
+  useEffect(() => {
+    const closes = processedData.map(d => d.close);
+    indicRef.current = {
+      rsi: calcRSI(closes, 14),
+      macd: calcMACD(closes)
+    };
+  }, [processedData]);
+
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
@@ -58,12 +71,17 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     const textColor = isDark ? '#9ca3af' : '#4b5563';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
+    // Cleanup previous chart if it exists
+    if (chartRef.current) {
+      chartRef.current.remove();
+    }
+
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: bgColor },
         textColor,
-        fontSize: 11,
-        fontFamily: 'var(--font-heading), sans-serif',
+        fontSize: 12, // Increased for readability
+        fontFamily: 'Inter, var(--font-heading), sans-serif',
       },
       grid: {
         vertLines: { color: gridColor },
@@ -71,21 +89,36 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
       },
       crosshair: {
         mode: 1,
-        vertLine: { labelBackgroundColor: '#6366f1' },
-        horzLine: { labelBackgroundColor: '#6366f1' },
+        vertLine: { 
+          labelBackgroundColor: '#6366f1',
+          width: 1,
+          style: 3, // Dashed
+        },
+        horzLine: { 
+          labelBackgroundColor: '#6366f1',
+          width: 1,
+          style: 3, // Dashed
+        },
       },
       timeScale: {
         borderColor: gridColor,
         timeVisible: true,
         fixLeftEdge: true,
-        barSpacing: 8,
+        rightOffset: 15, // Provide room at the edge
+        barSpacing: 12, // Slightly wider for better visual
+        minBarSpacing: 1,
       },
       rightPriceScale: {
         borderColor: gridColor,
         autoScale: true,
+        alignLabels: true,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.2,
+        },
       },
       localization: {
-        locale: 'zh-Hant-CN',
+        locale: 'zh-Hant-TW',
         dateFormat: 'yyyy/MM/dd',
       },
       width: chartContainerRef.current.clientWidth,
@@ -138,9 +171,15 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
     });
     smaSeriesRef.current = smaSeries;
 
+    // Preserve logical range when chart is recreated
+    chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+      logicalRangeRef.current = range;
+    });
+
     // Crosshair move handler
     chart.subscribeCrosshairMove(param => {
       if (
+        !param ||
         param.point === undefined ||
         !param.time ||
         param.point.x < 0 ||
@@ -148,7 +187,27 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
       ) {
         setHoverData(null);
       } else {
-        const timestamp = typeof param.time === 'number' ? param.time * 1000 : new Date(param.time as string).getTime();
+        const timeVal = param.time;
+        
+        // Safety check for series availability
+        if (!mainSeriesRef.current || !volumeSeriesRef.current || !smaSeriesRef.current) return;
+
+        const mainData = param.seriesData.get(mainSeriesRef.current!) as any;
+        const volData = param.seriesData.get(volumeSeriesRef.current!) as any;
+        const smaVal = param.seriesData.get(smaSeriesRef.current!) as any;
+
+        // Use ref-based data to avoid stale closures
+        const localData = dataRef.current;
+        const localIndic = indicRef.current;
+        const dataIndex = localData.findIndex(d => d.time === timeVal);
+
+        if (dataIndex === -1) {
+          setHoverData(null);
+          return;
+        }
+
+        const currentItem = localData[dataIndex];
+        const timestamp = typeof timeVal === 'number' ? timeVal * 1000 : new Date(timeVal as string).getTime();
         const fullDate = new Date(timestamp).toLocaleDateString('zh-TW', {
           year: 'numeric',
           month: '2-digit',
@@ -156,29 +215,17 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
           hour: '2-digit',
           minute: '2-digit'
         });
-
-        const mainData = param.seriesData.get(mainSeriesRef.current!) as any;
-        const volData = param.seriesData.get(volumeSeriesRef.current!) as any;
-        const smaVal = param.seriesData.get(smaSeriesRef.current!) as any;
-
-        // Calculate MACD/RSI for full context
-        const closes = processedData.map(d => d.close);
-        const rsiValues = calcRSI(closes, 14);
-        const macdData = calcMACD(closes);
-        
-        // Find index for the current time to get RSI/MACD
-        const dataIndex = processedData.findIndex(d => d.time === param.time);
         
         setHoverData({
           time: fullDate,
-          open: mainData?.open || mainData?.value || 0,
-          high: mainData?.high || mainData?.value || 0,
-          low: mainData?.low || mainData?.value || 0,
-          close: mainData?.close || mainData?.value || 0,
-          volume: volData?.value || 0,
-          sma: smaVal?.value || null,
-          rsi: dataIndex !== -1 ? rsiValues[dataIndex] : null,
-          macd: dataIndex !== -1 ? macdData.histogram[dataIndex] : null,
+          open: mainData?.open ?? currentItem?.open ?? 0,
+          high: mainData?.high ?? currentItem?.high ?? 0,
+          low: mainData?.low ?? currentItem?.low ?? 0,
+          close: mainData?.close ?? mainData?.value ?? currentItem?.close ?? 0,
+          volume: volData?.value ?? currentItem?.value ?? 0,
+          sma: smaVal?.value ?? null,
+          rsi: localIndic.rsi?.[dataIndex] ?? null,
+          macd: localIndic.macd?.[dataIndex]?.histogram ?? null,
         });
       }
     });
@@ -199,16 +246,50 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
     return () => {
       resizeObserver.disconnect();
-      chart.remove();
-      chartRef.current = null;
+      if (chartRef.current) {
+        chartRef.current.remove();
+        chartRef.current = null;
+      }
     };
-  }, [isDark, focusMode, chartType]);
+  }, [isDark, focusMode]); // Removed chartType from here to prevent full chart reset
 
-  // Data update effect
+  // Data & Series update effect - Separated from Chart creation to preserve state
   useEffect(() => {
-    if (!mainSeriesRef.current || !volumeSeriesRef.current || !processedData.length) return;
+    if (!chartRef.current || !processedData.length) return;
 
+    const chart = chartRef.current;
+
+    // 1. Handle Series Creation/Re-creation for type changes
     try {
+      // Remove old series if type changed
+      if (mainSeriesRef.current) {
+        chart.removeSeries(mainSeriesRef.current);
+      }
+
+      // Re-add based on current type
+      if (chartType === 'candle') {
+        mainSeriesRef.current = chart.addSeries(CandlestickSeries, {
+          upColor: '#10b981',
+          downColor: '#ef4444',
+          borderVisible: false,
+          wickUpColor: '#10b981',
+          wickDownColor: '#ef4444',
+        });
+      } else if (chartType === 'area') {
+        mainSeriesRef.current = chart.addSeries(AreaSeries, {
+          lineColor: '#6366f1',
+          topColor: 'rgba(99, 102, 241, 0.4)',
+          bottomColor: 'rgba(99, 102, 241, 0)',
+          lineWidth: 3,
+        });
+      } else {
+        mainSeriesRef.current = chart.addSeries(LineSeries, {
+          color: '#6366f1',
+          lineWidth: 3,
+        });
+      }
+
+      // 2. Refresh Data
       const uniqueData = Array.from(new Map(processedData.map(item => [item.time, item])).values());
       
       // Main series
@@ -225,31 +306,49 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
       }
 
       // Volume
-      if (showVolume) {
+      if (showVolume && volumeSeriesRef.current) {
         volumeSeriesRef.current.setData(uniqueData.map(d => ({
           time: d.time, value: d.value, color: d.color
         })));
-      } else {
+      } else if (volumeSeriesRef.current) {
         volumeSeriesRef.current.setData([]);
       }
 
       // SMA (20)
-      if (showSMA) {
+      if (showSMA && smaSeriesRef.current) {
         const closes = uniqueData.map(d => d.close);
         const smaValues = calcSMA(closes, 20);
         const smaData = uniqueData
           .map((d, i) => ({ time: d.time, value: smaValues[i] }))
           .filter(v => v.value !== null) as { time: Time, value: number }[];
-        smaSeriesRef.current?.setData(smaData);
-      } else {
-        smaSeriesRef.current?.setData([]);
+        smaSeriesRef.current.setData(smaData);
+      } else if (smaSeriesRef.current) {
+        smaSeriesRef.current.setData([]);
       }
 
-      chartRef.current?.timeScale().fitContent();
+      // 3. Intelligently handle view
+      if (!isInitializedRef.current) {
+        // Show only the last 100 bars by default for "Professional" look - much thicker bars
+        const barCount = uniqueData.length;
+        if (barCount > 100) {
+          chart.timeScale().setVisibleLogicalRange({
+            from: barCount - 100,
+            to: barCount,
+          });
+        } else {
+          chart.timeScale().fitContent();
+        }
+        isInitializedRef.current = true;
+      } else if (logicalRangeRef.current) {
+        // Restore user's previous zoom
+        chart.timeScale().setVisibleLogicalRange(logicalRangeRef.current);
+      }
+      
+      dataRef.current = uniqueData;
     } catch (err) {
-      console.warn("Failed to set chart data", err);
+      console.warn("Failed to update chart series or data", err);
     }
-  }, [processedData, chartType, showSMA, showVolume]);
+  }, [processedData, chartType, showSMA, showVolume, isDark]);
 
   return (
     <div className={safeCn(
@@ -263,30 +362,30 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
           <div className="flex items-center gap-1">
             <button 
               onClick={() => setChartType('candle')}
-              className={safeCn("p-1.5 rounded-md transition-all active:scale-90", chartType === 'candle' ? "bg-indigo-500/10 text-indigo-500" : "text-zinc-500 hover:bg-white/10")}
+              className={safeCn("p-2 rounded-md transition-all active:scale-95", chartType === 'candle' ? "bg-indigo-500/20 text-indigo-400" : "text-zinc-500 hover:bg-white/5")}
               title="K線圖"
             >
-              <BarChart3 size={15} />
+              <BarChart3 size={18} />
             </button>
             <button 
               onClick={() => setChartType('area')}
-              className={safeCn("p-1.5 rounded-md transition-all active:scale-90", chartType === 'area' ? "bg-indigo-500/10 text-indigo-500" : "text-zinc-500 hover:bg-white/10")}
+              className={safeCn("p-2 rounded-md transition-all active:scale-95", chartType === 'area' ? "bg-indigo-500/20 text-indigo-400" : "text-zinc-500 hover:bg-white/5")}
               title="面積圖"
             >
-              <TrendingUp size={15} />
+              <TrendingUp size={18} />
             </button>
           </div>
 
-          <div className="h-4 w-px bg-zinc-300/30 dark:bg-zinc-700/30 mx-1" />
+          <div className="h-4 w-px bg-zinc-300/30 dark:bg-zinc-700/30 mx-2" />
 
           {/* Indicators */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => setShowSMA(!showSMA)}
               className={safeCn(
-                "px-2 py-1 text-[9px] font-black rounded-md transition-all border shrink-0",
+                "px-3 py-1.5 text-xs font-bold rounded-md transition-all border shrink-0",
                 showSMA 
-                  ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.1)]" 
+                  ? "bg-amber-500/20 border-amber-500/40 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.1)]" 
                   : "border-zinc-200/30 dark:border-zinc-800/30 text-zinc-500 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
               )}
             >
@@ -295,13 +394,13 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
             <button 
               onClick={() => setShowVolume(!showVolume)}
               className={safeCn(
-                "px-2 py-1 text-[9px] font-black rounded-md transition-all border shrink-0",
+                "px-3 py-1.5 text-xs font-bold rounded-md transition-all border shrink-0",
                 showVolume 
-                  ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.1)]" 
+                  ? "bg-blue-500/20 border-blue-500/40 text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.1)]" 
                   : "border-zinc-200/30 dark:border-zinc-800/30 text-zinc-500 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
               )}
             >
-              VOL
+              交易量
             </button>
           </div>
         </div>
@@ -315,7 +414,7 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
 
       <div className="flex-1 relative bg-white/5 dark:bg-black/10">
         {/* Floating Timeframe Group - Integrated into Chart with Zero-Clutter Transparency */}
-        <div className="absolute top-1.5 right-1.5 z-30 flex items-center gap-0.5 p-0 overflow-hidden pointer-events-auto">
+        <div className="absolute top-2 right-2 z-30 flex items-center gap-1 p-0.5 pointer-events-auto bg-zinc-950/20 backdrop-blur-sm rounded-lg">
           {['1D', '5D', '1M', '6M', 'YTD', '1Y'].map((t) => (
             <button
               key={t}
@@ -324,10 +423,10 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
                 onTimeframeChange?.(t);
               }}
               className={safeCn(
-                "px-1 py-0 text-[10px] sm:text-[11px] font-black transition-all text-center leading-none h-4 min-w-[20px] flex items-center justify-center rounded-sm",
+                "px-2 py-1 text-[11px] font-bold transition-all text-center leading-none h-6 min-w-[28px] flex items-center justify-center rounded-md",
                 timeframe === t 
-                  ? "bg-indigo-500/80 text-white" 
-                  : "text-zinc-500/60 hover:text-white hover:bg-white/10"
+                  ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 scale-105" 
+                  : "text-zinc-400 hover:text-white hover:bg-white/10"
               )}
             >
               {t}
@@ -350,49 +449,50 @@ const ChartWidget: React.FC<Props> = ({ symbol = "AAPL", data = [], focusMode = 
         
         {/* Floating Tooltip - High Interaction */}
         {hoverData && (
-          <div className="absolute top-2 left-2 z-40 bg-zinc-950/80 backdrop-blur-md p-2 rounded-lg border border-white/10 shadow-2xl pointer-events-none flex flex-col gap-1 min-w-[140px]">
-             <div className="text-[10px] text-zinc-400 font-mono mb-1 border-b border-white/5 pb-1 uppercase tracking-tighter">
-               {hoverData.time}
+          <div className="absolute top-3 left-3 z-40 bg-zinc-950/85 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-2xl pointer-events-none flex flex-col gap-1.5 min-w-[160px] shadow-indigo-500/10">
+             <div className="text-[11px] text-zinc-400 font-bold mb-1 border-b border-white/10 pb-1.5 uppercase tracking-wide flex justify-between items-center">
+               <span>行情回放</span>
+               <span className="font-mono text-[10px] opacity-70">{hoverData.time}</span>
              </div>
-             <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                <div className="flex justify-between items-center">
-                 <span className="text-[9px] text-zinc-500 uppercase">O:</span>
-                 <span className="text-[10px] font-mono text-zinc-100">{hoverData.open.toFixed(2)}</span>
+                 <span className="text-[10px] text-zinc-500 font-bold">開:</span>
+                 <span className="text-[11px] font-mono font-bold text-zinc-100">{Number(hoverData.open ?? 0).toFixed(2)}</span>
                </div>
                <div className="flex justify-between items-center">
-                 <span className="text-[9px] text-zinc-500 uppercase">H:</span>
-                 <span className="text-[10px] font-mono text-emerald-400">{hoverData.high.toFixed(2)}</span>
+                 <span className="text-[10px] text-zinc-500 font-bold">高:</span>
+                 <span className="text-[11px] font-mono font-bold text-emerald-400">{Number(hoverData.high ?? 0).toFixed(2)}</span>
                </div>
                <div className="flex justify-between items-center">
-                 <span className="text-[9px] text-zinc-500 uppercase">L:</span>
-                 <span className="text-[10px] font-mono text-red-400">{hoverData.low.toFixed(2)}</span>
+                 <span className="text-[10px] text-zinc-500 font-bold">低:</span>
+                 <span className="text-[11px] font-mono font-bold text-rose-400">{Number(hoverData.low ?? 0).toFixed(2)}</span>
                </div>
                <div className="flex justify-between items-center">
-                 <span className="text-[9px] text-zinc-500 uppercase">C:</span>
-                 <span className="text-[10px] font-mono text-zinc-100">{hoverData.close.toFixed(2)}</span>
+                 <span className="text-[10px] text-zinc-500 font-bold">收:</span>
+                 <span className="text-[11px] font-mono font-bold text-zinc-100">{Number(hoverData.close ?? 0).toFixed(2)}</span>
                </div>
              </div>
-             <div className="flex justify-between items-center mt-1 border-t border-white/5 pt-1">
-               <span className="text-[9px] text-zinc-500 uppercase">VOL:</span>
-               <span className="text-[10px] font-mono text-zinc-300">{(hoverData.volume / 1000).toFixed(1)}K</span>
+             <div className="flex justify-between items-center mt-1 border-t border-white/10 pt-1.5">
+               <span className="text-[10px] text-zinc-500 font-bold uppercase">成交量:</span>
+               <span className="text-[11px] font-mono font-bold text-zinc-300">{(Number(hoverData.volume ?? 0) / 1000).toLocaleString('zh-TW', { maximumFractionDigits: 1 })}K</span>
              </div>
-             {hoverData.sma && (
+             {hoverData.sma !== undefined && hoverData.sma !== null && (
                <div className="flex justify-between items-center">
-                 <span className="text-[9px] text-amber-500/80 uppercase">SMA:</span>
-                 <span className="text-[10px] font-mono text-amber-400">{hoverData.sma.toFixed(2)}</span>
+                 <span className="text-[10px] text-amber-500 font-bold uppercase">SMA:</span>
+                 <span className="text-[11px] font-mono font-bold text-amber-400">{Number(hoverData.sma).toFixed(2)}</span>
                </div>
              )}
-             {hoverData.rsi && (
+             {hoverData.rsi !== undefined && hoverData.rsi !== null && (
                <div className="flex justify-between items-center">
-                 <span className="text-[9px] text-indigo-400/80 uppercase">RSI:</span>
-                 <span className="text-[10px] font-mono text-indigo-300">{hoverData.rsi.toFixed(2)}</span>
+                 <span className="text-[10px] text-indigo-400 font-bold uppercase">RSI:</span>
+                 <span className="text-[11px] font-mono font-bold text-indigo-300">{Number(hoverData.rsi).toFixed(2)}</span>
                </div>
              )}
-             {hoverData.macd !== null && (
+             {hoverData.macd !== undefined && hoverData.macd !== null && (
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] text-emerald-400/80 uppercase">MACD:</span>
-                  <span className={safeCn("text-[10px] font-mono", hoverData.macd >= 0 ? "text-emerald-400" : "text-red-400")}>
-                    {hoverData.macd.toFixed(2)}
+                  <span className="text-[10px] text-emerald-400 font-bold uppercase">MACD:</span>
+                  <span className={safeCn("text-[11px] font-mono font-bold", Number(hoverData.macd) >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                    {Number(hoverData.macd).toFixed(2)}
                   </span>
                 </div>
              )}

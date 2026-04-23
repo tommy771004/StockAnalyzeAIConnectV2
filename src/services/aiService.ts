@@ -1,7 +1,31 @@
 import { z } from 'zod';
+import { GoogleGenAI } from '@google/genai';
 import Decimal from 'decimal.js';
 import * as api from './api';
 import { Quote, HistoricalData, AIAnalysisResult, MTFResult, SentimentData, TradingStrategy, NewsItem } from '../types';
+
+// ── Gemini call ───────────────────────────────────────────────────────────────
+const ai = new GoogleGenAI({ apiKey: (process.env.GEMINI_API_KEY as string) });
+
+async function callGemini(prompt: string, model: string, jsonMode: boolean = true): Promise<string> {
+  try {
+    const response = await ai.models.generateContent({
+      model: model.includes('gemini') ? model : 'gemini-3-flash-preview',
+      contents: [{ parts: [{ text: prompt }] }],
+      config: {
+        temperature: 0.2,
+        ...(jsonMode && { responseMimeType: 'application/json' })
+      }
+    });
+
+    const text = response.text;
+    if (!text) throw new Error('Gemini response missing text content');
+    return text;
+  } catch (err: any) {
+    console.error('[aiService] Gemini error:', err);
+    throw err;
+  }
+}
 
 // ── Settings helpers ──────────────────────────────────────────────────────────
 function getSettings() {
@@ -124,7 +148,7 @@ async function callOpenRouter(
         model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.2,
-        max_tokens: 1024,
+        max_tokens: 2048,
         stream: false,
         ...(jsonMode && { response_format: { type: 'json_object' } })
       }),
@@ -181,9 +205,35 @@ async function callOpenRouter(
   return content;
 }
 
-// ── Router: Ollama vs OpenRouter ──────────────────────────────────────────────
+// ── Router: Ollama vs OpenRouter vs Gemini ──────────────────────────────────────
 async function callAI(prompt: string, model: string, jsonMode: boolean = true): Promise<string> {
-  return isOllamaModel(model) ? callOllama(prompt, model, jsonMode) : callOpenRouter(prompt, model, jsonMode);
+  const targetModel = model || 'gemini-flash-latest';
+  
+  if (isOllamaModel(targetModel)) {
+    return callOllama(prompt, targetModel, jsonMode);
+  }
+  
+  if (targetModel.includes('gemini') || targetModel === 'gemini-flash-latest') {
+    return callGemini(prompt, targetModel, jsonMode);
+  }
+
+  try {
+    return await callOpenRouter(prompt, targetModel, jsonMode);
+  } catch (err: any) {
+    const isQuotaError = err.status === 402 || 
+                        (err.message && (err.message.includes('402') || err.message.includes('Insufficient credits')));
+    
+    if (isQuotaError) {
+      console.warn(`[aiService] OpenRouter model ${targetModel} credits exhausted or 402, falling back to Gemini...`);
+      try {
+        return await callGemini(prompt, 'gemini-flash-latest', jsonMode);
+      } catch (geminiErr) {
+        console.error('[aiService] Fallback to Gemini failed:', geminiErr);
+        throw err; // Throw the original OpenRouter error if fallback also fails
+      }
+    }
+    throw err;
+  }
 }
 
 // ── Error response factories ──────────────────────────────────────────────────
@@ -272,23 +322,36 @@ function parseJSON<T>(raw: string, schema: z.ZodSchema<T>): T {
 
 // ── Validators (Zod Schemas) ──────────────────────────────────────────────────
 const AIAnalysisSchema = z.object({
-  action: z.enum(['STRONG BUY', 'BUY', 'NEUTRAL', 'SELL', 'STRONG SELL']).default('NEUTRAL'),
+  action: z.string()
+    .transform(s => s.toUpperCase())
+    .pipe(z.enum(['STRONG BUY', 'BUY', 'NEUTRAL', 'SELL', 'STRONG SELL']))
+    .catch('NEUTRAL')
+    .default('NEUTRAL'),
   reasoning: z.string().default('分析失敗'),
-  targetPrice: z.number().catch(100),
-  stopLoss: z.number().catch(90),
-  trend: z.enum(['bullish', 'bearish', 'neutral']).default('neutral'),
+  targetPrice: z.coerce.number().catch(0).default(0),
+  stopLoss: z.coerce.number().catch(0).default(0),
+  trend: z.string()
+    .transform(s => s.toLowerCase() as 'bullish' | 'bearish' | 'neutral')
+    .pipe(z.enum(['bullish', 'bearish', 'neutral']))
+    .catch('neutral')
+    .default('neutral'),
 });
 
 const MTFIndicatorSchema = z.object({
   name: z.string().default('Unknown'),
-  values: z.array(z.string()).length(3).default(['-', '-', '-']),
-  statuses: z.array(z.enum(['bullish', 'bearish', 'neutral'])).length(3).default(['neutral', 'neutral', 'neutral']),
+  values: z.array(z.string().default('-')).length(3).default(['-', '-', '-']),
+  statuses: z.array(
+    z.string()
+      .transform(s => s.toLowerCase() as 'bullish' | 'bearish' | 'neutral')
+      .pipe(z.enum(['bullish', 'bearish', 'neutral']))
+      .catch('neutral')
+  ).length(3).default(['neutral', 'neutral', 'neutral']),
 });
 
 const MTFResultSchema = z.object({
-  indicators: z.array(MTFIndicatorSchema).min(1).max(10).default([]),
+  indicators: z.array(MTFIndicatorSchema).catch([]).default([]),
   synthesis: z.string().default(''),
-  score: z.number().min(0).max(100).default(50),
+  score: z.coerce.number().min(0).max(100).catch(50).default(50),
   overallTrend: z.string().default('中性'),
 });
 
@@ -296,17 +359,27 @@ const TradingStrategySchema = z.object({
   strategy: z.string().default('分析失敗'),
   entry: z.string().default('N/A'),
   exit: z.string().default('N/A'),
-  riskLevel: z.enum(['low', 'medium', 'high', 'N/A']).default('medium'),
-  confidence: z.number().min(0).max(100).default(0),
+  riskLevel: z.string()
+    .transform(s => {
+      const v = s.toUpperCase();
+      if (v === 'LOW') return 'low';
+      if (v === 'MEDIUM') return 'medium';
+      if (v === 'HIGH') return 'high';
+      return 'N/A';
+    })
+    .pipe(z.enum(['low', 'medium', 'high', 'N/A']))
+    .catch('N/A')
+    .default('N/A'),
+  confidence: z.coerce.number().min(0).max(100).catch(0).default(0),
 });
 
 const SentimentDataSchema = z.object({
   overall: z.string().default('中立 (Neutral)'),
-  score: z.number().min(0).max(100).default(50),
+  score: z.coerce.number().min(0).max(100).catch(50).default(50),
   vixLevel: z.string().default('N/A'),
   putCallRatio: z.string().default('N/A'),
   marketBreadth: z.string().default('N/A'),
-  keyDrivers: z.array(z.string()).default([]),
+  keyDrivers: z.array(z.string()).catch([]).default([]),
   aiAdvice: z.string().default(''),
 });
 
@@ -361,7 +434,7 @@ export async function analyzeStock(
   ticker: string,
   quoteData: Partial<Quote>,
   historicalData: HistoricalData[],
-  model = 'openai/gpt-4o-mini',
+  model = 'gemini-flash-latest',
   systemInstruction = ''
 ): Promise<AIAnalysisResult | null> {
   try {
@@ -374,10 +447,10 @@ export async function analyzeStock(
   } catch (err: unknown) {
     const price = quoteData?.regularMarketPrice ?? 100;
     const kind = classifyError(err);
-    if (kind === 'missing') return errAnalysis(price, '⚠️ OpenRouter API Key 未設定。請至「系統設定」輸入 Key，或勾選 Ollama 本地模式。');
+    if (kind === 'missing') return errAnalysis(price, '⚠️ AI 服務未設定。請檢查配置。');
     if (kind === 'unauth') return errAnalysis(price, '⚠️ API Key 無效（401 Unauthorized）。');
-    if (kind === 'quota') return errAnalysis(price, '⚠️ AI 服務達配額限制，請稍後再試。');
-    if (kind === 'network') return errAnalysis(price, '⚠️ 網路連線失敗或 AI 服務被阻擋。請檢查網路狀態或 API Proxy 設定。');
+    if (kind === 'quota') return errAnalysis(price, '⚠️ AI 服務達配額限制或點數不足，請檢查配置。');
+    if (kind === 'network') return errAnalysis(price, '⚠️ 網路連線失敗或 AI 服務被阻擋。請檢查網路狀態。');
     console.error('analyzeStock:', err);
     return errAnalysis(price, 'AI 回傳格式不符，已套用預設值');
   }
@@ -427,7 +500,7 @@ export async function chatWithAI(
   ticker: string,
   quoteData: Partial<Quote>,
   historicalData: HistoricalData[],
-  model = 'openai/gpt-4o-mini',
+  model = 'gemini-flash-latest',
   systemInstruction = ''
 ): Promise<AIChatResponse | null> {
   try {
@@ -442,9 +515,9 @@ export async function chatWithAI(
     }
   } catch (err: unknown) {
     const kind  = classifyError(err);
-    if (kind === 'missing') return { message: '⚠️ OpenRouter API Key 未設定。請至「系統設定」輸入 Key，或勾選 Ollama 本地模式。' };
-    if (kind === 'unauth')  return { message: '⚠️ API Key 無效（401 Unauthorized）。' };
-    if (kind === 'quota')   return { message: '⚠️ AI 服務達配額限制，請稍後再試。' };
+    if (kind === 'missing') return { message: '⚠️ AI 服務未設定。' };
+    if (kind === 'unauth')  return { message: '⚠️ API Key 無效。' };
+    if (kind === 'quota')   return { message: '⚠️ AI 服務達配額限制或點數不足。' };
     console.error('chatWithAI:', err);
     return { message: '分析失敗，請稍後再試' };
   }
@@ -473,7 +546,7 @@ JSON:
 
 export async function analyzeMTF(
   ticker: string, data1h: HistoricalData[], data1d: HistoricalData[], data1wk: HistoricalData[],
-  model = 'openai/gpt-4o-mini',
+  model = 'gemini-flash-latest',
   systemInstruction = ''
 ): Promise<MTFResult | null> {
   try {
@@ -513,7 +586,7 @@ export async function getTradingStrategy(
   ticker: string,
   aiAnalysis: AIAnalysisResult,
   mtfAnalysis: MTFResult,
-  model = 'openai/gpt-4o-mini',
+  model = 'gemini-flash-latest',
   systemInstruction = ''
 ): Promise<TradingStrategy> {
   try {
@@ -542,7 +615,7 @@ JSON:
 {"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"string","putCallRatio":"string","marketBreadth":"string","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
 }
 
-export async function analyzeSentiment(marketData: Partial<Quote>[], model = 'openai/gpt-4o-mini', systemInstruction = ''): Promise<SentimentData | null> {
+export async function analyzeSentiment(marketData: Partial<Quote>[], model = 'gemini-flash-latest', systemInstruction = ''): Promise<SentimentData | null> {
   const vix = String(marketData?.find((d) => d?.symbol === '^VIX')?.regularMarketPrice?.toFixed(2) ?? 'N/A');
   try {
     const prompt = buildSentimentPrompt(marketData, systemInstruction);
@@ -573,7 +646,7 @@ JSON:
 {"overall":"樂觀 (Bullish)|悲觀 (Bearish)|中立 (Neutral)","score":0-100,"vixLevel":"N/A","putCallRatio":"N/A","marketBreadth":"N/A","keyDrivers":["Traditional Chinese x3"],"aiAdvice":"Traditional Chinese"}`;
 }
 
-export async function analyzeNewsSentiment(news: NewsItem[], model = 'openai/gpt-4o-mini', systemInstruction = ''): Promise<SentimentData | null> {
+export async function analyzeNewsSentiment(news: NewsItem[], model = 'gemini-flash-latest', systemInstruction = ''): Promise<SentimentData | null> {
   try {
     const prompt = buildNewsSentimentPrompt(news, systemInstruction);
     const raw = await callAI(prompt, model);

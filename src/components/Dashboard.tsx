@@ -238,27 +238,27 @@ export default function Dashboard({
     const sma20Arr = calcSMA(closes, 20);
     const sma50Arr = calcSMA(closes, 50);
 
-    const rsi = rsiArr.at(-1);
-    const macd = macdArr.at(-1);
-    const sma20 = sma20Arr.at(-1);
-    const sma50 = sma50Arr.at(-1);
-    const currentPrice = quote?.regularMarketPrice ?? closes.at(-1) ?? 0;
+    const rsi = rsiArr?.at(-1);
+    const macd = macdArr?.at(-1);
+    const sma20 = sma20Arr?.at(-1);
+    const sma50 = sma50Arr?.at(-1);
+    const currentPrice = quote?.regularMarketPrice ?? closes?.at(-1) ?? 0;
 
     // Simple strategy logic
     let score = 0;
-    if (rsi !== undefined) {
+    if (rsi !== undefined && rsi !== null) {
       if (rsi < 30) score += 2;
       else if (rsi < 40) score += 1;
       else if (rsi > 70) score -= 2;
       else if (rsi > 60) score -= 1;
     }
-    if (macd?.histogram !== undefined) {
+    if (macd?.histogram !== undefined && macd?.histogram !== null) {
       if (macd.histogram > 0) score += 1;
       else if (macd.histogram < 0) score -= 1;
     }
     if (sma20 && sma50) {
-      if (currentPrice > sma20 && sma20 > sma50) score += 2;
-      else if (currentPrice < sma20 && sma20 < sma50) score -= 2;
+      if (currentPrice > (sma20 ?? 0) && (sma20 ?? 0) > (sma50 ?? 0)) score += 2;
+      else if (currentPrice < (sma20 ?? 0) && (sma20 ?? 0) < (sma50 ?? 0)) score -= 2;
     }
 
     const suggestion =
@@ -394,136 +394,133 @@ export default function Dashboard({
           <div className="shrink-0">
             <PerformanceSummary trades={recentTrades} />
           </div>
-          {/* Chart Widget */}
-          <div
-            className={cn(
-              "flex flex-col flex-1 liquid-glass-strong rounded-[2rem] border border-zinc-800 bg-zinc-900/50 overflow-hidden",
-              compact ? "p-0.5" : "p-1",
-            )}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/[0.03] to-transparent pointer-events-none" />
             <div
               className={cn(
-                "flex items-center justify-between mb-4 md:mb-6 relative z-10 flex-wrap gap-3",
-                compact ? "p-3" : "p-4 md:p-6",
+                "flex flex-col flex-1 min-h-[450px] md:min-h-[600px] liquid-glass-strong rounded-[2.5rem] border border-zinc-800 bg-zinc-950/40 overflow-hidden shadow-2xl relative",
+                compact ? "p-0.5" : "p-1.5",
               )}
             >
-              <div className="flex items-center gap-3 md:gap-6 min-w-0">
-                <div
-                  className={cn(
-                    "rounded-2xl bg-zinc-800 flex items-center justify-center border border-zinc-700 shrink-0",
-                    compact ? "w-10 h-10" : "w-12 h-12 md:w-16 md:h-16",
-                  )}
-                >
-                  <Zap
-                    className={cn(
-                      "text-emerald-400",
-                      compact ? "w-5 h-5" : "w-6 h-6 md:w-8 md:h-8",
-                    )}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <h3
-                    className={cn(
-                      "font-black text-zinc-100 tracking-tighter truncate",
-                      compact ? "text-lg" : "text-xl md:text-2xl",
-                    )}
-                  >
-                    {quote?.shortName || symbol}
-                  </h3>
-                  <p className="text-zinc-500 text-xs md:text-sm font-bold truncate">
-                    {quote?.longName || symbol}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => {}}
-                  disabled={fetchStatus === "refreshing"}
-                  aria-label={
-                    fetchStatus === "refreshing"
-                      ? "資料更新中…"
-                      : "重新整理資料"
-                  }
-                  className={cn(
-                    "rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 transition-colors press-feedback shrink-0",
-                    compact ? "p-2" : "p-2 md:p-3",
-                  )}
-                >
-                  <Loader2
-                    aria-hidden="true"
-                    className={cn(
-                      "w-5 h-5",
-                      fetchStatus === "refreshing" && "animate-spin",
-                    )}
-                  />
-                </button>
-
-                {fetchStatus === "refreshing" && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">
-                      背景更新中
-                    </span>
-                  </motion.div>
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] to-transparent pointer-events-none" />
+              <div
+                className={cn(
+                  "flex items-center justify-between relative z-10 flex-wrap gap-4 border-b border-white/5",
+                  compact ? "p-4" : "p-5 md:p-7",
                 )}
-
-                <button
-                  type="button"
-                  onClick={(e) => {}}
-                  className={cn(
-                    "rounded-xl bg-emerald-950/30 border border-emerald-900/50 text-emerald-400 hover:bg-emerald-900/40 transition press-feedback font-black text-xs uppercase tracking-widest shrink-0",
-                    compact ? "px-3 py-1.5" : "px-4 py-2 md:px-5 md:py-2.5",
-                  )}
-                >
-                  匯出 CSV
-                </button>
-              </div>
-              <div className="text-right">
-                <div
-                  className={cn(
-                    "font-mono font-black text-zinc-100 tracking-tighter",
-                    compact ? "text-2xl" : "text-3xl",
-                  )}
-                >
-                  {quote ? quote.regularMarketPrice?.toFixed(2) : "---"}
-                </div>
-                {quote && (
+              >
+                <div className="flex items-center gap-4 md:gap-8 min-w-0">
                   <div
                     className={cn(
-                      "text-sm font-mono font-black flex items-center justify-end",
-                      isUp ? "text-emerald-400" : "text-rose-400",
+                      "rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner group",
+                      compact ? "w-12 h-12" : "w-14 h-14 md:w-20 md:h-20",
                     )}
                   >
-                    {isUp ? (
-                      <TrendingUp aria-hidden="true" className="w-4 h-4 mr-1" />
-                    ) : (
-                      <TrendingDown
-                        aria-hidden="true"
-                        className="w-4 h-4 mr-1"
-                      />
-                    )}
-                    {(quote.regularMarketChange ?? 0) > 0 ? "+" : ""}
-                    {(quote.regularMarketChange ?? 0).toFixed(2)} (
-                    {quote.regularMarketChangePercent?.toFixed(2)}%)
+                    <Zap
+                      className={cn(
+                        "text-indigo-400 group-hover:scale-110 transition-transform duration-500",
+                        compact ? "w-6 h-6" : "w-7 h-7 md:w-10 md:h-10",
+                      )}
+                    />
                   </div>
-                )}
+                  <div className="min-w-0">
+                    <h3
+                      className={cn(
+                        "font-black text-white tracking-tighter truncate filter drop-shadow-md",
+                        compact ? "text-xl" : "text-2xl md:text-4xl",
+                      )}
+                    >
+                      {quote?.shortName || symbol}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-zinc-400 text-xs md:text-base font-bold truncate opacity-80">
+                        {quote?.longName || symbol}
+                      </p>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 text-zinc-500 border border-zinc-700/50">
+                        {symbol}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => fetchData(true)}
+                      disabled={fetchStatus === "refreshing"}
+                      className={cn(
+                        "rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-lg",
+                        compact ? "p-2.5" : "p-3 md:p-4",
+                      )}
+                    >
+                      <Loader2
+                        className={cn(
+                          "w-6 h-6",
+                          fetchStatus === "refreshing" && "animate-spin text-indigo-400",
+                        )}
+                      />
+                    </button>
+
+                    {fetchStatus === "refreshing" && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="hidden md:flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                        <span className="text-xs font-black text-indigo-400 uppercase tracking-widest leading-none">
+                          Real-time
+                        </span>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-right flex flex-col justify-center">
+                  <div
+                    className={cn(
+                      "font-mono font-black text-white tracking-tighter leading-none mb-1",
+                      compact ? "text-3xl" : "text-4xl md:text-6xl",
+                    )}
+                  >
+                    {quote ? quote.regularMarketPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 }) : "---"}
+                  </div>
+                  {quote && (
+                    <div
+                      className={cn(
+                        "text-base md:text-xl font-mono font-black flex items-center justify-end gap-2",
+                        isUp ? "text-emerald-400" : "text-rose-400",
+                      )}
+                    >
+                      <div className={cn(
+                        "px-2 py-0.5 rounded-lg flex items-center",
+                        isUp ? "bg-emerald-500/10" : "bg-rose-500/10"
+                      )}>
+                        {isUp ? (
+                          <TrendingUp className="w-5 h-5 mr-1" />
+                        ) : (
+                          <TrendingDown className="w-5 h-5 mr-1" />
+                        )}
+                        <span>
+                          {(quote.regularMarketChange ?? 0) > 0 ? "+" : ""}
+                          {(quote.regularMarketChange ?? 0).toFixed(2)}
+                        </span>
+                      </div>
+                      <span className="opacity-80">
+                        ({quote.regularMarketChangePercent?.toFixed(2)}%)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 w-full relative z-10">
+                <MemoizedChartWidget
+                  data={historicalData}
+                  symbol={symbol}
+                  onTimeframeChange={(t) => {
+                    setTimeframe(t);
+                    fetchData(true, t);
+                  }}
+                />
               </div>
             </div>
-            <div className="flex-1 w-full h-full relative z-10">
-              <MemoizedChartWidget
-                data={historicalData}
-                symbol={symbol}
-                onTimeframeChange={(t) => {
-                  setTimeframe(t);
-                  fetchData(true, t);
-                }}
-              />
-            </div>
-          </div>
 
           {/* Technical Indicators Grid - Compact */}
           <div className="-mx-4 px-4 md:mx-0 md:px-0">
@@ -663,22 +660,17 @@ export default function Dashboard({
                   <span
                     className={cn(
                       "font-bold",
-                      aiAnalysis.action === "BUY" ||
-                        aiAnalysis.action === "STRONG BUY"
+                      (aiAnalysis.action?.toUpperCase()?.includes("BUY"))
                         ? "text-emerald-400"
-                        : aiAnalysis.action === "SELL" ||
-                            aiAnalysis.action === "STRONG SELL"
+                        : (aiAnalysis.action?.toUpperCase()?.includes("SELL"))
                           ? "text-rose-400"
                           : "text-yellow-400",
                     )}
                   >
-                    {aiAnalysis.action === "BUY" ||
-                    aiAnalysis.action === "STRONG BUY"
-                      ? "買進"
-                      : aiAnalysis.action === "SELL" ||
-                          aiAnalysis.action === "STRONG SELL"
-                        ? "賣出"
-                        : "觀望"}
+                    {aiAnalysis.action === "STRONG BUY" ? "強力買進" :
+                     aiAnalysis.action === "BUY" ? "買進" :
+                     aiAnalysis.action === "STRONG SELL" ? "強力賣出" :
+                     aiAnalysis.action === "SELL" ? "賣出" : "觀望"}
                   </span>
                 </div>
                 {aiAnalysis.reasoning && (
@@ -686,6 +678,20 @@ export default function Dashboard({
                     {aiAnalysis.reasoning}
                   </p>
                 )}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px]">
+                  <div className="flex items-center gap-1 text-slate-500">
+                    <span>目標:</span>
+                    <span className="text-emerald-400 font-mono">
+                      {aiAnalysis.targetPrice?.toFixed(2) ?? "0.00"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-slate-500">
+                    <span>停損:</span>
+                    <span className="text-rose-400 font-mono">
+                      {aiAnalysis.stopLoss?.toFixed(2) ?? "0.00"}
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : (
               <p className="text-xs text-slate-500">載入報價後自動分析</p>
@@ -816,15 +822,15 @@ function IndicatorCard({
   label: string;
 }) {
   return (
-    <div className="liquid-glass-strong rounded-[2rem] p-6 border border-zinc-800 bg-zinc-900/50 flex flex-col justify-between relative overflow-hidden transition">
-      <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/[0.03] to-transparent pointer-events-none" />
-      <div className="text-xs text-zinc-500 font-black uppercase tracking-widest mb-3 relative z-10">
+    <div className="liquid-glass-strong rounded-[2.5rem] p-7 border border-zinc-800 bg-zinc-950/40 flex flex-col justify-between relative overflow-hidden transition group hover:border-indigo-500/30 hover:bg-zinc-950/60 shadow-xl">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.02] to-transparent pointer-events-none" />
+      <div className="text-xs md:text-sm text-zinc-500 font-bold uppercase tracking-[0.2em] mb-4 relative z-10 opacity-70">
         {title}
       </div>
       <div className="relative z-10">
         <div
           className={cn(
-            "text-4xl font-black mb-1.5 tracking-tighter",
+            "text-4xl md:text-5xl font-black mb-2 tracking-tighter filter drop-shadow-sm",
             status === "bullish" && "text-emerald-400",
             status === "bearish" && "text-rose-400",
             status === "neutral" && "text-amber-400",
@@ -832,7 +838,7 @@ function IndicatorCard({
         >
           {value}
         </div>
-        <div className="text-xs text-zinc-600 font-black uppercase tracking-widest">
+        <div className="text-[10px] md:text-xs text-zinc-500 font-bold uppercase tracking-widest bg-zinc-800/20 w-fit px-2 py-0.5 rounded border border-white/5">
           {label}
         </div>
       </div>

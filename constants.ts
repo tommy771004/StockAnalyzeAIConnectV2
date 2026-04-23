@@ -1,6 +1,7 @@
 export const IS_AI_ENABLED = true;
 
 export const MODELS = [
+  {id:'gemini-flash-latest',               label:'✨ Gemini 1.5 Flash (穩定/免費)'},
   {id:'openai/gpt-4o-mini',                  label:'GPT-4o Mini'},
   {id:'anthropic/claude-3.5-sonnet',         label:'Claude 3.5 Sonnet'},
   {id:'anthropic/claude-3-haiku',            label:'Claude 3 Haiku'},
