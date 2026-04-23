@@ -4,27 +4,26 @@ import Decimal from 'decimal.js';
 import * as api from './api';
 import { Quote, HistoricalData, AIAnalysisResult, MTFResult, SentimentData, TradingStrategy, NewsItem } from '../types';
 
-// ── Gemini call ───────────────────────────────────────────────────────────────
-const ai = new GoogleGenAI({ apiKey: (process.env.GEMINI_API_KEY as string) });
-
+// ── Gemini call (Server-side proxy) ──────────────────────────────────────────
 async function callGemini(prompt: string, model: string, jsonMode: boolean = true): Promise<string> {
-  try {
-    const response = await ai.models.generateContent({
-      model: model.includes('gemini') ? model : 'gemini-3-flash-preview',
-      contents: [{ parts: [{ text: prompt }] }],
-      config: {
-        temperature: 0.2,
-        ...(jsonMode && { responseMimeType: 'application/json' })
-      }
-    });
+  const token = localStorage.getItem('auth_token');
+  const res = await fetch('/api/ai/call', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` 
+    },
+    body: JSON.stringify({ prompt, model, jsonMode }),
+  });
 
-    const text = response.text;
-    if (!text) throw new Error('Gemini response missing text content');
-    return text;
-  } catch (err: any) {
-    console.error('[aiService] Gemini error:', err);
-    throw err;
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.error || 'Gemini call failed');
   }
+
+  const data = await res.json();
+  if (!data.text) throw new Error('Gemini response missing text content');
+  return data.text;
 }
 
 // ── Settings helpers ──────────────────────────────────────────────────────────

@@ -411,6 +411,32 @@ app.use(express.json());
     });
   });
 
+  // --- AI Analysis ---
+  app.post('/api/ai/call', authMiddleware, async (req: AuthRequest, res) => {
+    const { prompt, model, jsonMode } = req.body;
+    if (!prompt) { res.status(400).json({ error: 'prompt required' }); return; }
+    try {
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+      
+      const response = await ai.models.generateContent({
+        model: model?.includes('gemini') ? model : 'gemini-3-flash-preview',
+        contents: [{ parts: [{ text: prompt }] }],
+        config: {
+          temperature: 0.2,
+          ...(jsonMode && { responseMimeType: 'application/json' })
+        }
+      });
+      
+      const text = response.text;
+      if (!text) throw new Error('Gemini response missing');
+      res.json({ text });
+    } catch (e: any) {
+      console.error('[API] AI Analyze error:', e);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // ── Auth ────────────────────────────────────────────────────────────────────
   app.post('/api/auth/register', async (req, res) => {
     const { email, password, name } = req.body ?? {};
