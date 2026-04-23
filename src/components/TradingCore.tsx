@@ -38,7 +38,7 @@ interface Props {
 const EMPTY_WATCHLIST: WatchlistItem[] = [];
 
 export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktest, isLandscape, focusMode: propFocusMode }: Props) {
-  const { settings } = useSettings();
+  const { settings, format } = useSettings();
   const compact = Boolean(settings.compactMode);
   const [tab, setTab] = useState<'news' | 'calendar' | 'mtf'>('news');
   
@@ -240,20 +240,20 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
           {/* Portfolio Summary Group */}
           <div className="flex flex-col gap-3">
              <div className="px-4">
-                <span className="text-[9px] md:text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] md:tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>資產概覽 ASSET OVERVIEW</span>
+                <span className="text-heading-xs text-zinc-500">{compact ? '概覽' : '資產概覽 ASSET OVERVIEW'}</span>
              </div>
              <div className={safeCn("glass-card border border-white/5 rounded-3xl shadow-2xl relative overflow-hidden group", compact ? "p-4" : "p-6")}>
                 <div className="absolute inset-0 bg-indigo-500/[0.03] pointer-events-none group-hover:bg-indigo-500/[0.05] transition-colors" />
                 <div className="relative z-10 flex flex-col">
-                  <div className="label-meta font-black text-zinc-600 uppercase tracking-widest mb-2 text-[9px] md:text-[10px]">當前權益 EQUITY</div>
+                  <div className="label-meta font-black text-zinc-600 uppercase tracking-widest mb-2 text-data-xs">當前權益 EQUITY</div>
                   <div className={safeCn("font-black text-white tracking-tighter tabular-nums flex items-baseline gap-2", compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
                     <span className="text-xs sm:text-sm opacity-30 font-medium">NT$</span>
-                    {portfolio.length > 0 ? portfolioValue.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+                    {portfolio.length > 0 ? format.number(portfolioValue, 0) : '0'}
                   </div>
                   {portfolio.length > 0 && (
                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
                       <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-indigo-500 animate-pulse" />
-                      <span className="text-[8px] md:text-[10px] font-black text-zinc-500 uppercase tracking-widest">{portfolio.length} 筆活動委託 ACTIVE ORDERS</span>
+                      <span className="text-data-xs font-black text-zinc-500 uppercase tracking-widest">{portfolio.length} 筆活動委託 ACTIVE ORDERS</span>
                     </div>
                   )}
                 </div>
@@ -340,7 +340,7 @@ export default function TradingCore({ model, symbol, onSymbolChange, onGoBacktes
                <div className="lg:hidden grid grid-cols-2 gap-2 px-1">
                  {technicalSummary?.map((s) => (
                    <div key={s.label} className="glass-card p-4 border border-white/5 bg-white/[0.02] rounded-2xl flex flex-col gap-1">
-                     <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">{s.label}</span>
+                     <span className="text-data-xs font-black text-zinc-600 uppercase tracking-widest">{s.label}</span>
                      <span className={safeCn(
                        "text-base font-black tabular-nums tracking-tighter",
                        s.status === 'bullish' ? 'text-emerald-400' : s.status === 'bearish' ? 'text-rose-400' : 'text-zinc-300'

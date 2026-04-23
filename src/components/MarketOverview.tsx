@@ -22,6 +22,7 @@ import * as api from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from './PullToRefreshIndicator';
+import * as formatters from '../utils/formatters';
 import { Quote, NewsItem, WatchlistItem, SentimentData } from '../types';
 import { analyzeNewsSentiment } from '../services/aiService';
 
@@ -85,8 +86,8 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
             <idx.icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
           </div>
           <div className="min-w-0">
-            <div className="text-[9px] min-[400px]:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.25em] text-zinc-500 mb-0.5" style={{ fontFamily: 'var(--font-heading)' }}>{idx.name}</div>
-            <div className="text-[8px] min-[400px]:text-[9px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] opacity-40 tabular-nums" style={{ fontFamily: 'var(--font-data)' }}>{idx.symbol}</div>
+            <div className="text-heading-xs text-zinc-500 mb-0.5">{idx.name}</div>
+            <div className="text-data-xs opacity-40 tabular-nums">{idx.symbol}</div>
           </div>
         </div>
         <div className="w-16 h-8 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity">
@@ -109,14 +110,14 @@ const IndexCard = memo(({ idx, compact, onSelect }: { idx: MarketIndex; compact:
       <div className="flex items-end justify-between relative z-10">
         <div className="flex flex-col">
           <div className="text-lg sm:text-xl md:text-2xl font-black tabular-nums tracking-tighter text-white" style={{ fontFamily: 'var(--font-data)' }}>
-            {idx.price ? idx.price.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '---'}
+            {idx.price != null ? formatters.formatPrice(idx.price, 'USD') : '---'}
           </div>
           <div className={safeCn(
-            "flex items-center gap-1.5 mt-1 text-[9px] md:text-[10px] font-black uppercase tracking-widest",
+            "flex items-center gap-1.5 mt-1 text-data-xs font-black uppercase tracking-widest",
             isUp ? "text-rose-400" : "text-emerald-400"
-          )} style={{ fontFamily: 'var(--font-data)' }}>
+          )}>
             <span className="opacity-40">{isUp ? <TrendingUp size={9} strokeWidth={3}/> : <TrendingDown size={9} strokeWidth={3}/>}</span>
-            {isUp ? '+' : ''}{idx.changePct ? idx.changePct.toFixed(2) : '0.00'}%
+            {formatters.formatPercent(idx.changePct)}
           </div>
         </div>
       </div>
@@ -165,13 +166,13 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
 
       <div className="text-2xl md:text-3xl font-black tabular-nums tracking-tighter relative z-10 mb-4 sm:mb-6"
         style={{ color: isUp ? '#fb7185' : '#34d399', fontFamily: 'var(--font-data)' }}>
-        {s.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        {formatters.formatPrice(s.price, s.symbol.includes('.TW') ? 'TWD' : 'USD')}
       </div>
 
-      <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.15em] font-black opacity-30 border-t border-white/5 pt-4 relative z-10" style={{ fontFamily: 'var(--font-data)' }}>
+      <div className="flex items-center gap-3 text-data-xs uppercase tracking-[0.15em] font-black opacity-30 border-t border-white/5 pt-4 relative z-10">
         <div className="flex-1 flex justify-between">
-          <div className="flex items-center gap-2"><span>BID</span><span className="text-white opacity-100">{s.bid.toFixed(2)}</span></div>
-          <div className="flex items-center gap-2"><span>ASK</span><span className="text-white opacity-100">{s.ask.toFixed(2)}</span></div>
+          <div className="flex items-center gap-2"><span>BID</span><span className="text-white opacity-100">{formatters.formatPrice(s.bid, s.symbol.includes('.TW') ? 'TWD' : 'USD')}</span></div>
+          <div className="flex items-center gap-2"><span>ASK</span><span className="text-white opacity-100">{formatters.formatPrice(s.ask, s.symbol.includes('.TW') ? 'TWD' : 'USD')}</span></div>
         </div>
       </div>
     </div>
@@ -181,7 +182,7 @@ const WatchlistStockCard = memo(({ s, isSelected, onSelect, onRemove }: {
 WatchlistStockCard.displayName = 'WatchlistStockCard';
 
 export default function MarketOverview({ onSelectSymbol }: Props) {
-  const { settings } = useSettings();
+  const { settings, format } = useSettings();
   const compact = Boolean(settings.compactMode);
 
   // ── 狀態管理 ──
@@ -619,16 +620,16 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                     )}
                     {posInfo.totalVal > 0 && (
                       <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
-                        <div className="text-[10px] font-black text-indigo-400/50 uppercase tracking-widest mb-2">投資組合效益 ASSET PERFORMANCE</div>
+                        <div className="text-data-xs font-black text-indigo-400/50 uppercase tracking-widest mb-2">投資組合效益 ASSET PERFORMANCE</div>
                         <div className={cn("text-sm font-mono font-black tracking-tighter", posInfo.plVal >= 0 ? "text-rose-400" : "text-emerald-400")}>
-                          {posInfo.plVal >= 0 ? '+' : ''}{posInfo.plVal.toLocaleString(undefined, { maximumFractionDigits: 0 })} TWD ({posInfo.plPct >= 0 ? '+' : ''}{posInfo.plPct.toFixed(2)}%)
+                          {posInfo.plVal >= 0 ? '+' : ''}{format.number(posInfo.plVal, 0)} TWD {format.percent(posInfo.plPct)}
                         </div>
                       </div>
                     )}
                     {aiSummary && (
                       <div className="bg-black/30 p-4 rounded-2xl border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors">
-                        <div className="text-[10px] font-black text-indigo-400/50 uppercase tracking-widest mb-2">市場情緒摘要 SENTIMENT SUMMARY</div>
-                        <div className="text-xs font-medium leading-relaxed opacity-80 line-clamp-2 italic">"{aiSummary.aiAdvice}"</div>
+                        <div className="text-data-xs font-black text-indigo-400/50 uppercase tracking-widest mb-2">市場情緒摘要 SENTIMENT SUMMARY</div>
+                        <div className="text-body-xs font-medium leading-relaxed opacity-80 line-clamp-2 italic">"{aiSummary.aiAdvice}"</div>
                       </div>
                     )}
                   </>
@@ -802,9 +803,9 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="text-xs font-mono font-bold" style={{ color: 'var(--md-on-surface)', fontFamily: 'var(--font-data)' }}>{t.price?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '---'}</div>
-                    <div className="text-[10px] font-black font-mono px-1.5 py-0.5 rounded mt-1" style={{ background: 'rgba(0,0,0,0.4)', color: isUp ? 'var(--color-up)' : 'var(--color-down)' }}>
-                      {isUp ? '+' : ''}{(t.changePct || 0).toFixed(2)}%
+                    <div className="text-data-xs font-mono font-bold" style={{ color: 'var(--md-on-surface)' }}>{format.price(t.price, t.symbol.includes('.TW') ? 'TWD' : 'USD')}</div>
+                    <div className="text-data-xs font-black font-mono px-1.5 py-0.5 rounded mt-1" style={{ background: 'rgba(0,0,0,0.4)', color: isUp ? 'var(--color-up)' : 'var(--color-down)' }}>
+                      {format.percent(t.changePct)}
                     </div>
                   </div>
                 </div>
@@ -872,14 +873,14 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   <h3 className="text-lg md:text-sm font-bold" style={{ color: 'var(--md-on-surface)' }}>快速委託</h3>
                   <div className="text-xs" style={{ color: 'var(--md-outline)' }}>{selected.symbol}</div>
                 </div>
-                <button type="button" onClick={(e) => {}} className="p-2 md:p-1 rounded-full hover:bg-zinc-800 text-zinc-400">
+                <button type="button" onClick={() => setShowOrder(false)} className="p-2 md:p-1 rounded-full hover:bg-zinc-800 text-zinc-400">
                   <X size={18} className="md:w-3.5 md:h-3.5" />
                 </button>
               </div>
 
               <div className="flex gap-2 md:gap-1.5 mb-5 md:mb-4">
                 {(['buy', 'sell'] as const).map(s => (
-                  <button type="button" key={s} onClick={(e) => {}}
+                  <button type="button" key={s} onClick={() => setOSide(s)}
                     className={cn('flex-1 py-3 md:py-2 rounded-xl text-base md:text-sm font-bold transition-colors')}
                     style={oSide === s
                       ? (s === 'buy' ? { background: 'var(--color-up)', color: '#fff' } : { background: 'var(--color-down)', color: '#fff' })
@@ -923,9 +924,9 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                   </select>
                 </div>
 
-                <div className="flex justify-between text-sm md:text-xs py-1">
+                <div className="flex justify-between text-data-xs py-1">
                   <span className="text-zinc-400">現價</span>
-                  <span className="font-mono font-bold text-lg md:text-base" style={{ color: up(selected) ? 'var(--color-up)' : 'var(--color-down)', fontFamily: 'var(--font-data)' }}>{selected.price.toFixed(2)}</span>
+                  <span className="font-mono font-bold text-lg md:text-base" style={{ color: up(selected) ? 'var(--color-up)' : 'var(--color-down)' }}>{format.price(selected.price, selected.symbol.includes('.TW') ? 'TWD' : 'USD')}</span>
                 </div>
 
                 <div>
@@ -935,14 +936,15 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
                     style={{ background: 'var(--md-surface-container)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface)' }}/>
                 </div>
 
-                <div className="flex justify-between text-sm md:text-xs pt-2 border-t border-zinc-800">
+                <div className="flex justify-between text-data-xs pt-2 border-t border-zinc-800">
                   <span className="text-zinc-400">預估金額</span>
                   <span className="text-zinc-100 font-mono text-lg md:text-base">
-                    ${new Decimal(selected.price).times(oQty).toNumber().toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    {format.currency(new Decimal(selected.price).times(oQty).toNumber(), selected.symbol.includes('.TW') ? 'TWD' : 'USD')}
                   </span>
                 </div>
 
-                <button type="button" onClick={(e) => {}} className="w-full py-4 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700">
+                <button type="button" onClick={executeTrade} disabled={busy} className="w-full py-4 rounded-xl text-white font-bold bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50">
+                  {busy ? <Loader2 className="animate-spin inline mr-2" size={14}/> : null}
                   確認{oSide === 'buy' ? '買進' : '賣出'}
                 </button>
               </div>
@@ -950,7 +952,7 @@ export default function MarketOverview({ onSelectSymbol }: Props) {
           </>
         )}
 
-        <button type="button" onClick={(e) => {}}
+        <button type="button" onClick={() => setShowOrder(true)}
           className="flex items-center gap-2 px-5 py-3 md:py-2.5 font-bold rounded-full transition text-base md:text-sm hover:scale-105 active:scale-95"
           style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)', boxShadow: '0 0 20px rgba(128,131,255,0.35)' }}>
           <Zap size={18} className="md:w-4 md:h-4"/> <span className="hidden xs:inline">快速委託</span>

@@ -111,22 +111,21 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
               compact ? 'text-lg md:text-xl' : 'text-xl md:text-2xl', 
               flashDir === 'up' ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : flashDir === 'down' ? 'text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.8)]' : isActive ? 'text-indigo-300' : 'text-white'
             )} style={{ fontFamily: 'var(--font-data)' }}>
-              {safeN(w.price)}
+              {w.price?.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) ?? '—'}
             </div>
             
             <div className={safeCn(
-              'font-black tabular-nums flex items-center gap-1.5 leading-none', 
-              compact ? 'text-[9px]' : 'text-[10px]', 
+              'font-black tabular-nums flex items-center gap-1.5 leading-none text-data-xs', 
               wUp ? 'text-emerald-400' : 'text-rose-400'
             )} style={{ fontFamily: 'var(--font-data)' }}>
               <span className="opacity-40">{wUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}</span>
-              {wUp ? '+' : ''}{safeN(w.changePct)}%
+              {wUp ? '+' : ''}{(Number(w.changePct) || 0).toFixed(2)}%
             </div>
           </div>
           
           <div className="flex gap-1.5 ml-2 shrink-0">
-            <button type="button">B</button>
-            <button type="button">S</button>
+            <button type="button" onClick={handleBuy} className="w-6 h-6 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 text-[10px] font-black hover:bg-emerald-500/20 transition-colors">B</button>
+            <button type="button" onClick={handleSell} className="w-6 h-6 flex items-center justify-center rounded-lg bg-rose-500/10 text-rose-400 text-[10px] font-black hover:bg-rose-500/20 transition-colors">S</button>
           </div>
         </div>
       </motion.div>
@@ -137,7 +136,7 @@ const SwipeableWatchlistItem = React.memo(({ w, isActive, wUp, compact, onClick,
 export const Watchlist: React.FC<WatchlistProps> = React.memo(({
   watchlist, norm, symbol, onSymbolChange, wlAdding, setWlAdding, wlSearch, setWlSearch, addToWatchlist, searchResults = [], isSearching = false, onSwipeAction
 }) => {
-  const { settings } = useSettings();
+  const { settings, format } = useSettings();
   const compact = settings.compactMode;
   const [filter, setFilter] = React.useState<'all' | 'bullish' | 'bearish'>('all');
 
@@ -154,8 +153,8 @@ export const Watchlist: React.FC<WatchlistProps> = React.memo(({
     <div className={safeCn("flex-1 flex flex-col min-h-0 bg-transparent", compact ? "p-3" : "p-4")}>
       <div className="flex items-center justify-between shrink-0 mb-4 px-1">
         <div className="flex flex-col">
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>追蹤清單 WATCHLIST</span>
-          <span className="text-[9px] font-bold text-zinc-700 tracking-widest uppercase">REAL-TIME MONITOR</span>
+          <span className="text-heading-xs text-zinc-500" style={{ fontFamily: 'var(--font-heading)' }}>{compact ? '追蹤 WATCH' : '追蹤清單 WATCHLIST'}</span>
+          <span className="text-data-xs font-bold text-zinc-700 tracking-widest uppercase">REAL-TIME MONITOR</span>
         </div>
         
         <div className="flex items-center gap-2">

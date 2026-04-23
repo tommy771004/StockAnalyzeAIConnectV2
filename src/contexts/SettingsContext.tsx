@@ -1,9 +1,17 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { getSetting, setSetting } from '../services/api';
+import * as formatters from '../utils/formatters';
 
 interface SettingsContextType {
-  settings: Record<string, unknown>;
-  updateSetting: (key: string, value: unknown) => void;
+  settings: Record<string, any>;
+  updateSetting: (key: string, value: any) => void;
+  format: {
+    price: (v: number, c?: string) => string;
+    currency: (v: number, c?: string) => string;
+    percent: (v: number, d?: number) => string;
+    volume: (v: number) => string;
+    number: (v: number, d?: number) => string;
+  };
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -44,12 +52,20 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
+  const format = useMemo(() => ({
+    price: (v: number, c?: string) => formatters.formatPrice(v, c || (settings.displayCurrency as string) || 'USD', (settings.language as string) || 'zh-TW'),
+    currency: (v: number, c?: string) => formatters.formatCurrency(v, c || (settings.displayCurrency as string) || 'USD', (settings.language as string) || 'zh-TW'),
+    percent: (v: number, d?: number) => formatters.formatPercent(v, d),
+    volume: (v: number) => formatters.formatVolume(v, (settings.language as string) || 'en-US'),
+    number: (v: number, d?: number) => formatters.formatNumber(v, d, (settings.language as string) || 'zh-TW'),
+  }), [settings.displayCurrency, settings.language]);
+
   return (
-    <SettingsContext.Provider value={{ settings, updateSetting }}>
+    <SettingsContext.Provider value={{ settings, updateSetting, format }}>
       {children}
     </SettingsContext.Provider>
   );
-};
+}
 
 export const useSettings = () => {
   const context = useContext(SettingsContext);

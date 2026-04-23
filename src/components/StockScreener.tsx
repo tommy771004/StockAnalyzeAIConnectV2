@@ -48,7 +48,7 @@ interface Props {
 }
 
 export default function StockScreener({ onSelectSymbol }: Props) {
-  const { settings } = useSettings();
+  const { settings, format } = useSettings();
   const compact = settings.compactMode;
 
   const [results, setResults] = useState<ScreenerResult[]>([]);
@@ -331,7 +331,7 @@ export default function StockScreener({ onSelectSymbol }: Props) {
                     <div className="text-[10px] truncate max-w-[80px] sm:max-w-[120px]" style={{ color: 'var(--md-outline)' }}>{r.name}</div>
                   </td>
                   <td className="px-3 sm:px-4 py-3 font-mono font-bold text-[var(--text-color)] text-xs sm:text-sm whitespace-nowrap">
-                    {r.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    {format.number(r.price, 2)}
                   </td>
                   <td className="px-3 sm:px-4 py-3 font-mono font-black text-xs sm:text-sm whitespace-nowrap" style={{ color: r.changePct >= 0 ? 'var(--color-up)' : 'var(--color-down)', fontFamily: 'var(--font-data)' }}>
                     {r.changePct >= 0 ? '+' : ''}{r.changePct.toFixed(2)}%
@@ -361,15 +361,14 @@ export default function StockScreener({ onSelectSymbol }: Props) {
               ))}
             </tbody>
           </table>
-          {sorted.length > visibleCount && (
-            <div className="flex justify-center mt-3">
-              <button type="button" onClick={(e) => {}}
-                className="px-4 py-2 text-xs rounded-lg transition-colors" style={{ background: 'var(--md-surface-container)', color: 'var(--md-outline)', border: '1px solid var(--md-outline-variant)' }}
+            <div className="flex justify-center p-6 border-t border-[var(--border-color)]">
+              <button type="button" onClick={() => setVisibleCount(v => v + 50)}
+                className="px-6 py-2 text-xs font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-black/20"
+                style={{ background: 'var(--md-surface-container-high)', color: 'var(--md-on-surface)', border: '1px solid var(--md-outline-variant)' }}
               >
-                載入更多 ({visibleCount}/{sorted.length})
+                載入更多項目 ({visibleCount}/{sorted.length})
               </button>
             </div>
-          )}
         </div>
       )}
     </motion.div>

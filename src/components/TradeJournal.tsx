@@ -73,6 +73,7 @@ const MonthTip = ({ active, payload, label }: MonthTipProps) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function TradeJournal() {
+  const { settings, format } = useSettings();
   const [trades,   setTrades]   = useState<Trade[]>([]);
   type JournalStatus = 'idle' | 'loading' | 'saving';
   const [status,   setStatus]   = useState<JournalStatus>('loading');
@@ -195,21 +196,21 @@ export default function TradeJournal() {
       {/* ── KPI ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 shrink-0">
         {[
-          { label:'勝率',          value:`${winRate}%`, sub:`${wins.length} 勝 / ${trades.length - wins.length} 敗`, up:parseFloat(winRate)>=50,
+          { label:'勝率',          value:`${format.number(parseFloat(winRate), 1)}%`, sub:`${wins.length} 勝 / ${trades.length - wins.length} 敗`, up:parseFloat(winRate)>=50,
             tip:'獲利交易 ÷ 總交易次數' },
-          { label:'累計損益',      value:`${netPnL>=0?'+':''}$${netPnL.toLocaleString(undefined,{maximumFractionDigits:0})}`, sub:'所有已實現損益加總', up:netPnL>=0,
+          { label:'累計損益',      value:format.currency(netPnL, 'USD'), sub:'所有已實現損益加總', up:netPnL>=0,
             tip:'正數=賺錢，負數=虧損' },
-          { label:'獲利因子 (PF)', value:pf, sub:`獲利金額 ÷ 虧損金額`, up:parseFloat(pf)>=1,
+          { label:'獲利因子 (PF)', value:format.number(parseFloat(pf), 2), sub:`獲利金額 ÷ 虧損金額`, up:parseFloat(pf)>=1,
             tip:'>1 代表整體策略有正期望值' },
         ].map(c => (
           <div key={c.label} className="liquid-glass-strong rounded-2xl sm:rounded-[2rem] p-5 sm:p-6 border border-zinc-800 bg-zinc-900/50 shadow-xl">
-            <div className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">{c.label}</div>
-            <div className={cn('text-2xl sm:text-3xl font-black mb-2 tracking-tighter', c.up?'text-zinc-100':'text-rose-400')}>{c.value}</div>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="text-heading-xs text-zinc-500 mb-2">{c.label}</div>
+            <div className={cn('text-2xl sm:text-3xl font-black mb-2 tracking-tighter', c.up?'text-zinc-100':'text-rose-400')} style={{ fontFamily: 'var(--font-data)' }}>{c.value}</div>
+            <div className="flex items-center gap-2 text-data-xs">
               {c.up ? <ArrowUpRight size={16} className="text-emerald-400"/> : <ArrowDownRight size={16} className="text-rose-400"/>}
-              <span className="text-zinc-400 font-bold text-xs sm:text-sm">{c.sub}</span>
+              <span className="text-zinc-400 font-bold">{c.sub}</span>
             </div>
-            <div className="text-xs text-zinc-600 mt-3 italic font-bold hidden sm:block">{c.tip}</div>
+            <div className="text-body-xs text-zinc-600 mt-3 italic font-bold hidden sm:block">{c.tip}</div>
           </div>
         ))}
       </div>
@@ -319,7 +320,7 @@ export default function TradeJournal() {
       {err && (
         <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm rounded-2xl p-4 shrink-0 font-bold">
           <AlertCircle size={16}/> {err}
-          <button type="button" onClick={(e) => {}} className="ml-auto"><X size={14}/></button>
+          <button type="button" onClick={() => setErr('')} className="ml-auto"><X size={14}/></button>
         </div>
       )}
 
@@ -345,11 +346,11 @@ export default function TradeJournal() {
                 </button>
               ))}
             </div>
-            <button type="button" onClick={(e) => { setAdding(v=>!v); setErr(''); }}
+            <button type="button" onClick={() => setAdding(v=>!v)}
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 transition">
               <Plus size={14}/> 新增交易
             </button>
-            <button type="button">
+            <button type="button" onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-black uppercase tracking-widest hover:bg-zinc-700 transition border border-zinc-700">
               <Download size={14}/> 匯出CSV
             </button>
           </div>
@@ -392,7 +393,8 @@ export default function TradeJournal() {
               ))}
             </div>
             <div className="flex gap-3">
-              <button type="button"> {saving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>} 儲存
+              <button type="button" onClick={handleAdd} disabled={saving} className="px-8 py-3 rounded-xl bg-emerald-500 text-black text-sm font-black uppercase tracking-widest hover:bg-emerald-400 transition flex items-center justify-center gap-2 min-w-[120px]">
+                {saving ? <Loader2 size={16} className="animate-spin"/> : <Check size={16}/>} 儲存
               </button>
               <button type="button" onClick={(e) => { setAdding(false); setErr(''); }}
                 className="px-8 py-3 rounded-xl bg-zinc-900 text-zinc-400 text-sm font-black uppercase tracking-widest border border-zinc-800 hover:bg-zinc-800 transition">
@@ -414,7 +416,7 @@ export default function TradeJournal() {
               </div>
               <h3 className="text-zinc-100 font-bold">連線異常</h3>
               <p className="text-zinc-400 text-sm max-w-xs">{error}</p>
-              <button type="button">
+              <button type="button" onClick={load} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 text-zinc-100 text-xs border border-zinc-700">
                 <RefreshCw className="w-4 h-4" />
                 重新整理
               </button>
@@ -428,7 +430,7 @@ export default function TradeJournal() {
               <div className="text-3xl">📒</div>
               <p className="text-zinc-500 text-sm font-semibold">還沒有交易記錄</p>
               <p className="text-zinc-500 text-xs">記錄每筆交易，追蹤自己的進步</p>
-              <button type="button" onClick={(e) => {}}
+              <button type="button" onClick={() => setAdding(true)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-sm border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
                 <Plus size={12}/> 新增第一筆
               </button>
@@ -436,7 +438,7 @@ export default function TradeJournal() {
           ) : (
             <table className="w-full text-sm text-left">
               <thead className="sticky top-0 bg-[var(--card-bg)] z-10">
-                <tr className="text-zinc-500 border-b border-[var(--border-color)] text-sm">
+                <tr className="text-zinc-500 border-b border-[var(--border-color)] text-data-xs">
                   <th className="pb-2 font-medium">日期</th>
                   <th className="pb-2 font-medium">代碼</th>
                   <th className="pb-2 font-medium">方向</th>
@@ -489,10 +491,11 @@ export default function TradeJournal() {
                           <td/><td/>
                           <td className="py-2">
                             <div className="flex gap-1">
-                              <button type="button"> {saving ? <Loader2 size={11} className="animate-spin"/> : <Check size={11}/>}
+                              <button type="button" onClick={handleSaveEdit} disabled={saving} className="p-1.5 rounded bg-indigo-500 text-black hover:bg-indigo-400 disabled:opacity-50">
+                                {saving ? <Loader2 size={11} className="animate-spin"/> : <Check size={11}/>}
                               </button>
-                              <button type="button" onClick={(e) => { setEditId(null); setEditBuf({}); }}
-                                className="p-1.5 rounded bg-[var(--bg-color)] text-zinc-500 hover:bg-[var(--border-color)] transition-colors">
+                              <button type="button" onClick={() => { setEditId(null); setEditBuf({}); }}
+                                className="p-1.5 rounded bg-zinc-800 text-zinc-500 hover:bg-zinc-700 transition-colors">
                                 <X size={11}/>
                               </button>
                             </div>
@@ -527,25 +530,25 @@ export default function TradeJournal() {
                           <td className="py-2.5 text-zinc-500 text-sm max-w-[120px] truncate" title={t.notes}>{t.notes}</td>
                           <td className="py-2.5">
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button type="button" onClick={(e) => { setEditId(t.id); setEditBuf({}); }}
+                              <button type="button" onClick={() => { setEditId(t.id); setEditBuf({}); }}
                                 className="p-1.5 rounded bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 transition-colors">
                                 <Edit2 size={11}/>
                               </button>
                               {deleteConfirmId === t.id ? (
                                 <div className="flex items-center gap-1">
-                                  <button type="button" onClick={(e) => {}}
+                                  <button type="button" onClick={() => handleDelete(t.id)}
                                     className="px-2 py-1 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors text-xs font-bold"
                                     title="確認刪除">
                                     <Check size={11}/>
                                   </button>
-                                  <button type="button" onClick={(e) => {}}
+                                  <button type="button" onClick={() => setDeleteConfirmId(null)}
                                     className="px-2 py-1 rounded bg-[var(--bg-color)] text-zinc-500 hover:bg-[var(--border-color)] transition-colors text-xs"
                                     title="取消">
                                     <X size={11}/>
                                   </button>
                                 </div>
                               ) : (
-                                <button type="button" onClick={(e) => {}}
+                                <button type="button" onClick={() => setDeleteConfirmId(t.id)}
                                   className="p-1.5 rounded bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-colors">
                                   <Trash2 size={11}/>
                                 </button>

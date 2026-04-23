@@ -102,10 +102,10 @@ const PortfolioSummary = React.memo(({ portfolio, compact, sentiment }: { portfo
       <div className="absolute inset-0 bg-indigo-500/[0.03] pointer-events-none group-hover:bg-indigo-500/[0.05] transition-colors" />
       <div className="flex justify-between items-start relative z-10">
         <div>
-          <div className={safeCn("font-black tracking-[0.15em] md:tracking-[0.2em] opacity-30 uppercase mb-1.5", compact ? "text-[8px] md:text-[9px]" : "text-[9px] md:text-[10px]")}>資產總值 PORTFOLIO VALUE</div>
+          <div className="text-heading-xs mb-1.5" style={{ color: 'var(--md-outline)' }}>{compact ? '資產' : '資產總值 PORTFOLIO VALUE'}</div>
           <div className={safeCn("font-black text-white tabular-nums tracking-tighter leading-none flex items-baseline gap-1.5", compact ? "text-xl md:text-2xl" : "text-2xl md:text-3xl")} style={{ fontFamily: 'var(--font-data)' }}>
             <span className="text-xs md:text-sm opacity-40 font-medium">NT$</span>
-            {totalValue.toLocaleString()}
+            {format.number(totalValue, 0)}
           </div>
         </div>
         {sentiment && (() => {
@@ -122,7 +122,7 @@ const PortfolioSummary = React.memo(({ portfolio, compact, sentiment }: { portfo
                   ? "bg-rose-500/10 border-rose-500/20"
                   : "bg-zinc-500/10 border-zinc-500/20"
             )}>
-              <div className="text-[8px] font-black tracking-widest opacity-40 uppercase leading-none mb-1">AI SENTIMENT</div>
+            <div className="text-data-xs font-black tracking-widest opacity-40 uppercase leading-none mb-1">AI SENTIMENT</div>
               <div className={safeCn(
                 "font-black leading-none uppercase tracking-tighter", 
                 compact ? "text-xs" : "text-sm",
@@ -147,7 +147,7 @@ const InfoTabs = React.memo(({ news, newsStatus, tab, setTab, mtfData, mtfStatus
             role="tab" 
             aria-selected={tab === t} 
             className={safeCn(
-              'flex-1 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition rounded-xl',
+              'flex-1 py-2 text-data-xs font-black uppercase tracking-[0.2em] transition rounded-xl',
               tab === t ? 'bg-indigo-500 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-200'
             )}
             style={{ fontFamily: 'var(--font-heading)' }}
@@ -299,7 +299,7 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
   return (
     <div className={safeCn("glass-card border border-white/5 rounded-3xl overflow-hidden relative", compact ? "p-4" : "p-6")}>
       <div className="flex items-center justify-between mb-5 relative z-10">
-        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.25em]" style={{ fontFamily: 'var(--font-heading)' }}>終端交易 TERMINAL</span>
+        <span className="text-heading-xs text-zinc-500" style={{ fontFamily: 'var(--font-heading)' }}>{compact ? '下單' : '終端交易 TERMINAL'}</span>
         <div className="flex gap-1 bg-black/40 rounded-xl p-1 border border-white/5 overflow-hidden">
           {(['buy', 'sell'] as const).map(s => (
             <button type="button" key={s} onClick={(e) => { setOSide(s); vibrate(15); }}
@@ -318,7 +318,7 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
       
       <div className="space-y-5 relative z-10">
         <div className="flex justify-between items-baseline bg-white/5 p-3 rounded-2xl border border-white/5">
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">市場報價</span>
+          <span className="text-data-xs font-black text-zinc-500 uppercase tracking-widest">市場報價</span>
           <span className={safeCn('font-black tracking-tighter tabular-nums', compact ? 'text-base md:text-lg' : 'text-lg md:text-xl', isUp ? 'text-rose-400' : 'text-emerald-400')} style={{ fontFamily: 'var(--font-data)' }}>
             <span className="text-[9px] md:text-[10px] opacity-40 mr-1 font-medium italic">LAST</span>
             {safeN(price)}
@@ -327,8 +327,8 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
 
         <div className="space-y-2">
           <div className="flex justify-between px-1">
-            <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest" htmlFor="order-qty-right">交易數量 QUANTITY</label>
-            <span className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest">AUTO-STEP 100</span>
+            <label className="text-data-xs font-black text-zinc-500 uppercase tracking-widest" htmlFor="order-qty-right">交易數量 QUANTITY</label>
+            <span className="text-data-xs font-black text-indigo-400/60 uppercase tracking-widest">AUTO-STEP 100</span>
           </div>
           <div className="flex items-center h-14 bg-black/40 border border-white/5 rounded-2xl overflow-hidden group focus-within:border-indigo-500/40 transition focus-within:ring-4 focus-within:ring-indigo-500/5">
             <button type="button" onClick={(e) => { setOrderQty(Math.max(1, orderQty - 100)); vibrate(20); }}
@@ -348,10 +348,10 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
         </div>
 
         <div className="flex justify-between items-baseline px-1 border-t border-white/5 pt-4">
-          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">估算成交量 ESTIMATED</span>
+          <span className="text-data-xs font-black text-zinc-500 uppercase tracking-widest">估算成交量 ESTIMATED</span>
           <span className="text-white font-black tracking-tighter tabular-nums flex items-baseline gap-1" style={{ fontFamily: 'var(--font-data)' }}>
             <span className="text-[10px] opacity-30 font-medium">NT$</span>
-            {price && isFinite(Number(price)) && isFinite(orderQty) ? (Number(price) * orderQty).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—'}
+            {price && isFinite(Number(price)) && isFinite(orderQty) ? format.number(Number(price) * orderQty, 0) : '—'}
           </span>
         </div>
         
@@ -376,7 +376,7 @@ const OrderPanel = React.memo(({ price, symbol, oSide, setOSide, orderQty, setOr
 export const RightPanel: React.FC<RightPanelProps> = React.memo(({
   price, symbol, news, sentiment, newsStatus, tab, setTab, eDateFmt, chat, setChat, chatRep, chatStatus, handleChat, oSide, setOSide, orderQty, setOrderQty, isUp, onGoBacktest, executeOrder, mtfData, mtfStatus, portfolio, orderStatus
 }) => {
-  const { settings } = useSettings();
+  const { settings, format } = useSettings();
   const compact = !!settings.compactMode;
   
   return (

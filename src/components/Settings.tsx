@@ -445,8 +445,11 @@ export default function Settings() {
                   {saveErr}
                 </span>
               )}
-              <button type="button" onClick={save}>
-                {" "}
+              <button type="button" onClick={save}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition active:scale-95 disabled:opacity-50"
+                style={{ background: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
+                disabled={saving}
+              >
                 {saving ? (
                   <RefreshCw size={14} className="animate-spin" />
                 ) : saved ? (
@@ -885,7 +888,9 @@ export default function Settings() {
               >
                 <div className="flex items-center gap-2">
                   <Toggle k="browserNotifications" />
-                  <button type="button" onClick={requestNotifPermission}>
+                  <button type="button" onClick={requestNotifPermission}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-95"
+                    style={{ background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)', color: 'var(--md-on-surface-variant)' }}>
                     請求權限
                   </button>
                 </div>
@@ -1086,7 +1091,7 @@ export default function Settings() {
                     border: "1px solid var(--md-outline-variant)",
                   }}
                 >
-                  <RefreshCw size={13} /> 重新整理
+                  <RefreshCw size={13} className={saving ? 'animate-spin' : ''} /> 重新整理
                 </button>
               </Row>
               <div
